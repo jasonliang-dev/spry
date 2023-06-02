@@ -360,7 +360,7 @@ $api_reference = [
         img:draw(x, y)
         spry.pop_color()
       ",
-      "args" => $draw_description,
+      "args" => [],
       "return" => false,
     ],
     "spry.draw_filled_rect" => [
@@ -404,7 +404,7 @@ $api_reference = [
         -- draw image rotated, origin center, flipped vertically
         local ox = img:width() / 2
         local oy = img:height() / 2
-        img:draw(x, y, angle, -1, 1, ox, oy)
+        img:draw(x, y, angle, 1, -1, ox, oy)
       ",
       "args" => array_merge($draw_description, $uv_coords),
       "return" => false,
@@ -476,39 +476,19 @@ $api_reference = [
   ],
   "Sprite" => [
     "spry.sprite_load" => [
-      "desc" => "Create a sprite object from an Aseprite file.",
-      "example" => "local player_sprite = spry.sprite_load 'player.ase'",
+      "desc" => "
+        Create a sprite renderer from an Aseprite file. Sprites are cached, so
+        creating a sprite renderer from a file that has already been loaded
+        is cheap.
+      ",
+      "example" => "
+        function Player:new()
+          self.sprite = spry.sprite_load 'player.ase'
+        end
+      ",
       "args" => [
         "file" => ["string", "The Aseprite file to open."],
       ],
-      "return" => "Sprite",
-    ],
-    "Sprite" => [
-      "desc" => "Create a sprite renderer from a sprite object.",
-      "example" => "
-        function spry.start()
-          player_sprite = spry.sprite.load 'player.ase'
-        end
-
-        class 'Player'
-
-        function Player:new(x, y)
-          self.x = x
-          self.y = y
-
-          -- player_sprite is a sprite object
-          self.spr = player_sprite()
-        end
-
-        function Player:update(dt)
-          self.spr:update(dt)
-        end
-
-        function Player:draw()
-          self.spr:draw(self.x, self.y)
-        end
-      ",
-      "args" => [],
       "return" => "SpriteRenderer",
     ],
     "SpriteRenderer:play" => [
@@ -1619,7 +1599,6 @@ $api_reference = [
     class="dn db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden"
     style="width: 300px; top: <?= $nav_height ?>"
   >
-    <script>console.log(<?= json_encode($sections) ?>)</script>
     <form
       @submit.prevent="e => {
         const section = filtered()[0]
