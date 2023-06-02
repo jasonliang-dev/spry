@@ -4120,7 +4120,11 @@ end
           
           <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
           <div class="prose">
-            <pre class="mb0"><code class="language-lua">local v = vec2(self.x, self.y)</code></pre>
+            <pre class="mb0"><code class="language-lua">local a = vec2(self.x, self.y)
+local b = vec2(other.x, other.y)
+local c = a + b
+print(c.x, c.y)
+</code></pre>
           </div>
         </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
