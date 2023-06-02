@@ -321,8 +321,7 @@ first.</p>
 <p>You might notice that moving diagonally is a little faster compared to
 vertical or horizonal movement. This is because vertical and horizontal
 movement has a speed of 200, but using both vertical and horizontal speeds
-together results in a speed of around 282 (square root of
-x_speed<sup>2</sup> + y_speed<sup>2</sup>). We need to normalize <code>vx</code> and
+together results in a speed of around 282 (square root of 200<sup>2</sup> + 200<sup>2</sup>). We need to normalize <code>vx</code> and
 <code>vy</code> so that the combined speed of both <code>vx</code> and <code>vy</code> is always 1.</p>
 <p>After setting keyboard input, but before moving the player, add the following line:</p>
 <pre><code class="language-lua">vx, vy = normalize(vx, vy)</code></pre>
