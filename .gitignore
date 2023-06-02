@@ -1,0 +1,15 @@
+*.exe
+*.exp
+*.lib
+*.pdb
+*.ilk
+*.obj
+*.o
+*.out
+spry
+.vs
+ignore
+*.data
+*.html
+*.wasm
+*.js
