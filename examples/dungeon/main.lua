@@ -1,7 +1,7 @@
 function spry.conf(t)
   t.swap_interval = false
-  -- t.window_width = 1280
-  -- t.window_height = 720
+  t.window_width = 1280
+  t.window_height = 720
 end
 
 function spry.start()
@@ -67,9 +67,9 @@ function spry.frame(dt)
     end
   camera:end_draw()
 
-  -- font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+  font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
 
-  -- local mx, my = spry.mouse_pos()
-  -- local dx, dy = spry.mouse_delta()
-  -- font:draw(("(%.2f, %.2f) (%.2f, %.2f)"):format(mx, my, dx, dy), 0, 24)
+  local mx, my = spry.mouse_pos()
+  local dx, dy = spry.mouse_delta()
+  font:draw(("(%.2f, %.2f) (%.2f, %.2f)"):format(mx, my, dx, dy), 0, 24)
 end
