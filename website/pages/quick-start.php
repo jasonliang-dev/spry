@@ -37,9 +37,12 @@ you created to `spry.exe`. You can also run the program from the console:
 C:\path\to\spry.exe my_folder
 ```
 
-You've successfully created your first game using Spry! For further learning,
-you can look at [this](game-demo.html) guide that sees a UFO move around the
-screen. If you're confident with your coding abilities, you can look at
-Spry's [API reference](docs.html).
+You've successfully created your first game using Spry!
+
+## What next?
+
+- [UFO demo](game-demo.html)
+- [API reference](docs.html)
+- [Examples on GitHub](https://github.com/jasonliang-dev/spry/tree/master/examples)
 
 <?php });
