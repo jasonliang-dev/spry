@@ -6,6 +6,7 @@ prototyping.
 - [Download for Windows](https://github.com/jasonliang-dev/spry/releases/download/1.0/spry-windows-x86-64.exe)
 - [Download for Linux](https://github.com/jasonliang-dev/spry/releases/download/1.0/spry-linux-x86-64)
 - [Documentation](https://jasonliang.js.org/spry/)
+- [API reference](https://jasonliang.js.org/spry/docs.html)
 
 ## Basic example
 
