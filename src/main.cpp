@@ -271,6 +271,8 @@ static void cleanup() {
   sgl_shutdown();
   sg_shutdown();
 
+  drop(&g_app->archive);
+
   mem_free(g_app);
 
 #ifdef DEBUG

@@ -10,9 +10,11 @@ struct Archive {
   bool (*list_all_files)(Archive *self, Array<String> *files);
 
   mz_zip_archive zip;
+  String zip_contents;
 };
 
 bool make_filesystem_archive(Archive *ar, String mount);
 bool make_zip_archive(Archive *ar, String mount);
+void drop(Archive *ar);
 String program_dir();
 String program_path();

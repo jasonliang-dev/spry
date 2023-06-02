@@ -1,5 +1,6 @@
 #include "archive.h"
 #include "deps/tinydir.h"
+#include "prelude.h"
 #include "strings.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,15 +143,30 @@ static bool zip_archive_read_entire_file(Archive *self, String *out,
   String path = clone(filepath);
   defer(mem_free(path.data));
 
-  usize len = 0;
-  char *buf = (char *)mz_zip_reader_extract_file_to_heap(&self->zip, path.data,
-                                                         &len, 0);
-  if (buf == nullptr) {
+  i32 file_index = mz_zip_reader_locate_file(&self->zip, path.data, nullptr, 0);
+  if (file_index == -1) {
     return false;
   }
 
-  // buf[len] = 0; // todo: is this okay?
-  *out = {buf, len};
+  mz_zip_archive_file_stat stat;
+  mz_bool ok = mz_zip_reader_file_stat(&self->zip, file_index, &stat);
+  if (!ok) {
+    return false;
+  }
+
+  usize size = stat.m_uncomp_size;
+  char *buf = (char *)mem_alloc(size + 1);
+
+  ok = mz_zip_reader_extract_to_mem(&self->zip, file_index, buf, size, 0);
+  if (!ok) {
+    mz_zip_error err = mz_zip_get_last_error(&self->zip);
+    fprintf(stderr, "failed to read file '%s': %s\n", path.data,
+            mz_zip_get_error_string(err));
+    mem_free(buf);
+    return false;
+  }
+
+  *out = {buf, size};
   return true;
 }
 
@@ -175,7 +191,6 @@ bool make_zip_archive(Archive *ar, String mount) {
   if (!contents_ok) {
     return false;
   }
-  defer(mem_free(contents.data));
 
   char *data = contents.data;
   char *end = &data[contents.len];
@@ -213,8 +228,16 @@ bool make_zip_archive(Archive *ar, String mount) {
   ar->file_exists = zip_archive_file_exists;
   ar->read_entire_file = zip_archive_read_entire_file;
   ar->list_all_files = zip_archive_list_all_files;
+  ar->zip_contents = contents;
 
   return true;
+}
+
+void drop(Archive *ar) {
+  if (ar->zip_contents.data != nullptr) {
+    mz_zip_reader_end(&ar->zip);
+    mem_free(ar->zip_contents.data);
+  }
 }
 
 String program_dir() {
