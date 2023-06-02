@@ -106,7 +106,9 @@ static void init() {
     }
   }
 
+#ifdef DEBUG
   printf("end of init\n");
+#endif
 }
 
 static void event(const sapp_event *e) {
@@ -271,7 +273,9 @@ static void cleanup() {
 
   mem_free(g_app);
 
+#ifdef DEBUG
   dump_allocs(&g_allocator);
+#endif
 }
 
 static void run_lua_script(Archive *ar, String filepath) {
@@ -463,6 +467,8 @@ sapp_desc sokol_main(int argc, char **argv) {
   sapp.gl_force_gles2 = true;
 #endif
 
-  printf("end of main\n");
+#ifdef DEBUG
+  printf("debug build\n");
+#endif
   return sapp;
 }

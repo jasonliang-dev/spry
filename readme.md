@@ -35,10 +35,10 @@ spry examples/boxes
 ## Building from source
 
 Build `src/spry.cpp` through a C++17 compiler. `src/deps/box2d` needs to be in
-the include path.
+the include path, and either `DEBUG` or `RELEASE` must be defined.
 
 An optimized build of Spry using MSVC looks like this:
 
 ```sh
-cl /std:c++17 /O2 /EHsc /DNOMINMAX /Isrc/deps/box2d src/spry.cpp
+cl /std:c++17 /O2 /EHsc /DNOMINMAX /DRELEASE /Isrc/deps/box2d src/spry.cpp
 ```
