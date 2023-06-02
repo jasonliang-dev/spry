@@ -3,8 +3,8 @@
 [Spry](https://jasonliang.js.org/spry/) is a 2D game framework made for rapid
 prototyping.
 
-- [Download for Windows](#)
-- [Download for Linux](#)
+- [Download for Windows](https://github.com/jasonliang-dev/spry/releases/download/1.0/spry-windows-x86-64.exe)
+- [Download for Linux](https://github.com/jasonliang-dev/spry/releases/download/1.0/spry-linux-x86-64)
 - [Documentation](https://jasonliang.js.org/spry/)
 
 ## Basic example
