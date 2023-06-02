@@ -9,12 +9,8 @@ To create a zip archive of your game, select all of the files in your game's
 directory and create a new zip file from it. Make sure `main.lua` is in the
 root of the zip archive.
 
-On Windows, you can create a zip file of your game by:
-
-1. Going into the game's folder in the file explorer
-1. Selecting all files (you can use `Ctrl + A`)
-1. Right clicking any of the selected files, Send to > Compressed (zipped) folder
-1. Rename the new zip file if necessary
+On Windows, you can create a zip file of your game by right clicking any of
+the selected files, Send to > Compressed (zipped) folder.
 
 On Linux, navigate to your game's folder and then run:
 

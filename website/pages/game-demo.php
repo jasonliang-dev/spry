@@ -156,8 +156,7 @@ first.
 You might notice that moving diagonally is a little faster compared to
 vertical or horizonal movement. This is because vertical and horizontal
 movement has a speed of 200, but using both vertical and horizontal speeds
-together results in a speed of around 282 (square root of
-x_speed<sup>2</sup> + y_speed<sup>2</sup>). We need to normalize `vx` and
+together results in a speed of around 282 (square root of 200<sup>2</sup> + 200<sup>2</sup>). We need to normalize `vx` and
 `vy` so that the combined speed of both `vx` and `vy` is always 1.
 
 After setting keyboard input, but before moving the player, add the following line:

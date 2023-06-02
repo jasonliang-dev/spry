@@ -42,7 +42,8 @@ You've successfully created your first game using Spry!
 ## What next?
 
 - [UFO demo](game-demo.html)
-- [API reference](docs.html)
+- [Spry API reference](docs.html)
 - [Examples on GitHub](https://github.com/jasonliang-dev/spry/tree/master/examples)
+- [Learn Lua in Y Minutes](https://learnxinyminutes.com/docs/lua/)
 
 <?php });

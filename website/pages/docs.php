@@ -10,6 +10,18 @@ $draw_description = [
   "oy" => ["number", "The y origin offset.", 0],
 ];
 
+$rect_description = [
+  "x" => ["number", "The x position to draw at.", 0],
+  "y" => ["number", "The y position to draw at.", 0],
+  "w" => ["number", "The width of the rectangle.", 0],
+  "h" => ["number", "The height of the rectangle.", 0],
+  "rotation" => ["number", "The rotation angle in radians.", 0],
+  "sx" => ["number", "The x scale factor.", 1],
+  "sy" => ["number", "The y scale factor.", 1],
+  "ox" => ["number", "The x origin offset.", 0],
+  "oy" => ["number", "The y origin offset.", 0],
+];
+
 $uv_coords = [
   "u0" => ["number", "The top-left x texture coordinate.", 0],
   "v0" => ["number", "The top-left y texture coordinate.", 0],
@@ -121,7 +133,7 @@ $api_reference = [
     ],
     "spry.key_down" => [
       "desc" => "
-        Check if a keyboard key is held down this frame.
+        Check if a keyboard key is held down since last frame.
 
         The key can be one of the following strings:
 
@@ -147,10 +159,25 @@ $api_reference = [
       ],
       "return" => "boolean",
     ],
-    "spry.key_up" => [
+    "spry.key_press" => [
       "desc" => "
-        Check if a keyboard key went from pressed to released this frame. The
-        key can be any of the strings used in [`spry.key_down`](#spry.key_down).
+        Check if a keyboard key was pressed since last frame. The key can be
+        any of the strings used in [`spry.key_down`](#spry.key_down).
+      ",
+      "example" => "
+        if spry.key_press 'space' then
+          self:jump()
+        end
+      ",
+      "args" => [
+        "key" => ["string", "The key to check."]
+      ],
+      "return" => "boolean",
+    ],
+    "spry.key_release" => [
+      "desc" => "
+        Check if a keyboard key was released since last frame. The key can be
+        any of the strings used in [`spry.key_down`](#spry.key_down).
       ",
       "example" => "
         if spry.key_up 'e' then
@@ -162,20 +189,150 @@ $api_reference = [
       ],
       "return" => "boolean",
     ],
-    "spry.key_press" => [
+    "spry.mouse_down" => [
       "desc" => "
-        Check if a keyboard key went from released to pressed this frame. The
-        key can be any of the strings used in [`spry.key_down`](#spry.key_down).
+        Check if a mouse button is held down since last frame. Mouse button 0
+        is the left button, button 1 is the right button, and button 2 is the
+        middle button.
       ",
       "example" => "
-        if spry.key_press 'space' then
-          self:jump()
+        if spry.mouse_down(0) then
+          aim_to(mx, my)
         end
       ",
       "args" => [
-        "key" => ["string", "The key to check."]
+        "button" => ["number", "The mouse button."]
       ],
       "return" => "boolean",
+    ],
+    "spry.mouse_click" => [
+      "desc" => "
+        Check if a mouse button was clicked since last frame. Mouse button 0
+        is the left button, button 1 is the right button, and button 2 is the
+        middle button.
+      ",
+      "example" => "
+        if spry.mouse_click(0) then
+          spawn_block(mx, my)
+        end
+      ",
+      "args" => [
+        "button" => ["number", "The mouse button."]
+      ],
+      "return" => "boolean",
+    ],
+    "spry.mouse_release" => [
+      "desc" => "
+        Check if a mouse button was released since last frame. Mouse button 0
+        is the left button, button 1 is the right button, and button 2 is the
+        middle button.
+      ",
+      "example" => "
+        if spry.mouse_release(1) then
+          show_context_menu()
+        end
+      ",
+      "args" => [
+        "button" => ["number", "The mouse button."]
+      ],
+      "return" => "boolean",
+    ],
+    "spry.mouse_pos" => [
+      "desc" => "Get the mouse's current position.",
+      "example" => "local mx, my = spry.mouse_pos()",
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "spry.mouse_delta" => [
+      "desc" => "Get the mouse's movement since last frame.",
+      "example" => "local dx, dy = spry.mouse_delta()",
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "spry.show_mouse" => [
+      "desc" => "Show/hide the mouse cursor.",
+      "example" => "spry.show_mouse(false)",
+      "args" => [
+        "show" => ["boolean", "True if cursor should be shown. False if cursor should be hidden."],
+      ],
+      "return" => false,
+    ],
+    "spry.scroll_wheel" => [
+      "desc" => "Get the scroll wheel value since last frame.",
+      "example" => "local scroll_x, scroll_y = spry.scroll_wheel()",
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "spry.push_matrix" => [
+      "desc" => "Push an identity matrix onto the matrix transform stack.",
+      "example" => "
+        spry.push_matrix()
+        spry.translate(spry.window_width() / 2, spry.window_height() / 2)
+        spry.scale(self.scale, self.scale)
+        spry.translate(-self.x, -self.y)
+      ",
+      "args" => [],
+      "return" => false,
+    ],
+    "spry.pop_matrix" => [
+      "desc" => "
+        Pop a matrix from the matrix transform stack. You should have a
+        matching `pop_matrix` for every `push_matrix`.
+      ",
+      "example" => "
+        spry.push_matrix()
+        spry.translate(spry.window_width() / 2, spry.window_height() / 2)
+        draw_stuff()
+        spry.pop_matrix()
+      ",
+      "args" => [],
+      "return" => false,
+    ],
+    "spry.translate" => [
+      "desc" => "Apply a 2D translation for the current matrix transform.",
+      "example" => "
+        spry.push_matrix()
+        spry.translate(camera.x, camera.y)
+      ",
+      "args" => [
+        "x" => ["number", "The translation in the x direction."],
+        "y" => ["number", "The translation in the y direction."],
+      ],
+      "return" => false,
+    ],
+    "spry.rotate" => [
+      "desc" => "Apply a rotation for the current matrix transform.",
+      "example" => "
+        spry.push_matrix()
+        spry.rotate(camera.tilt)
+      ",
+      "args" => [
+        "angle" => ["number", "The angle rotation in radians."],
+      ],
+      "return" => false,
+    ],
+    "spry.scale" => [
+      "desc" => "Apply a 2D scale for the current matrix transform.",
+      "example" => "
+        spry.push_matrix()
+        spry.scale(camera.zoom, camera.zoom)
+      ",
+      "args" => [
+        "x" => ["number", "The scale in the x direction."],
+        "y" => ["number", "The scale in the y direction."],
+      ],
+      "return" => false,
+    ],
+    "spry.clear_color" => [
+      "desc" => "Set the background clear color. Call this before drawing the frame.",
+      "example" => "spry.clear_color(255, 255, 255, 255)",
+      "args" => [
+        "r" => ["number", "The color's red channel, in the range [0, 255]."],
+        "g" => ["number", "The color's green channel, in the range [0, 255]."],
+        "b" => ["number", "The color's blue channel, in the range [0, 255]."],
+        "a" => ["number", "The color's alpha channel, in the range [0, 255]."],
+      ],
+      "return" => false,
     ],
     "spry.push_color" => [
       "desc" => "Add a color to the color stack. The color is used as a tint when drawing things to the screen.",
@@ -194,13 +351,38 @@ $api_reference = [
       "return" => false,
     ],
     "spry.pop_color" => [
-      "desc" => "Remove a color from the color stack. You should always have a matching `pop_color` for every `push_color`.",
+      "desc" => "
+        Remove a color from the color stack. You should have a matching
+        `pop_color` for every `push_color`.
+      ",
       "example" => "
         spry.push_color(255, 0, 0, 255)
         img:draw(x, y)
         spry.pop_color()
       ",
-      "args" => [],
+      "args" => $draw_description,
+      "return" => false,
+    ],
+    "spry.draw_filled_rect" => [
+      "desc" => "Draw a solid filled rectangle.",
+      "example" => "spry.draw_filled_rect(self.x, self.y, w, h)",
+      "args" => $rect_description,
+      "return" => false,
+    ],
+    "spry.draw_line_rect" => [
+      "desc" => "Draw a rectangle outline.",
+      "example" => "spry.draw_line_rect(self.x, self.y, w, h)",
+      "args" => $rect_description,
+      "return" => false,
+    ],
+    "spry.draw_line_circle" => [
+      "desc" => "Draw a circle outline.",
+      "example" => "spry.draw_line_circle(self.x, self.y, radius)",
+      "args" => [
+        "x" => ["number", "The x position to draw at."],
+        "y" => ["number", "The y position to draw at."],
+        "radius" => ["number", "The radius of the circle."],
+      ],
       "return" => false,
     ],
   ],
@@ -269,9 +451,9 @@ $api_reference = [
       "example" => "font:draw('Hello, World!', 100, 100, 30)",
       "args" => [
         "text" => ["string", "The text to draw."],
-        "x" => ["number", "The x position to draw at."],
-        "y" => ["number", "The y position to draw at."],
-        "size" => ["number", "The size of the text."],
+        "x" => ["number", "The x position to draw at.", 0],
+        "y" => ["number", "The y position to draw at.", 0],
+        "size" => ["number", "The size of the text.", 12],
       ],
       "return" => false,
     ],
@@ -443,7 +625,7 @@ $api_reference = [
     ],
     "Tilemap:grid_end" => [
       "desc" => "
-        Stop tilemap layer collision check. There should be a call to
+        Stop tilemap layer collision check. You should have a matching
         `grid_end` for every `grid_begin`.
       ",
       "example" => "
@@ -808,7 +990,12 @@ $api_reference = [
   "2D Vector" => [
     "vec2" => [
       "desc" => "Create a new 2D vector.",
-      "example" => "local v = vec2(self.x, self.y)",
+      "example" => "
+        local a = vec2(self.x, self.y)
+        local b = vec2(other.x, other.y)
+        local c = a + b
+        print(c.x, c.y)
+      ",
       "args" => [
         "x" => ["number", "The vector's x component."],
         "y" => ["number", "The vector's y component."],
@@ -1224,6 +1411,14 @@ $api_reference = [
       ],
       "return" => "number",
     ],
+    "clone" => [
+      "desc" => "Creates a new shallow copy of a table.",
+      "example" => "local bullets_copy = clone(bullets)",
+      "args" => [
+        "t" => ["table", "The table to clone."],
+      ],
+      "return" => "table",
+    ],
     "push" => [
       "desc" => "Add a value to the end of a table.",
       "example" => "push(bullets, bullet)",
@@ -1303,6 +1498,14 @@ $api_reference = [
       ],
       "return" => "function",
     ],
+    "create_thread" => [
+      "desc" => "Creates a coroutine.",
+      "example" => "local update_thread = create_thread(co_update)",
+      "args" => [
+        "fn" => ["function", "The function to create the coroutine with."],
+      ],
+      "return" => "thread",
+    ],
     "resume" => [
       "desc" => "Runs a coroutine, raising an error if the coroutine ran with an error.",
       "example" => "resume(thread, self, dt)",
@@ -1320,7 +1523,7 @@ $api_reference = [
       ",
       "example" => "
         function Enemy:new()
-          self.thread = coroutine.create(self.wander)
+          self.thread = create_thread(self.wander)
         end
 
         function Enemy:wander(dt)
