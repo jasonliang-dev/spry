@@ -1,0 +1,335 @@
+  <!DOCTYPE html>
+  <html lang="en" style="scroll-behavior: smooth">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/tachyons.min.css">
+    <link id="hljs-light" rel="stylesheet" href="static/atom-one-light.min.css" disabled>
+    <link id="hljs-dark" rel="stylesheet" href="static/default-dark.min.css" disabled>
+    <script src="static/highlight.min.js"></script>
+    <script defer src="static/alpine.js"></script>
+    <title>
+              UFO Demo |
+            Spry
+    </title>
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+
+      code {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.95em;
+      }
+
+      pre > code {
+        line-height: 1.25;
+      }
+
+      .shadow {
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      }
+
+      .shadow-sm {
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        margin: 0;
+      }
+
+      .break-words {
+        overflow-wrap: break-word;
+      }
+
+      .bg-off-white {
+        background-color: #fafafa;
+      }
+
+      .dark-mode .dm-dn {
+        display: none;
+      }
+
+      .dark-mode .dm-dib {
+        display: inline-block;
+      }
+
+      .prose h1,
+      .prose h2,
+      .prose h3,
+      .prose h4,
+      .prose h5,
+      .prose h6 {
+        margin-top: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      @media screen and (min-width: 60em) {
+        .ml-300px-l {
+          margin-left: 300px;
+        }
+      }
+
+      .prose p {
+        line-height: 1.5;
+      }
+
+      .prose ul,
+      .prose ol {
+        padding-left: 1rem;
+      }
+
+      .prose li {
+        line-height: 1.5;
+      }
+
+      .prose li > p {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+      }
+
+      .prose a {
+        color: #357EDD;
+        text-decoration: none;
+      }
+
+      .prose a:hover, .prose a:focus {
+        text-decoration: underline;
+      }
+
+      .prose :not(pre) > code {
+        background-color: rgba(0, 0, 0, 0.05);
+        padding-left: 0.2rem;
+        padding-right: 0.2rem;
+        border-radius: 0.25rem;
+      }
+
+      .dark-mode .prose :not(pre) > code {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+
+      .prose pre > code {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .dark-mode .prose pre > code {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .bg-fade-down {
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #f4f4f4 50%);
+      }
+
+      .dark-mode .bg-fade-down {
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #111111 50%);
+      }
+
+      .placeholder::placeholder {
+        color: #000000;
+        opacity: 0.5;
+      }
+
+      .dark-mode .placeholder::placeholder {
+        color: #ffffff;
+        opacity: 0.5;
+      }
+    </style>
+    <script>
+      const doc = document.documentElement
+      const prefersDark = localStorage.theme === undefined && window.matchMedia('(prefers-color-scheme: dark)').matches
+      if (localStorage.theme === 'dark' || prefersDark) {
+        doc.classList.add('dark-mode')
+        document.getElementById('hljs-dark').removeAttribute('disabled')
+      } else {
+        document.getElementById('hljs-light').removeAttribute('disabled')
+      }
+
+      function toggleTheme() {
+        const doc = document.documentElement
+        if (doc.classList.contains('dark-mode')) {
+          doc.classList.remove('dark-mode')
+          localStorage.theme = 'light'
+          document.getElementById('hljs-light').removeAttribute('disabled')
+          document.getElementById('hljs-dark').setAttribute('disabled', 'disabled')
+        } else {
+          doc.classList.add('dark-mode')
+          localStorage.theme = 'dark'
+          document.getElementById('hljs-dark').removeAttribute('disabled')
+          document.getElementById('hljs-light').setAttribute('disabled', 'disabled')
+        }
+      }
+    </script>
+  </head>
+  <body class="ph3 black bg-near-white dm-bg-near-black dm-light-gray">
+        <div class="fixed z-999 top-0 left-0 right-0 bb b--black-10 dm-b--white-10 bg-white-90 dm-bg-black-90 ph3" style="height: 3.5rem">
+      <div class="mw8 center flex items-center justify-between h-100">
+        <a class="link dim black dm-white f3 b" href="/">Spry</a>
+        <div class="flex items-center">
+          <nav>
+            <div
+              x-data="{ open: false }"
+              class="mr3 dib relative"
+            >
+              <button
+                type="button"
+                @click="open = !open"
+                class="flex items-center underline-hover dark-gray dm-silver bg-transparent bn ph0 pointer"
+              >
+                <span class="mr1">Guides</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px" class="gray">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+              </button>
+              <ul
+                x-show="open"
+                @click.outside="open = false"
+                class="absolute right-0 list shadow-sm ba pv1 b--black-10 dm-b--white-10 pl0 mv0 bg-white dm-bg-near-black nowrap br2"
+              >
+                                                    <li>
+                    <a href="quick-start.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      Getting Started                    </a>
+                  </li>
+                                                    <li>
+                    <a href="game-demo.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      UFO Demo                    </a>
+                  </li>
+                                                    <li>
+                    <a href="distribution.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      Distribution                    </a>
+                  </li>
+                                                </ul>
+            </div>
+            <a class="mr3 link dark-gray dm-silver underline-hover" href="docs.html">Reference</a>
+          </nav>
+          <button class="bg-transparent bn black dm-silver dim pointer" type="button" onclick="toggleTheme()">
+            <svg class="dib dm-dn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+            </svg>
+            <svg class="dn dm-dib" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="mb5" style="margin-top: 3.5rem">
+        <div class="mw8 center prose pt3"><h1>UFO Demo</h1>
+<video controls class="w-100 mw7 center db">
+  <source src="static/ufo-demo.webm" type="video/webm">
+</video>
+<p>We'll be creating a little demo that sees a UFO move around the screen using
+the keyboard. Create a new folder, then add the following code to a new
+<code>main.lua</code> file:</p>
+<pre><code class="language-lua">function spry.conf(t)
+  t.window_title = 'UFO Demo'
+end</code></pre>
+<p><a href="https://kenney.nl/assets/alien-ufo-pack">kenney.nl</a> provides free
+(public domain) game assets. One of the asset packs includes
+<a href="static/green-ufo.png">a green UFO</a>. Add it to the game folder, and load it
+using <code>spry.image_load</code>.</p>
+<pre><code class="language-lua">function spry.start()
+  ufo = spry.image_load 'green-ufo.png'
+end</code></pre>
+<h2>Player Class</h2>
+<p>We'll create a new file called <code>player.lua</code> with the following contents:</p>
+<pre><code class="language-lua">class 'Player'
+
+function Player:new()
+  self.x = spry.window_width() / 2
+  self.y = spry.window_height() / 2
+end
+
+function Player:draw()
+  ufo:draw(self.x, self.y)
+end</code></pre>
+<p>Inside <code>spry.start</code>, We'll create a new player back in the <code>main.lua</code> file:</p>
+<pre><code class="language-lua">function spry.start()
+  ufo = spry.image_load 'green-ufo.png'
+  player = Player()
+end</code></pre>
+<p><code>Player()</code> calls the <code>Player:new</code> method. The player's x and y position is
+one half of the window's width and height. In other words, we're setting the
+player's position to the center of the screen.</p>
+<p><code>Player:draw</code> uses the ufo image that we load during program startup in
+<code>spry.start</code>. The image is drawn with the player's x and y position.</p>
+<p>Let's create <code>spry.frame</code> in <code>main.lua</code>. In this function, we'll draw the
+player:</p>
+<pre><code class="language-lua">function spry.frame(dt)
+  player:draw()
+end</code></pre>
+<p>Now run your game:</p>
+<pre><code class="language-plaintext">spry.exe my_folder</code></pre>
+<p>All <code>.lua</code> files in the folder are loaded on startup. You should see a ufo on
+the screen.</p>
+<h2>Keyboard Input</h2>
+<p>We'll use keyboard input to move the player. Create a new <code>Player:update</code>
+method:</p>
+<pre><code class="language-lua">function Player:update(dt)
+  local vx, vy = 0, 0
+
+  if spry.key_down 'w' then vy = vy - 1 end
+  if spry.key_down 's' then vy = vy + 1 end
+  if spry.key_down 'a' then vx = vx - 1 end
+  if spry.key_down 'd' then vx = vx + 1 end
+end</code></pre>
+<p><code>vx</code> and <code>vy</code> stands for velocity x, and velocity y. These variables represent
+the player's horizonal and vertical speed. When the user presses any of the
+WASD keys, the velocity changes appropriately. In the case of the W key, <code>vy</code>
+is set to itself, minus 1, representing movement towards the top of the
+screen. This is because the positive y axis is pointing down the screen
+(unlike in math, where you'll often see positive y pointing up).</p>
+<p>Now we'll move the player by setting the x and y position. Put the following
+code inside <code>Player:update</code>, just before the function ends:</p>
+<pre><code class="language-lua">local move_speed = 200
+self.x = self.x + vx * move_speed * dt
+self.y = self.y + vy * move_speed * dt</code></pre>
+<p>Whenever we move something, we need to make sure the movement is framerate
+independent. This is done by multiplying movement speed by delta time <code>dt</code>
+(the time spend between this frame and last frame). We'll pass <code>dt</code> to the
+player's update method through <code>spry.update</code>:</p>
+<pre><code class="language-lua">function spry.frame(dt)
+  player:update(dt)
+  player:draw()
+end</code></pre>
+<p>Run the game again and try moving the UFO using the WASD keys.</p>
+<h2>Image Origin</h2>
+<p>When drawing the UFO, the image origin starts at the top-left. If you want the
+player to be exactly centered, change <code>Player:draw</code>:</p>
+<pre><code class="language-lua">function Player:draw()
+  local rotation = 0
+
+  -- scale
+  local sx = 1
+  local sy = 1
+
+  -- image origin
+  local ox = ufo:width() / 2
+  local oy = ufo:height() / 2
+
+  ufo:draw(self.x, self.y, rotation, sx, sy, ox, oy)
+end</code></pre>
+<p>Here, we're adding additional info to <code>ufo:draw</code>. To set the image origin to
+the center of the image, get the image dimensions with <code>ufo:width</code> and
+<code>ufo:height</code>, and divide by 2. In order to set the image origin, we also need
+to explicitly set the image's rotation, horizontal scale, and vertical scale
+first.</p>
+<h2>Movement Fix</h2>
+<p>You might notice that moving diagonally is a little faster compared to
+vertical or horizonal movement. This is because vertical and horizontal
+movement has a speed of 200, but using both vertical and horizontal speeds
+together results in a speed of around 282 (square root of
+x_speed<sup>2</sup> + y_speed<sup>2</sup>). We need to normalize <code>vx</code> and
+<code>vy</code> so that the combined speed of both <code>vx</code> and <code>vy</code> is always 1.</p>
+<p>After setting keyboard input, but before moving the player, add the following line:</p>
+<pre><code class="language-lua">vx, vy = normalize(vx, vy)</code></pre>
+<p>Run the game again, and you'll see that the player moves at the same speed
+regardless of direction.</p></div>
+      </div>
+    <script>hljs.highlightAll()</script>
+  </body>
+  </html>
+  

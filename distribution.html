@@ -1,0 +1,244 @@
+  <!DOCTYPE html>
+  <html lang="en" style="scroll-behavior: smooth">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/tachyons.min.css">
+    <link id="hljs-light" rel="stylesheet" href="static/atom-one-light.min.css" disabled>
+    <link id="hljs-dark" rel="stylesheet" href="static/default-dark.min.css" disabled>
+    <script src="static/highlight.min.js"></script>
+    <script defer src="static/alpine.js"></script>
+    <title>
+              Distribution |
+            Spry
+    </title>
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+
+      code {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.95em;
+      }
+
+      pre > code {
+        line-height: 1.25;
+      }
+
+      .shadow {
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      }
+
+      .shadow-sm {
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        margin: 0;
+      }
+
+      .break-words {
+        overflow-wrap: break-word;
+      }
+
+      .bg-off-white {
+        background-color: #fafafa;
+      }
+
+      .dark-mode .dm-dn {
+        display: none;
+      }
+
+      .dark-mode .dm-dib {
+        display: inline-block;
+      }
+
+      .prose h1,
+      .prose h2,
+      .prose h3,
+      .prose h4,
+      .prose h5,
+      .prose h6 {
+        margin-top: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      @media screen and (min-width: 60em) {
+        .ml-300px-l {
+          margin-left: 300px;
+        }
+      }
+
+      .prose p {
+        line-height: 1.5;
+      }
+
+      .prose ul,
+      .prose ol {
+        padding-left: 1rem;
+      }
+
+      .prose li {
+        line-height: 1.5;
+      }
+
+      .prose li > p {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+      }
+
+      .prose a {
+        color: #357EDD;
+        text-decoration: none;
+      }
+
+      .prose a:hover, .prose a:focus {
+        text-decoration: underline;
+      }
+
+      .prose :not(pre) > code {
+        background-color: rgba(0, 0, 0, 0.05);
+        padding-left: 0.2rem;
+        padding-right: 0.2rem;
+        border-radius: 0.25rem;
+      }
+
+      .dark-mode .prose :not(pre) > code {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+
+      .prose pre > code {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .dark-mode .prose pre > code {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .bg-fade-down {
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #f4f4f4 50%);
+      }
+
+      .dark-mode .bg-fade-down {
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #111111 50%);
+      }
+
+      .placeholder::placeholder {
+        color: #000000;
+        opacity: 0.5;
+      }
+
+      .dark-mode .placeholder::placeholder {
+        color: #ffffff;
+        opacity: 0.5;
+      }
+    </style>
+    <script>
+      const doc = document.documentElement
+      const prefersDark = localStorage.theme === undefined && window.matchMedia('(prefers-color-scheme: dark)').matches
+      if (localStorage.theme === 'dark' || prefersDark) {
+        doc.classList.add('dark-mode')
+        document.getElementById('hljs-dark').removeAttribute('disabled')
+      } else {
+        document.getElementById('hljs-light').removeAttribute('disabled')
+      }
+
+      function toggleTheme() {
+        const doc = document.documentElement
+        if (doc.classList.contains('dark-mode')) {
+          doc.classList.remove('dark-mode')
+          localStorage.theme = 'light'
+          document.getElementById('hljs-light').removeAttribute('disabled')
+          document.getElementById('hljs-dark').setAttribute('disabled', 'disabled')
+        } else {
+          doc.classList.add('dark-mode')
+          localStorage.theme = 'dark'
+          document.getElementById('hljs-dark').removeAttribute('disabled')
+          document.getElementById('hljs-light').setAttribute('disabled', 'disabled')
+        }
+      }
+    </script>
+  </head>
+  <body class="ph3 black bg-near-white dm-bg-near-black dm-light-gray">
+        <div class="fixed z-999 top-0 left-0 right-0 bb b--black-10 dm-b--white-10 bg-white-90 dm-bg-black-90 ph3" style="height: 3.5rem">
+      <div class="mw8 center flex items-center justify-between h-100">
+        <a class="link dim black dm-white f3 b" href="/">Spry</a>
+        <div class="flex items-center">
+          <nav>
+            <div
+              x-data="{ open: false }"
+              class="mr3 dib relative"
+            >
+              <button
+                type="button"
+                @click="open = !open"
+                class="flex items-center underline-hover dark-gray dm-silver bg-transparent bn ph0 pointer"
+              >
+                <span class="mr1">Guides</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px" class="gray">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+              </button>
+              <ul
+                x-show="open"
+                @click.outside="open = false"
+                class="absolute right-0 list shadow-sm ba pv1 b--black-10 dm-b--white-10 pl0 mv0 bg-white dm-bg-near-black nowrap br2"
+              >
+                                                    <li>
+                    <a href="quick-start.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      Getting Started                    </a>
+                  </li>
+                                                    <li>
+                    <a href="game-demo.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      UFO Demo                    </a>
+                  </li>
+                                                    <li>
+                    <a href="distribution.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      Distribution                    </a>
+                  </li>
+                                                </ul>
+            </div>
+            <a class="mr3 link dark-gray dm-silver underline-hover" href="docs.html">Reference</a>
+          </nav>
+          <button class="bg-transparent bn black dm-silver dim pointer" type="button" onclick="toggleTheme()">
+            <svg class="dib dm-dn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+            </svg>
+            <svg class="dn dm-dib" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="mb5" style="margin-top: 3.5rem">
+        <div class="mw8 center prose pt3"><h1>Distribution</h1>
+<p>You can send a copy of your game to others as a single program by packaging
+your game files into a zip file, and fusing it into the Spry executable.</p>
+<p>To create a zip archive of your game, select all of the files in your game's
+directory and create a new zip file from it. Make sure <code>main.lua</code> is in the
+root of the zip archive.</p>
+<p>On Windows, you can create a zip file of your game by:</p>
+<ol>
+<li>Going into the game's folder in the file explorer</li>
+<li>Selecting all files (you can use <code>Ctrl + A</code>)</li>
+<li>Right clicking any of the selected files, Send to &gt; Compressed (zipped) folder</li>
+<li>Rename the new zip file if necessary</li>
+</ol>
+<p>On Linux, navigate to your game's folder and then run:</p>
+<pre><code class="language-plaintext">zip -9 -r my_game.zip .</code></pre>
+<p>Once you have a zip file of your game, combine it with <code>spry.exe</code> to create a
+new executable <code>my_game.exe</code>:</p>
+<pre><code class="language-plaintext">copy /b spry.exe+my_game.zip my_game.exe</code></pre>
+<p>Or on Linux:</p>
+<pre><code class="language-plaintext">cat spry my_game.zip &gt; my_game</code></pre></div>
+      </div>
+    <script>hljs.highlightAll()</script>
+  </body>
+  </html>
+  
