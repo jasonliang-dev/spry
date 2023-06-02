@@ -222,7 +222,7 @@
     x-data="{
       search: '',
       sections:
-        [{&quot;header&quot;:&quot;Callback Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.conf&quot;,&quot;signature&quot;:&quot;spry.conf(t)&quot;},{&quot;name&quot;:&quot;spry.start&quot;,&quot;signature&quot;:&quot;spry.start()&quot;},{&quot;name&quot;:&quot;spry.frame&quot;,&quot;signature&quot;:&quot;spry.frame(dt)&quot;}]},{&quot;header&quot;:&quot;Core Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.quit&quot;,&quot;signature&quot;:&quot;spry.quit()&quot;},{&quot;name&quot;:&quot;spry.dt&quot;,&quot;signature&quot;:&quot;spry.dt()&quot;},{&quot;name&quot;:&quot;spry.window_width&quot;,&quot;signature&quot;:&quot;spry.window_width()&quot;},{&quot;name&quot;:&quot;spry.window_height&quot;,&quot;signature&quot;:&quot;spry.window_height()&quot;},{&quot;name&quot;:&quot;spry.key_down&quot;,&quot;signature&quot;:&quot;spry.key_down(key)&quot;},{&quot;name&quot;:&quot;spry.key_up&quot;,&quot;signature&quot;:&quot;spry.key_up(key)&quot;},{&quot;name&quot;:&quot;spry.key_press&quot;,&quot;signature&quot;:&quot;spry.key_press(key)&quot;},{&quot;name&quot;:&quot;spry.push_color&quot;,&quot;signature&quot;:&quot;spry.push_color(r, g, b, a)&quot;},{&quot;name&quot;:&quot;spry.pop_color&quot;,&quot;signature&quot;:&quot;spry.pop_color()&quot;}]},{&quot;header&quot;:&quot;Image&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.image_load&quot;,&quot;signature&quot;:&quot;spry.image_load(file)&quot;},{&quot;name&quot;:&quot;Image:draw&quot;,&quot;signature&quot;:&quot;Image:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)&quot;},{&quot;name&quot;:&quot;Image:width&quot;,&quot;signature&quot;:&quot;Image:width()&quot;},{&quot;name&quot;:&quot;Image:height&quot;,&quot;signature&quot;:&quot;Image:height()&quot;}]},{&quot;header&quot;:&quot;Font&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.font_load&quot;,&quot;signature&quot;:&quot;spry.font_load(file)&quot;},{&quot;name&quot;:&quot;spry.default_font&quot;,&quot;signature&quot;:&quot;spry.default_font()&quot;},{&quot;name&quot;:&quot;Font:width&quot;,&quot;signature&quot;:&quot;Font:width(text, size)&quot;},{&quot;name&quot;:&quot;Font:draw&quot;,&quot;signature&quot;:&quot;Font:draw(text, x, y, size)&quot;}]},{&quot;header&quot;:&quot;Audio&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.audio_load&quot;,&quot;signature&quot;:&quot;spry.audio_load(file)&quot;},{&quot;name&quot;:&quot;Audio:play&quot;,&quot;signature&quot;:&quot;Audio:play()&quot;}]},{&quot;header&quot;:&quot;Sprite&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.sprite_load&quot;,&quot;signature&quot;:&quot;spry.sprite_load(file)&quot;},{&quot;name&quot;:&quot;Sprite&quot;,&quot;signature&quot;:&quot;Sprite()&quot;},{&quot;name&quot;:&quot;SpriteRenderer:play&quot;,&quot;signature&quot;:&quot;SpriteRenderer:play(tag)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:update&quot;,&quot;signature&quot;:&quot;SpriteRenderer:update(dt)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:draw&quot;,&quot;signature&quot;:&quot;SpriteRenderer:draw(x, y, r, sx, sy, ox, oy)&quot;}]},{&quot;header&quot;:&quot;Texture Atlas&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.atlas_load&quot;,&quot;signature&quot;:&quot;spry.atlas_load(file)&quot;},{&quot;name&quot;:&quot;Atlas:get_image&quot;,&quot;signature&quot;:&quot;Atlas:get_image(name)&quot;},{&quot;name&quot;:&quot;AtlasImage:draw&quot;,&quot;signature&quot;:&quot;AtlasImage:draw(x, y, r, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;AtlasImage:width&quot;,&quot;signature&quot;:&quot;AtlasImage:width()&quot;},{&quot;name&quot;:&quot;AtlasImage:height&quot;,&quot;signature&quot;:&quot;AtlasImage:height()&quot;}]},{&quot;header&quot;:&quot;Tilemap&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.tilemap_load&quot;,&quot;signature&quot;:&quot;spry.tilemap_load(file)&quot;},{&quot;name&quot;:&quot;Tilemap:draw&quot;,&quot;signature&quot;:&quot;Tilemap:draw()&quot;},{&quot;name&quot;:&quot;Tilemap:grid_begin&quot;,&quot;signature&quot;:&quot;Tilemap:grid_begin(layer)&quot;},{&quot;name&quot;:&quot;Tilemap:grid_end&quot;,&quot;signature&quot;:&quot;Tilemap:grid_end()&quot;},{&quot;name&quot;:&quot;Tilemap:grid_value&quot;,&quot;signature&quot;:&quot;Tilemap:grid_value(x, y)&quot;},{&quot;name&quot;:&quot;Tilemap:grid_rect&quot;,&quot;signature&quot;:&quot;Tilemap:grid_rect(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;Tilemap:rect_every&quot;,&quot;signature&quot;:&quot;Tilemap:rect_every(needle, x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;Tilemap:rect_has&quot;,&quot;signature&quot;:&quot;Tilemap:rect_has(needle, x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;Tilemap:entities&quot;,&quot;signature&quot;:&quot;Tilemap:entities()&quot;}]},{&quot;header&quot;:&quot;Box2D World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.b2_world&quot;,&quot;signature&quot;:&quot;spry.b2_world(t)&quot;},{&quot;name&quot;:&quot;b2World:step&quot;,&quot;signature&quot;:&quot;b2World:step(dt, vel_iters, pos_iters)&quot;},{&quot;name&quot;:&quot;b2World:make_static_body&quot;,&quot;signature&quot;:&quot;b2World:make_static_body(t)&quot;},{&quot;name&quot;:&quot;b2World:make_dynamic_body&quot;,&quot;signature&quot;:&quot;b2World:make_dynamic_body(t)&quot;},{&quot;name&quot;:&quot;b2World:on_begin_contact&quot;,&quot;signature&quot;:&quot;b2World:on_begin_contact(fn)&quot;},{&quot;name&quot;:&quot;b2World:on_end_contact&quot;,&quot;signature&quot;:&quot;b2World:on_end_contact(fn)&quot;}]},{&quot;header&quot;:&quot;Box2D Body&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Body:make_box_fixture&quot;,&quot;signature&quot;:&quot;b2Body:make_box_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:make_circle_fixture&quot;,&quot;signature&quot;:&quot;b2Body:make_circle_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:position&quot;,&quot;signature&quot;:&quot;b2Body:position()&quot;},{&quot;name&quot;:&quot;b2Body:angle&quot;,&quot;signature&quot;:&quot;b2Body:angle()&quot;},{&quot;name&quot;:&quot;b2Body:apply_force&quot;,&quot;signature&quot;:&quot;b2Body:apply_force(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:apply_linear_impulse&quot;,&quot;signature&quot;:&quot;b2Body:apply_linear_impulse(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_position&quot;,&quot;signature&quot;:&quot;b2Body:set_position(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_angle&quot;,&quot;signature&quot;:&quot;b2Body:set_angle(angle)&quot;},{&quot;name&quot;:&quot;b2Body:set_transform&quot;,&quot;signature&quot;:&quot;b2Body:set_transform(x, y, angle)&quot;},{&quot;name&quot;:&quot;b2Body:draw_fixtures&quot;,&quot;signature&quot;:&quot;b2Body:draw_fixtures()&quot;},{&quot;name&quot;:&quot;b2Body:udata&quot;,&quot;signature&quot;:&quot;b2Body:udata()&quot;}]},{&quot;header&quot;:&quot;Box2D Fixture&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Fixture:friction&quot;,&quot;signature&quot;:&quot;b2Fixture:friction()&quot;},{&quot;name&quot;:&quot;b2Fixture:restitution&quot;,&quot;signature&quot;:&quot;b2Fixture:restitution()&quot;},{&quot;name&quot;:&quot;b2Fixture:is_sensor&quot;,&quot;signature&quot;:&quot;b2Fixture:is_sensor()&quot;},{&quot;name&quot;:&quot;b2Fixture:set_friction&quot;,&quot;signature&quot;:&quot;b2Fixture:set_friction(friction)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_restitution&quot;,&quot;signature&quot;:&quot;b2Fixture:set_restitution(restitution)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_sensor&quot;,&quot;signature&quot;:&quot;b2Fixture:set_sensor(sensor)&quot;},{&quot;name&quot;:&quot;b2Fixture:body&quot;,&quot;signature&quot;:&quot;b2Fixture:body()&quot;},{&quot;name&quot;:&quot;b2Fixture:udata&quot;,&quot;signature&quot;:&quot;b2Fixture:udata()&quot;}]},{&quot;header&quot;:&quot;2D Vector&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;vec2&quot;,&quot;signature&quot;:&quot;vec2(x, y)&quot;},{&quot;name&quot;:&quot;vec2:normalize&quot;,&quot;signature&quot;:&quot;vec2:normalize()&quot;},{&quot;name&quot;:&quot;vec2:distance&quot;,&quot;signature&quot;:&quot;vec2:distance(rhs)&quot;},{&quot;name&quot;:&quot;vec2:direction&quot;,&quot;signature&quot;:&quot;vec2:direction(rhs)&quot;},{&quot;name&quot;:&quot;vec2:lerp&quot;,&quot;signature&quot;:&quot;vec2:lerp(rhs)&quot;},{&quot;name&quot;:&quot;vec2:dot&quot;,&quot;signature&quot;:&quot;vec2:dot(rhs)&quot;},{&quot;name&quot;:&quot;vec2:unpack&quot;,&quot;signature&quot;:&quot;vec2:unpack()&quot;},{&quot;name&quot;:&quot;vec2.__add&quot;,&quot;signature&quot;:&quot;vec2.__add(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__sub&quot;,&quot;signature&quot;:&quot;vec2.__sub(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__mul&quot;,&quot;signature&quot;:&quot;vec2.__mul(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__div&quot;,&quot;signature&quot;:&quot;vec2.__div(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2:__len&quot;,&quot;signature&quot;:&quot;vec2:__len()&quot;},{&quot;name&quot;:&quot;vec2.__eq&quot;,&quot;signature&quot;:&quot;vec2.__eq(lhs, rhs)&quot;}]},{&quot;header&quot;:&quot;World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;World&quot;,&quot;signature&quot;:&quot;World()&quot;},{&quot;name&quot;:&quot;World:add&quot;,&quot;signature&quot;:&quot;World:add(obj)&quot;},{&quot;name&quot;:&quot;World:kill&quot;,&quot;signature&quot;:&quot;World:kill(obj)&quot;},{&quot;name&quot;:&quot;World:query_id&quot;,&quot;signature&quot;:&quot;World:query_id(obj)&quot;},{&quot;name&quot;:&quot;World:query_mt&quot;,&quot;signature&quot;:&quot;World:query_mt(mt)&quot;},{&quot;name&quot;:&quot;World:query_near&quot;,&quot;signature&quot;:&quot;World:query_near(x, y, mt)&quot;},{&quot;name&quot;:&quot;World:update&quot;,&quot;signature&quot;:&quot;World:update(dt)&quot;},{&quot;name&quot;:&quot;World:draw&quot;,&quot;signature&quot;:&quot;World:draw()&quot;}]},{&quot;header&quot;:&quot;Spring&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;Spring&quot;,&quot;signature&quot;:&quot;Spring(k, d)&quot;},{&quot;name&quot;:&quot;Spring:update&quot;,&quot;signature&quot;:&quot;Spring:update(dt)&quot;},{&quot;name&quot;:&quot;Spring:pull&quot;,&quot;signature&quot;:&quot;Spring:pull(f)&quot;}]},{&quot;header&quot;:&quot;Timer&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;interval&quot;,&quot;signature&quot;:&quot;interval(sec, action)&quot;},{&quot;name&quot;:&quot;timeout&quot;,&quot;signature&quot;:&quot;timeout(sec, action)&quot;},{&quot;name&quot;:&quot;stop_interval&quot;,&quot;signature&quot;:&quot;stop_interval(id)&quot;},{&quot;name&quot;:&quot;stop_timeout&quot;,&quot;signature&quot;:&quot;stop_timeout(id)&quot;}]},{&quot;header&quot;:&quot;Utility Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;class&quot;,&quot;signature&quot;:&quot;class(name)&quot;},{&quot;name&quot;:&quot;stringify&quot;,&quot;signature&quot;:&quot;stringify(value)&quot;},{&quot;name&quot;:&quot;clamp&quot;,&quot;signature&quot;:&quot;clamp(n, min, max)&quot;},{&quot;name&quot;:&quot;sign&quot;,&quot;signature&quot;:&quot;sign(x)&quot;},{&quot;name&quot;:&quot;lerp&quot;,&quot;signature&quot;:&quot;lerp(src, dest, t)&quot;},{&quot;name&quot;:&quot;direction&quot;,&quot;signature&quot;:&quot;direction(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;heading&quot;,&quot;signature&quot;:&quot;heading(angle, mag)&quot;},{&quot;name&quot;:&quot;delta_angle&quot;,&quot;signature&quot;:&quot;delta_angle(src, dst)&quot;},{&quot;name&quot;:&quot;distance&quot;,&quot;signature&quot;:&quot;distance(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;normalize&quot;,&quot;signature&quot;:&quot;normalize(x, y)&quot;},{&quot;name&quot;:&quot;dot&quot;,&quot;signature&quot;:&quot;dot(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;random&quot;,&quot;signature&quot;:&quot;random(min, max)&quot;},{&quot;name&quot;:&quot;push&quot;,&quot;signature&quot;:&quot;push(arr, x)&quot;},{&quot;name&quot;:&quot;map&quot;,&quot;signature&quot;:&quot;map(arr, fn)&quot;},{&quot;name&quot;:&quot;filter&quot;,&quot;signature&quot;:&quot;filter(arr, fn)&quot;},{&quot;name&quot;:&quot;zip&quot;,&quot;signature&quot;:&quot;zip(lhs, rhs)&quot;},{&quot;name&quot;:&quot;choose&quot;,&quot;signature&quot;:&quot;choose(arr)&quot;},{&quot;name&quot;:&quot;sortpairs&quot;,&quot;signature&quot;:&quot;sortpairs(t)&quot;},{&quot;name&quot;:&quot;resume&quot;,&quot;signature&quot;:&quot;resume(co, ...)&quot;},{&quot;name&quot;:&quot;yield&quot;,&quot;signature&quot;:&quot;yield(...)&quot;},{&quot;name&quot;:&quot;sleep_for&quot;,&quot;signature&quot;:&quot;sleep_for(secs, dt)&quot;}]}],
+        [{&quot;header&quot;:&quot;Callback Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.conf&quot;,&quot;signature&quot;:&quot;spry.conf(t)&quot;},{&quot;name&quot;:&quot;spry.start&quot;,&quot;signature&quot;:&quot;spry.start()&quot;},{&quot;name&quot;:&quot;spry.frame&quot;,&quot;signature&quot;:&quot;spry.frame(dt)&quot;}]},{&quot;header&quot;:&quot;Core Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.quit&quot;,&quot;signature&quot;:&quot;spry.quit()&quot;},{&quot;name&quot;:&quot;spry.dt&quot;,&quot;signature&quot;:&quot;spry.dt()&quot;},{&quot;name&quot;:&quot;spry.window_width&quot;,&quot;signature&quot;:&quot;spry.window_width()&quot;},{&quot;name&quot;:&quot;spry.window_height&quot;,&quot;signature&quot;:&quot;spry.window_height()&quot;},{&quot;name&quot;:&quot;spry.key_down&quot;,&quot;signature&quot;:&quot;spry.key_down(key)&quot;},{&quot;name&quot;:&quot;spry.key_press&quot;,&quot;signature&quot;:&quot;spry.key_press(key)&quot;},{&quot;name&quot;:&quot;spry.key_release&quot;,&quot;signature&quot;:&quot;spry.key_release(key)&quot;},{&quot;name&quot;:&quot;spry.mouse_down&quot;,&quot;signature&quot;:&quot;spry.mouse_down(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_click&quot;,&quot;signature&quot;:&quot;spry.mouse_click(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_release&quot;,&quot;signature&quot;:&quot;spry.mouse_release(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_pos&quot;,&quot;signature&quot;:&quot;spry.mouse_pos()&quot;},{&quot;name&quot;:&quot;spry.mouse_delta&quot;,&quot;signature&quot;:&quot;spry.mouse_delta()&quot;},{&quot;name&quot;:&quot;spry.show_mouse&quot;,&quot;signature&quot;:&quot;spry.show_mouse(show)&quot;},{&quot;name&quot;:&quot;spry.scroll_wheel&quot;,&quot;signature&quot;:&quot;spry.scroll_wheel()&quot;},{&quot;name&quot;:&quot;spry.push_matrix&quot;,&quot;signature&quot;:&quot;spry.push_matrix()&quot;},{&quot;name&quot;:&quot;spry.pop_matrix&quot;,&quot;signature&quot;:&quot;spry.pop_matrix()&quot;},{&quot;name&quot;:&quot;spry.translate&quot;,&quot;signature&quot;:&quot;spry.translate(x, y)&quot;},{&quot;name&quot;:&quot;spry.rotate&quot;,&quot;signature&quot;:&quot;spry.rotate(angle)&quot;},{&quot;name&quot;:&quot;spry.scale&quot;,&quot;signature&quot;:&quot;spry.scale(x, y)&quot;},{&quot;name&quot;:&quot;spry.clear_color&quot;,&quot;signature&quot;:&quot;spry.clear_color(r, g, b, a)&quot;},{&quot;name&quot;:&quot;spry.push_color&quot;,&quot;signature&quot;:&quot;spry.push_color(r, g, b, a)&quot;},{&quot;name&quot;:&quot;spry.pop_color&quot;,&quot;signature&quot;:&quot;spry.pop_color(x, y, r, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;spry.draw_filled_rect&quot;,&quot;signature&quot;:&quot;spry.draw_filled_rect(x, y, w, h, rotation, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;spry.draw_line_rect&quot;,&quot;signature&quot;:&quot;spry.draw_line_rect(x, y, w, h, rotation, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;spry.draw_line_circle&quot;,&quot;signature&quot;:&quot;spry.draw_line_circle(x, y, radius)&quot;}]},{&quot;header&quot;:&quot;Image&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.image_load&quot;,&quot;signature&quot;:&quot;spry.image_load(file)&quot;},{&quot;name&quot;:&quot;Image:draw&quot;,&quot;signature&quot;:&quot;Image:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)&quot;},{&quot;name&quot;:&quot;Image:width&quot;,&quot;signature&quot;:&quot;Image:width()&quot;},{&quot;name&quot;:&quot;Image:height&quot;,&quot;signature&quot;:&quot;Image:height()&quot;}]},{&quot;header&quot;:&quot;Font&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.font_load&quot;,&quot;signature&quot;:&quot;spry.font_load(file)&quot;},{&quot;name&quot;:&quot;spry.default_font&quot;,&quot;signature&quot;:&quot;spry.default_font()&quot;},{&quot;name&quot;:&quot;Font:width&quot;,&quot;signature&quot;:&quot;Font:width(text, size)&quot;},{&quot;name&quot;:&quot;Font:draw&quot;,&quot;signature&quot;:&quot;Font:draw(text, x, y, size)&quot;}]},{&quot;header&quot;:&quot;Audio&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.audio_load&quot;,&quot;signature&quot;:&quot;spry.audio_load(file)&quot;},{&quot;name&quot;:&quot;Audio:play&quot;,&quot;signature&quot;:&quot;Audio:play()&quot;}]},{&quot;header&quot;:&quot;Sprite&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.sprite_load&quot;,&quot;signature&quot;:&quot;spry.sprite_load(file)&quot;},{&quot;name&quot;:&quot;Sprite&quot;,&quot;signature&quot;:&quot;Sprite()&quot;},{&quot;name&quot;:&quot;SpriteRenderer:play&quot;,&quot;signature&quot;:&quot;SpriteRenderer:play(tag)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:update&quot;,&quot;signature&quot;:&quot;SpriteRenderer:update(dt)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:draw&quot;,&quot;signature&quot;:&quot;SpriteRenderer:draw(x, y, r, sx, sy, ox, oy)&quot;}]},{&quot;header&quot;:&quot;Texture Atlas&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.atlas_load&quot;,&quot;signature&quot;:&quot;spry.atlas_load(file)&quot;},{&quot;name&quot;:&quot;Atlas:get_image&quot;,&quot;signature&quot;:&quot;Atlas:get_image(name)&quot;},{&quot;name&quot;:&quot;AtlasImage:draw&quot;,&quot;signature&quot;:&quot;AtlasImage:draw(x, y, r, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;AtlasImage:width&quot;,&quot;signature&quot;:&quot;AtlasImage:width()&quot;},{&quot;name&quot;:&quot;AtlasImage:height&quot;,&quot;signature&quot;:&quot;AtlasImage:height()&quot;}]},{&quot;header&quot;:&quot;Tilemap&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.tilemap_load&quot;,&quot;signature&quot;:&quot;spry.tilemap_load(file)&quot;},{&quot;name&quot;:&quot;Tilemap:draw&quot;,&quot;signature&quot;:&quot;Tilemap:draw()&quot;},{&quot;name&quot;:&quot;Tilemap:grid_begin&quot;,&quot;signature&quot;:&quot;Tilemap:grid_begin(layer)&quot;},{&quot;name&quot;:&quot;Tilemap:grid_end&quot;,&quot;signature&quot;:&quot;Tilemap:grid_end()&quot;},{&quot;name&quot;:&quot;Tilemap:grid_value&quot;,&quot;signature&quot;:&quot;Tilemap:grid_value(x, y)&quot;},{&quot;name&quot;:&quot;Tilemap:grid_rect&quot;,&quot;signature&quot;:&quot;Tilemap:grid_rect(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;Tilemap:rect_every&quot;,&quot;signature&quot;:&quot;Tilemap:rect_every(needle, x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;Tilemap:rect_has&quot;,&quot;signature&quot;:&quot;Tilemap:rect_has(needle, x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;Tilemap:entities&quot;,&quot;signature&quot;:&quot;Tilemap:entities()&quot;}]},{&quot;header&quot;:&quot;Box2D World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.b2_world&quot;,&quot;signature&quot;:&quot;spry.b2_world(t)&quot;},{&quot;name&quot;:&quot;b2World:step&quot;,&quot;signature&quot;:&quot;b2World:step(dt, vel_iters, pos_iters)&quot;},{&quot;name&quot;:&quot;b2World:make_static_body&quot;,&quot;signature&quot;:&quot;b2World:make_static_body(t)&quot;},{&quot;name&quot;:&quot;b2World:make_dynamic_body&quot;,&quot;signature&quot;:&quot;b2World:make_dynamic_body(t)&quot;},{&quot;name&quot;:&quot;b2World:on_begin_contact&quot;,&quot;signature&quot;:&quot;b2World:on_begin_contact(fn)&quot;},{&quot;name&quot;:&quot;b2World:on_end_contact&quot;,&quot;signature&quot;:&quot;b2World:on_end_contact(fn)&quot;}]},{&quot;header&quot;:&quot;Box2D Body&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Body:make_box_fixture&quot;,&quot;signature&quot;:&quot;b2Body:make_box_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:make_circle_fixture&quot;,&quot;signature&quot;:&quot;b2Body:make_circle_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:position&quot;,&quot;signature&quot;:&quot;b2Body:position()&quot;},{&quot;name&quot;:&quot;b2Body:angle&quot;,&quot;signature&quot;:&quot;b2Body:angle()&quot;},{&quot;name&quot;:&quot;b2Body:apply_force&quot;,&quot;signature&quot;:&quot;b2Body:apply_force(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:apply_linear_impulse&quot;,&quot;signature&quot;:&quot;b2Body:apply_linear_impulse(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_position&quot;,&quot;signature&quot;:&quot;b2Body:set_position(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_angle&quot;,&quot;signature&quot;:&quot;b2Body:set_angle(angle)&quot;},{&quot;name&quot;:&quot;b2Body:set_transform&quot;,&quot;signature&quot;:&quot;b2Body:set_transform(x, y, angle)&quot;},{&quot;name&quot;:&quot;b2Body:draw_fixtures&quot;,&quot;signature&quot;:&quot;b2Body:draw_fixtures()&quot;},{&quot;name&quot;:&quot;b2Body:udata&quot;,&quot;signature&quot;:&quot;b2Body:udata()&quot;}]},{&quot;header&quot;:&quot;Box2D Fixture&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Fixture:friction&quot;,&quot;signature&quot;:&quot;b2Fixture:friction()&quot;},{&quot;name&quot;:&quot;b2Fixture:restitution&quot;,&quot;signature&quot;:&quot;b2Fixture:restitution()&quot;},{&quot;name&quot;:&quot;b2Fixture:is_sensor&quot;,&quot;signature&quot;:&quot;b2Fixture:is_sensor()&quot;},{&quot;name&quot;:&quot;b2Fixture:set_friction&quot;,&quot;signature&quot;:&quot;b2Fixture:set_friction(friction)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_restitution&quot;,&quot;signature&quot;:&quot;b2Fixture:set_restitution(restitution)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_sensor&quot;,&quot;signature&quot;:&quot;b2Fixture:set_sensor(sensor)&quot;},{&quot;name&quot;:&quot;b2Fixture:body&quot;,&quot;signature&quot;:&quot;b2Fixture:body()&quot;},{&quot;name&quot;:&quot;b2Fixture:udata&quot;,&quot;signature&quot;:&quot;b2Fixture:udata()&quot;}]},{&quot;header&quot;:&quot;2D Vector&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;vec2&quot;,&quot;signature&quot;:&quot;vec2(x, y)&quot;},{&quot;name&quot;:&quot;vec2:normalize&quot;,&quot;signature&quot;:&quot;vec2:normalize()&quot;},{&quot;name&quot;:&quot;vec2:distance&quot;,&quot;signature&quot;:&quot;vec2:distance(rhs)&quot;},{&quot;name&quot;:&quot;vec2:direction&quot;,&quot;signature&quot;:&quot;vec2:direction(rhs)&quot;},{&quot;name&quot;:&quot;vec2:lerp&quot;,&quot;signature&quot;:&quot;vec2:lerp(rhs)&quot;},{&quot;name&quot;:&quot;vec2:dot&quot;,&quot;signature&quot;:&quot;vec2:dot(rhs)&quot;},{&quot;name&quot;:&quot;vec2:unpack&quot;,&quot;signature&quot;:&quot;vec2:unpack()&quot;},{&quot;name&quot;:&quot;vec2.__add&quot;,&quot;signature&quot;:&quot;vec2.__add(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__sub&quot;,&quot;signature&quot;:&quot;vec2.__sub(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__mul&quot;,&quot;signature&quot;:&quot;vec2.__mul(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__div&quot;,&quot;signature&quot;:&quot;vec2.__div(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2:__len&quot;,&quot;signature&quot;:&quot;vec2:__len()&quot;},{&quot;name&quot;:&quot;vec2.__eq&quot;,&quot;signature&quot;:&quot;vec2.__eq(lhs, rhs)&quot;}]},{&quot;header&quot;:&quot;World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;World&quot;,&quot;signature&quot;:&quot;World()&quot;},{&quot;name&quot;:&quot;World:add&quot;,&quot;signature&quot;:&quot;World:add(obj)&quot;},{&quot;name&quot;:&quot;World:kill&quot;,&quot;signature&quot;:&quot;World:kill(obj)&quot;},{&quot;name&quot;:&quot;World:query_id&quot;,&quot;signature&quot;:&quot;World:query_id(obj)&quot;},{&quot;name&quot;:&quot;World:query_mt&quot;,&quot;signature&quot;:&quot;World:query_mt(mt)&quot;},{&quot;name&quot;:&quot;World:query_near&quot;,&quot;signature&quot;:&quot;World:query_near(x, y, mt)&quot;},{&quot;name&quot;:&quot;World:update&quot;,&quot;signature&quot;:&quot;World:update(dt)&quot;},{&quot;name&quot;:&quot;World:draw&quot;,&quot;signature&quot;:&quot;World:draw()&quot;}]},{&quot;header&quot;:&quot;Spring&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;Spring&quot;,&quot;signature&quot;:&quot;Spring(k, d)&quot;},{&quot;name&quot;:&quot;Spring:update&quot;,&quot;signature&quot;:&quot;Spring:update(dt)&quot;},{&quot;name&quot;:&quot;Spring:pull&quot;,&quot;signature&quot;:&quot;Spring:pull(f)&quot;}]},{&quot;header&quot;:&quot;Timer&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;interval&quot;,&quot;signature&quot;:&quot;interval(sec, action)&quot;},{&quot;name&quot;:&quot;timeout&quot;,&quot;signature&quot;:&quot;timeout(sec, action)&quot;},{&quot;name&quot;:&quot;stop_interval&quot;,&quot;signature&quot;:&quot;stop_interval(id)&quot;},{&quot;name&quot;:&quot;stop_timeout&quot;,&quot;signature&quot;:&quot;stop_timeout(id)&quot;}]},{&quot;header&quot;:&quot;Utility Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;class&quot;,&quot;signature&quot;:&quot;class(name)&quot;},{&quot;name&quot;:&quot;stringify&quot;,&quot;signature&quot;:&quot;stringify(value)&quot;},{&quot;name&quot;:&quot;clamp&quot;,&quot;signature&quot;:&quot;clamp(n, min, max)&quot;},{&quot;name&quot;:&quot;sign&quot;,&quot;signature&quot;:&quot;sign(x)&quot;},{&quot;name&quot;:&quot;lerp&quot;,&quot;signature&quot;:&quot;lerp(src, dest, t)&quot;},{&quot;name&quot;:&quot;direction&quot;,&quot;signature&quot;:&quot;direction(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;heading&quot;,&quot;signature&quot;:&quot;heading(angle, mag)&quot;},{&quot;name&quot;:&quot;delta_angle&quot;,&quot;signature&quot;:&quot;delta_angle(src, dst)&quot;},{&quot;name&quot;:&quot;distance&quot;,&quot;signature&quot;:&quot;distance(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;normalize&quot;,&quot;signature&quot;:&quot;normalize(x, y)&quot;},{&quot;name&quot;:&quot;dot&quot;,&quot;signature&quot;:&quot;dot(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;random&quot;,&quot;signature&quot;:&quot;random(min, max)&quot;},{&quot;name&quot;:&quot;clone&quot;,&quot;signature&quot;:&quot;clone(t)&quot;},{&quot;name&quot;:&quot;push&quot;,&quot;signature&quot;:&quot;push(arr, x)&quot;},{&quot;name&quot;:&quot;map&quot;,&quot;signature&quot;:&quot;map(arr, fn)&quot;},{&quot;name&quot;:&quot;filter&quot;,&quot;signature&quot;:&quot;filter(arr, fn)&quot;},{&quot;name&quot;:&quot;zip&quot;,&quot;signature&quot;:&quot;zip(lhs, rhs)&quot;},{&quot;name&quot;:&quot;choose&quot;,&quot;signature&quot;:&quot;choose(arr)&quot;},{&quot;name&quot;:&quot;sortpairs&quot;,&quot;signature&quot;:&quot;sortpairs(t)&quot;},{&quot;name&quot;:&quot;create_thread&quot;,&quot;signature&quot;:&quot;create_thread(fn)&quot;},{&quot;name&quot;:&quot;resume&quot;,&quot;signature&quot;:&quot;resume(co, ...)&quot;},{&quot;name&quot;:&quot;yield&quot;,&quot;signature&quot;:&quot;yield(...)&quot;},{&quot;name&quot;:&quot;sleep_for&quot;,&quot;signature&quot;:&quot;sleep_for(secs, dt)&quot;}]}],
       init() {
         const search = document.getElementById('search')
         document.addEventListener('keydown', e => {
@@ -255,7 +255,7 @@
     class="dn db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden"
     style="width: 300px; top: 3.5rem"
   >
-    <script>console.log([{"header":"Callback Functions","list":[{"name":"spry.conf","signature":"spry.conf(t)"},{"name":"spry.start","signature":"spry.start()"},{"name":"spry.frame","signature":"spry.frame(dt)"}]},{"header":"Core Functions","list":[{"name":"spry.quit","signature":"spry.quit()"},{"name":"spry.dt","signature":"spry.dt()"},{"name":"spry.window_width","signature":"spry.window_width()"},{"name":"spry.window_height","signature":"spry.window_height()"},{"name":"spry.key_down","signature":"spry.key_down(key)"},{"name":"spry.key_up","signature":"spry.key_up(key)"},{"name":"spry.key_press","signature":"spry.key_press(key)"},{"name":"spry.push_color","signature":"spry.push_color(r, g, b, a)"},{"name":"spry.pop_color","signature":"spry.pop_color()"}]},{"header":"Image","list":[{"name":"spry.image_load","signature":"spry.image_load(file)"},{"name":"Image:draw","signature":"Image:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)"},{"name":"Image:width","signature":"Image:width()"},{"name":"Image:height","signature":"Image:height()"}]},{"header":"Font","list":[{"name":"spry.font_load","signature":"spry.font_load(file)"},{"name":"spry.default_font","signature":"spry.default_font()"},{"name":"Font:width","signature":"Font:width(text, size)"},{"name":"Font:draw","signature":"Font:draw(text, x, y, size)"}]},{"header":"Audio","list":[{"name":"spry.audio_load","signature":"spry.audio_load(file)"},{"name":"Audio:play","signature":"Audio:play()"}]},{"header":"Sprite","list":[{"name":"spry.sprite_load","signature":"spry.sprite_load(file)"},{"name":"Sprite","signature":"Sprite()"},{"name":"SpriteRenderer:play","signature":"SpriteRenderer:play(tag)"},{"name":"SpriteRenderer:update","signature":"SpriteRenderer:update(dt)"},{"name":"SpriteRenderer:draw","signature":"SpriteRenderer:draw(x, y, r, sx, sy, ox, oy)"}]},{"header":"Texture Atlas","list":[{"name":"spry.atlas_load","signature":"spry.atlas_load(file)"},{"name":"Atlas:get_image","signature":"Atlas:get_image(name)"},{"name":"AtlasImage:draw","signature":"AtlasImage:draw(x, y, r, sx, sy, ox, oy)"},{"name":"AtlasImage:width","signature":"AtlasImage:width()"},{"name":"AtlasImage:height","signature":"AtlasImage:height()"}]},{"header":"Tilemap","list":[{"name":"spry.tilemap_load","signature":"spry.tilemap_load(file)"},{"name":"Tilemap:draw","signature":"Tilemap:draw()"},{"name":"Tilemap:grid_begin","signature":"Tilemap:grid_begin(layer)"},{"name":"Tilemap:grid_end","signature":"Tilemap:grid_end()"},{"name":"Tilemap:grid_value","signature":"Tilemap:grid_value(x, y)"},{"name":"Tilemap:grid_rect","signature":"Tilemap:grid_rect(x0, y0, x1, y1)"},{"name":"Tilemap:rect_every","signature":"Tilemap:rect_every(needle, x0, y0, x1, y1)"},{"name":"Tilemap:rect_has","signature":"Tilemap:rect_has(needle, x0, y0, x1, y1)"},{"name":"Tilemap:entities","signature":"Tilemap:entities()"}]},{"header":"Box2D World","list":[{"name":"spry.b2_world","signature":"spry.b2_world(t)"},{"name":"b2World:step","signature":"b2World:step(dt, vel_iters, pos_iters)"},{"name":"b2World:make_static_body","signature":"b2World:make_static_body(t)"},{"name":"b2World:make_dynamic_body","signature":"b2World:make_dynamic_body(t)"},{"name":"b2World:on_begin_contact","signature":"b2World:on_begin_contact(fn)"},{"name":"b2World:on_end_contact","signature":"b2World:on_end_contact(fn)"}]},{"header":"Box2D Body","list":[{"name":"b2Body:make_box_fixture","signature":"b2Body:make_box_fixture(t)"},{"name":"b2Body:make_circle_fixture","signature":"b2Body:make_circle_fixture(t)"},{"name":"b2Body:position","signature":"b2Body:position()"},{"name":"b2Body:angle","signature":"b2Body:angle()"},{"name":"b2Body:apply_force","signature":"b2Body:apply_force(x, y)"},{"name":"b2Body:apply_linear_impulse","signature":"b2Body:apply_linear_impulse(x, y)"},{"name":"b2Body:set_position","signature":"b2Body:set_position(x, y)"},{"name":"b2Body:set_angle","signature":"b2Body:set_angle(angle)"},{"name":"b2Body:set_transform","signature":"b2Body:set_transform(x, y, angle)"},{"name":"b2Body:draw_fixtures","signature":"b2Body:draw_fixtures()"},{"name":"b2Body:udata","signature":"b2Body:udata()"}]},{"header":"Box2D Fixture","list":[{"name":"b2Fixture:friction","signature":"b2Fixture:friction()"},{"name":"b2Fixture:restitution","signature":"b2Fixture:restitution()"},{"name":"b2Fixture:is_sensor","signature":"b2Fixture:is_sensor()"},{"name":"b2Fixture:set_friction","signature":"b2Fixture:set_friction(friction)"},{"name":"b2Fixture:set_restitution","signature":"b2Fixture:set_restitution(restitution)"},{"name":"b2Fixture:set_sensor","signature":"b2Fixture:set_sensor(sensor)"},{"name":"b2Fixture:body","signature":"b2Fixture:body()"},{"name":"b2Fixture:udata","signature":"b2Fixture:udata()"}]},{"header":"2D Vector","list":[{"name":"vec2","signature":"vec2(x, y)"},{"name":"vec2:normalize","signature":"vec2:normalize()"},{"name":"vec2:distance","signature":"vec2:distance(rhs)"},{"name":"vec2:direction","signature":"vec2:direction(rhs)"},{"name":"vec2:lerp","signature":"vec2:lerp(rhs)"},{"name":"vec2:dot","signature":"vec2:dot(rhs)"},{"name":"vec2:unpack","signature":"vec2:unpack()"},{"name":"vec2.__add","signature":"vec2.__add(lhs, rhs)"},{"name":"vec2.__sub","signature":"vec2.__sub(lhs, rhs)"},{"name":"vec2.__mul","signature":"vec2.__mul(lhs, rhs)"},{"name":"vec2.__div","signature":"vec2.__div(lhs, rhs)"},{"name":"vec2:__len","signature":"vec2:__len()"},{"name":"vec2.__eq","signature":"vec2.__eq(lhs, rhs)"}]},{"header":"World","list":[{"name":"World","signature":"World()"},{"name":"World:add","signature":"World:add(obj)"},{"name":"World:kill","signature":"World:kill(obj)"},{"name":"World:query_id","signature":"World:query_id(obj)"},{"name":"World:query_mt","signature":"World:query_mt(mt)"},{"name":"World:query_near","signature":"World:query_near(x, y, mt)"},{"name":"World:update","signature":"World:update(dt)"},{"name":"World:draw","signature":"World:draw()"}]},{"header":"Spring","list":[{"name":"Spring","signature":"Spring(k, d)"},{"name":"Spring:update","signature":"Spring:update(dt)"},{"name":"Spring:pull","signature":"Spring:pull(f)"}]},{"header":"Timer","list":[{"name":"interval","signature":"interval(sec, action)"},{"name":"timeout","signature":"timeout(sec, action)"},{"name":"stop_interval","signature":"stop_interval(id)"},{"name":"stop_timeout","signature":"stop_timeout(id)"}]},{"header":"Utility Functions","list":[{"name":"class","signature":"class(name)"},{"name":"stringify","signature":"stringify(value)"},{"name":"clamp","signature":"clamp(n, min, max)"},{"name":"sign","signature":"sign(x)"},{"name":"lerp","signature":"lerp(src, dest, t)"},{"name":"direction","signature":"direction(x0, y0, x1, y1)"},{"name":"heading","signature":"heading(angle, mag)"},{"name":"delta_angle","signature":"delta_angle(src, dst)"},{"name":"distance","signature":"distance(x0, y0, x1, y1)"},{"name":"normalize","signature":"normalize(x, y)"},{"name":"dot","signature":"dot(x0, y0, x1, y1)"},{"name":"random","signature":"random(min, max)"},{"name":"push","signature":"push(arr, x)"},{"name":"map","signature":"map(arr, fn)"},{"name":"filter","signature":"filter(arr, fn)"},{"name":"zip","signature":"zip(lhs, rhs)"},{"name":"choose","signature":"choose(arr)"},{"name":"sortpairs","signature":"sortpairs(t)"},{"name":"resume","signature":"resume(co, ...)"},{"name":"yield","signature":"yield(...)"},{"name":"sleep_for","signature":"sleep_for(secs, dt)"}]}])</script>
+    <script>console.log([{"header":"Callback Functions","list":[{"name":"spry.conf","signature":"spry.conf(t)"},{"name":"spry.start","signature":"spry.start()"},{"name":"spry.frame","signature":"spry.frame(dt)"}]},{"header":"Core Functions","list":[{"name":"spry.quit","signature":"spry.quit()"},{"name":"spry.dt","signature":"spry.dt()"},{"name":"spry.window_width","signature":"spry.window_width()"},{"name":"spry.window_height","signature":"spry.window_height()"},{"name":"spry.key_down","signature":"spry.key_down(key)"},{"name":"spry.key_press","signature":"spry.key_press(key)"},{"name":"spry.key_release","signature":"spry.key_release(key)"},{"name":"spry.mouse_down","signature":"spry.mouse_down(button)"},{"name":"spry.mouse_click","signature":"spry.mouse_click(button)"},{"name":"spry.mouse_release","signature":"spry.mouse_release(button)"},{"name":"spry.mouse_pos","signature":"spry.mouse_pos()"},{"name":"spry.mouse_delta","signature":"spry.mouse_delta()"},{"name":"spry.show_mouse","signature":"spry.show_mouse(show)"},{"name":"spry.scroll_wheel","signature":"spry.scroll_wheel()"},{"name":"spry.push_matrix","signature":"spry.push_matrix()"},{"name":"spry.pop_matrix","signature":"spry.pop_matrix()"},{"name":"spry.translate","signature":"spry.translate(x, y)"},{"name":"spry.rotate","signature":"spry.rotate(angle)"},{"name":"spry.scale","signature":"spry.scale(x, y)"},{"name":"spry.clear_color","signature":"spry.clear_color(r, g, b, a)"},{"name":"spry.push_color","signature":"spry.push_color(r, g, b, a)"},{"name":"spry.pop_color","signature":"spry.pop_color(x, y, r, sx, sy, ox, oy)"},{"name":"spry.draw_filled_rect","signature":"spry.draw_filled_rect(x, y, w, h, rotation, sx, sy, ox, oy)"},{"name":"spry.draw_line_rect","signature":"spry.draw_line_rect(x, y, w, h, rotation, sx, sy, ox, oy)"},{"name":"spry.draw_line_circle","signature":"spry.draw_line_circle(x, y, radius)"}]},{"header":"Image","list":[{"name":"spry.image_load","signature":"spry.image_load(file)"},{"name":"Image:draw","signature":"Image:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)"},{"name":"Image:width","signature":"Image:width()"},{"name":"Image:height","signature":"Image:height()"}]},{"header":"Font","list":[{"name":"spry.font_load","signature":"spry.font_load(file)"},{"name":"spry.default_font","signature":"spry.default_font()"},{"name":"Font:width","signature":"Font:width(text, size)"},{"name":"Font:draw","signature":"Font:draw(text, x, y, size)"}]},{"header":"Audio","list":[{"name":"spry.audio_load","signature":"spry.audio_load(file)"},{"name":"Audio:play","signature":"Audio:play()"}]},{"header":"Sprite","list":[{"name":"spry.sprite_load","signature":"spry.sprite_load(file)"},{"name":"Sprite","signature":"Sprite()"},{"name":"SpriteRenderer:play","signature":"SpriteRenderer:play(tag)"},{"name":"SpriteRenderer:update","signature":"SpriteRenderer:update(dt)"},{"name":"SpriteRenderer:draw","signature":"SpriteRenderer:draw(x, y, r, sx, sy, ox, oy)"}]},{"header":"Texture Atlas","list":[{"name":"spry.atlas_load","signature":"spry.atlas_load(file)"},{"name":"Atlas:get_image","signature":"Atlas:get_image(name)"},{"name":"AtlasImage:draw","signature":"AtlasImage:draw(x, y, r, sx, sy, ox, oy)"},{"name":"AtlasImage:width","signature":"AtlasImage:width()"},{"name":"AtlasImage:height","signature":"AtlasImage:height()"}]},{"header":"Tilemap","list":[{"name":"spry.tilemap_load","signature":"spry.tilemap_load(file)"},{"name":"Tilemap:draw","signature":"Tilemap:draw()"},{"name":"Tilemap:grid_begin","signature":"Tilemap:grid_begin(layer)"},{"name":"Tilemap:grid_end","signature":"Tilemap:grid_end()"},{"name":"Tilemap:grid_value","signature":"Tilemap:grid_value(x, y)"},{"name":"Tilemap:grid_rect","signature":"Tilemap:grid_rect(x0, y0, x1, y1)"},{"name":"Tilemap:rect_every","signature":"Tilemap:rect_every(needle, x0, y0, x1, y1)"},{"name":"Tilemap:rect_has","signature":"Tilemap:rect_has(needle, x0, y0, x1, y1)"},{"name":"Tilemap:entities","signature":"Tilemap:entities()"}]},{"header":"Box2D World","list":[{"name":"spry.b2_world","signature":"spry.b2_world(t)"},{"name":"b2World:step","signature":"b2World:step(dt, vel_iters, pos_iters)"},{"name":"b2World:make_static_body","signature":"b2World:make_static_body(t)"},{"name":"b2World:make_dynamic_body","signature":"b2World:make_dynamic_body(t)"},{"name":"b2World:on_begin_contact","signature":"b2World:on_begin_contact(fn)"},{"name":"b2World:on_end_contact","signature":"b2World:on_end_contact(fn)"}]},{"header":"Box2D Body","list":[{"name":"b2Body:make_box_fixture","signature":"b2Body:make_box_fixture(t)"},{"name":"b2Body:make_circle_fixture","signature":"b2Body:make_circle_fixture(t)"},{"name":"b2Body:position","signature":"b2Body:position()"},{"name":"b2Body:angle","signature":"b2Body:angle()"},{"name":"b2Body:apply_force","signature":"b2Body:apply_force(x, y)"},{"name":"b2Body:apply_linear_impulse","signature":"b2Body:apply_linear_impulse(x, y)"},{"name":"b2Body:set_position","signature":"b2Body:set_position(x, y)"},{"name":"b2Body:set_angle","signature":"b2Body:set_angle(angle)"},{"name":"b2Body:set_transform","signature":"b2Body:set_transform(x, y, angle)"},{"name":"b2Body:draw_fixtures","signature":"b2Body:draw_fixtures()"},{"name":"b2Body:udata","signature":"b2Body:udata()"}]},{"header":"Box2D Fixture","list":[{"name":"b2Fixture:friction","signature":"b2Fixture:friction()"},{"name":"b2Fixture:restitution","signature":"b2Fixture:restitution()"},{"name":"b2Fixture:is_sensor","signature":"b2Fixture:is_sensor()"},{"name":"b2Fixture:set_friction","signature":"b2Fixture:set_friction(friction)"},{"name":"b2Fixture:set_restitution","signature":"b2Fixture:set_restitution(restitution)"},{"name":"b2Fixture:set_sensor","signature":"b2Fixture:set_sensor(sensor)"},{"name":"b2Fixture:body","signature":"b2Fixture:body()"},{"name":"b2Fixture:udata","signature":"b2Fixture:udata()"}]},{"header":"2D Vector","list":[{"name":"vec2","signature":"vec2(x, y)"},{"name":"vec2:normalize","signature":"vec2:normalize()"},{"name":"vec2:distance","signature":"vec2:distance(rhs)"},{"name":"vec2:direction","signature":"vec2:direction(rhs)"},{"name":"vec2:lerp","signature":"vec2:lerp(rhs)"},{"name":"vec2:dot","signature":"vec2:dot(rhs)"},{"name":"vec2:unpack","signature":"vec2:unpack()"},{"name":"vec2.__add","signature":"vec2.__add(lhs, rhs)"},{"name":"vec2.__sub","signature":"vec2.__sub(lhs, rhs)"},{"name":"vec2.__mul","signature":"vec2.__mul(lhs, rhs)"},{"name":"vec2.__div","signature":"vec2.__div(lhs, rhs)"},{"name":"vec2:__len","signature":"vec2:__len()"},{"name":"vec2.__eq","signature":"vec2.__eq(lhs, rhs)"}]},{"header":"World","list":[{"name":"World","signature":"World()"},{"name":"World:add","signature":"World:add(obj)"},{"name":"World:kill","signature":"World:kill(obj)"},{"name":"World:query_id","signature":"World:query_id(obj)"},{"name":"World:query_mt","signature":"World:query_mt(mt)"},{"name":"World:query_near","signature":"World:query_near(x, y, mt)"},{"name":"World:update","signature":"World:update(dt)"},{"name":"World:draw","signature":"World:draw()"}]},{"header":"Spring","list":[{"name":"Spring","signature":"Spring(k, d)"},{"name":"Spring:update","signature":"Spring:update(dt)"},{"name":"Spring:pull","signature":"Spring:pull(f)"}]},{"header":"Timer","list":[{"name":"interval","signature":"interval(sec, action)"},{"name":"timeout","signature":"timeout(sec, action)"},{"name":"stop_interval","signature":"stop_interval(id)"},{"name":"stop_timeout","signature":"stop_timeout(id)"}]},{"header":"Utility Functions","list":[{"name":"class","signature":"class(name)"},{"name":"stringify","signature":"stringify(value)"},{"name":"clamp","signature":"clamp(n, min, max)"},{"name":"sign","signature":"sign(x)"},{"name":"lerp","signature":"lerp(src, dest, t)"},{"name":"direction","signature":"direction(x0, y0, x1, y1)"},{"name":"heading","signature":"heading(angle, mag)"},{"name":"delta_angle","signature":"delta_angle(src, dst)"},{"name":"distance","signature":"distance(x0, y0, x1, y1)"},{"name":"normalize","signature":"normalize(x, y)"},{"name":"dot","signature":"dot(x0, y0, x1, y1)"},{"name":"random","signature":"random(min, max)"},{"name":"clone","signature":"clone(t)"},{"name":"push","signature":"push(arr, x)"},{"name":"map","signature":"map(arr, fn)"},{"name":"filter","signature":"filter(arr, fn)"},{"name":"zip","signature":"zip(lhs, rhs)"},{"name":"choose","signature":"choose(arr)"},{"name":"sortpairs","signature":"sortpairs(t)"},{"name":"create_thread","signature":"create_thread(fn)"},{"name":"resume","signature":"resume(co, ...)"},{"name":"yield","signature":"yield(...)"},{"name":"sleep_for","signature":"sleep_for(secs, dt)"}]}])</script>
     <form
       @submit.prevent="e => {
         const section = filtered()[0]
@@ -549,7 +549,7 @@ end
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Check if a keyboard key is held down this frame.</p>
+            <p>Check if a keyboard key is held down since last frame.</p>
 <p>The key can be one of the following strings:</p>
 <p><code>space</code> <code>'</code> <code>,</code> <code>-</code> <code>.</code> <code>/</code> <code>0</code> <code>1</code> <code>2</code> <code>3</code> <code>4</code> <code>5</code> <code>6</code> <code>7</code> <code>8</code> <code>9</code>
 <code>;</code> <code>=</code> <code>a</code> <code>b</code> <code>c</code> <code>d</code> <code>e</code> <code>f</code> <code>g</code> <code>h</code> <code>i</code> <code>j</code> <code>k</code> <code>l</code> <code>m</code> <code>n</code> <code>o</code>
@@ -596,17 +596,62 @@ if spry.key_down 's' then vy = vy + 1 end
           </div>
         </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spry.key_up" style="position: relative; top: -5rem"></span>
+          <span id="spry.key_press" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 b gray">
             Core Functions          </p>
           <h2 class="mb2">
-            <a href="#spry.key_up" class="black dm-white link underline-hover break-words">
-              <code>spry.key_up(key)</code>
+            <a href="#spry.key_press" class="black dm-white link underline-hover break-words">
+              <code>spry.key_press(key)</code>
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Check if a keyboard key went from pressed to released this frame. The
-key can be any of the strings used in <a href="#spry.key_down"><code>spry.key_down</code></a>.</p>          </div>
+            <p>Check if a keyboard key was pressed since last frame. The key can be
+any of the strings used in <a href="#spry.key_down"><code>spry.key_down</code></a>.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>key</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>string</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The key to check.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>boolean</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">if spry.key_press 'space' then
+  self:jump()
+end
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.key_release" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.key_release" class="black dm-white link underline-hover break-words">
+              <code>spry.key_release(key)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Check if a keyboard key was released since last frame. The key can be
+any of the strings used in <a href="#spry.key_down"><code>spry.key_down</code></a>.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
@@ -641,17 +686,18 @@ end
           </div>
         </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spry.key_press" style="position: relative; top: -5rem"></span>
+          <span id="spry.mouse_down" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 b gray">
             Core Functions          </p>
           <h2 class="mb2">
-            <a href="#spry.key_press" class="black dm-white link underline-hover break-words">
-              <code>spry.key_press(key)</code>
+            <a href="#spry.mouse_down" class="black dm-white link underline-hover break-words">
+              <code>spry.mouse_down(button)</code>
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Check if a keyboard key went from released to pressed this frame. The
-key can be any of the strings used in <a href="#spry.key_down"><code>spry.key_down</code></a>.</p>          </div>
+            <p>Check if a mouse button is held down since last frame. Mouse button 0
+is the left button, button 1 is the right button, and button 2 is the
+middle button.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
@@ -663,11 +709,11 @@ key can be any of the strings used in <a href="#spry.key_down"><code>spry.key_do
                                             <th class="tl pv2 ph3 fw6">Description</th>
                     </tr>
                                                                 <tr>
-                        <td class="pv2 ph3 pre overflow-hidden"><code>key</code></td>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>button</code></td>
                         <td class="pv2 ph3">
-                                                      <code>string</code>
+                                                      <code>number</code>
                                                   </td>
-                                                <td class="pv2 ph3">The key to check.</td>
+                                                <td class="pv2 ph3">The mouse button.</td>
                       </tr>
                                       </tbody>
                 </table>
@@ -679,10 +725,450 @@ key can be any of the strings used in <a href="#spry.key_down"><code>spry.key_do
           
           <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
           <div class="prose">
-            <pre class="mb0"><code class="language-lua">if spry.key_press 'space' then
-  self:jump()
+            <pre class="mb0"><code class="language-lua">if spry.mouse_down(0) then
+  aim_to(mx, my)
 end
 </code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.mouse_click" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.mouse_click" class="black dm-white link underline-hover break-words">
+              <code>spry.mouse_click(button)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Check if a mouse button was clicked since last frame. Mouse button 0
+is the left button, button 1 is the right button, and button 2 is the
+middle button.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>button</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The mouse button.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>boolean</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">if spry.mouse_click(0) then
+  spawn_block(mx, my)
+end
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.mouse_release" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.mouse_release" class="black dm-white link underline-hover break-words">
+              <code>spry.mouse_release(button)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Check if a mouse button was released since last frame. Mouse button 0
+is the left button, button 1 is the right button, and button 2 is the
+middle button.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>button</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The mouse button.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>boolean</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">if spry.mouse_release(1) then
+  show_context_menu()
+end
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.mouse_pos" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.mouse_pos" class="black dm-white link underline-hover break-words">
+              <code>spry.mouse_pos()</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Get the mouse's current position.</p>          </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>number, number</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">local mx, my = spry.mouse_pos()</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.mouse_delta" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.mouse_delta" class="black dm-white link underline-hover break-words">
+              <code>spry.mouse_delta()</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Get the mouse's movement since last frame.</p>          </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>number, number</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">local dx, dy = spry.mouse_delta()</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.show_mouse" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.show_mouse" class="black dm-white link underline-hover break-words">
+              <code>spry.show_mouse(show)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Show/hide the mouse cursor.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>show</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>boolean</code>
+                                                  </td>
+                                                <td class="pv2 ph3">True if cursor should be shown. False if cursor should be hidden.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.show_mouse(false)</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.scroll_wheel" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.scroll_wheel" class="black dm-white link underline-hover break-words">
+              <code>spry.scroll_wheel()</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Get the scroll wheel value since last frame.</p>          </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>number, number</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">local scroll_x, scroll_y spry.scroll_wheel()</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.push_matrix" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.push_matrix" class="black dm-white link underline-hover break-words">
+              <code>spry.push_matrix()</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Push an identity matrix onto the matrix transform stack.</p>          </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.push_matrix()
+spry.translate(spry.window_width() / 2, spry.window_height() / 2)
+spry.scale(self.scale, self.scale)
+spry.translate(-self.x, -self.y)
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.pop_matrix" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.pop_matrix" class="black dm-white link underline-hover break-words">
+              <code>spry.pop_matrix()</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Pop a matrix from the matrix transform stack. You should have a
+matching <code>pop_matrix</code> for every <code>push_matrix</code>.</p>          </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.push_matrix()
+spry.translate(spry.window_width() / 2, spry.window_height() / 2)
+draw_stuff()
+spry.pop_matrix()
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.translate" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.translate" class="black dm-white link underline-hover break-words">
+              <code>spry.translate(x, y)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Apply a 2D translation for the current matrix transform.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The translation in the x direction.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The translation in the y direction.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.push_matrix()
+spry.translate(camera.x, camera.y)
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.rotate" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.rotate" class="black dm-white link underline-hover break-words">
+              <code>spry.rotate(angle)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Apply a rotation for the current matrix transform.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>angle</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The angle rotation in radians.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.push_matrix()
+spry.rotate(camera.tilt)
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.scale" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.scale" class="black dm-white link underline-hover break-words">
+              <code>spry.scale(x, y)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Apply a 2D scale for the current matrix transform.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The scale in the x direction.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The scale in the y direction.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.push_matrix()
+spry.scale(camera.zoom, camera.zoom)
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.clear_color" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.clear_color" class="black dm-white link underline-hover break-words">
+              <code>spry.clear_color(r, g, b, a)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Set the background clear color. Call this before drawing the frame.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>r</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The color's red channel, in the range [0, 255].</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>g</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The color's green channel, in the range [0, 255].</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>b</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The color's blue channel, in the range [0, 255].</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>a</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The color's alpha channel, in the range [0, 255].</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.clear_color(255, 255, 255, 255)</code></pre>
           </div>
         </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
@@ -756,11 +1242,83 @@ img:draw(x, y)
             Core Functions          </p>
           <h2 class="mb2">
             <a href="#spry.pop_color" class="black dm-white link underline-hover break-words">
-              <code>spry.pop_color()</code>
+              <code>spry.pop_color(x, y, r, sx, sy, ox, oy)</code>
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Remove a color from the color stack. You should always have a matching <code>pop_color</code> for every <code>push_color</code>.</p>          </div>
+            <p>Remove a color from the color stack. You should have a matching
+<code>pop_color</code> for every <code>push_color</code>.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                              <th class="tl pv2 ph3 fw6">Default</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The x position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The y position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>r</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The rotation angle in radians.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sx</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                <td class="pv2 ph3">The x scale factor.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sy</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                <td class="pv2 ph3">The y scale factor.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>ox</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The x origin offset.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>oy</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The y origin offset.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
           
                       <p class="i gray">Returns nothing.</p>
           
@@ -770,6 +1328,272 @@ img:draw(x, y)
 img:draw(x, y)
 spry.pop_color()
 </code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.draw_filled_rect" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.draw_filled_rect" class="black dm-white link underline-hover break-words">
+              <code>spry.draw_filled_rect(x, y, w, h, rotation, sx, sy, ox, oy)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Draw a solid filled rectangle.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                              <th class="tl pv2 ph3 fw6">Default</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The x position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The y position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>w</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The width of the rectangle.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>h</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The height of the rectangle.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>rotation</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The rotation angle in radians.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sx</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                <td class="pv2 ph3">The x scale factor.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sy</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                <td class="pv2 ph3">The y scale factor.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>ox</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The x origin offset.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>oy</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The y origin offset.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.draw_filled_rect(self.x, self.y, w, h)</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.draw_line_rect" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.draw_line_rect" class="black dm-white link underline-hover break-words">
+              <code>spry.draw_line_rect(x, y, w, h, rotation, sx, sy, ox, oy)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Draw a rectangle outline.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                              <th class="tl pv2 ph3 fw6">Default</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The x position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The y position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>w</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The width of the rectangle.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>h</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The height of the rectangle.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>rotation</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The rotation angle in radians.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sx</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                <td class="pv2 ph3">The x scale factor.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sy</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                <td class="pv2 ph3">The y scale factor.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>ox</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The x origin offset.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>oy</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                <td class="pv2 ph3">The y origin offset.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.draw_line_rect(self.x, self.y, w, h)</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.draw_line_circle" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Core Functions          </p>
+          <h2 class="mb2">
+            <a href="#spry.draw_line_circle" class="black dm-white link underline-hover break-words">
+              <code>spry.draw_line_circle(x, y, radius)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Draw a circle outline.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The x position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The y position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>radius</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The radius of the circle.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">spry.draw_line_circle(self.x, self.y, radius)</code></pre>
           </div>
         </div>
                         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
@@ -1810,7 +2634,7 @@ tilemap:grid_end()
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Stop tilemap layer collision check. There should be a call to
+            <p>Stop tilemap layer collision check. You should have a matching
 <code>grid_end</code> for every <code>grid_begin</code>.</p>          </div>
           
                       <p class="i gray">Returns nothing.</p>
@@ -5039,6 +5863,47 @@ end
           </div>
         </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="clone" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Utility Functions          </p>
+          <h2 class="mb2">
+            <a href="#clone" class="black dm-white link underline-hover break-words">
+              <code>clone(t)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Creates a new shallow copy of a table.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>t</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>table</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The table to clone.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>table</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">local bullets_copy = clone(bullets)</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="push" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 b gray">
             Utility Functions          </p>
@@ -5330,6 +6195,47 @@ end
 -- second
 -- third
 </code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="create_thread" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 b gray">
+            Utility Functions          </p>
+          <h2 class="mb2">
+            <a href="#create_thread" class="black dm-white link underline-hover break-words">
+              <code>create_thread(fn)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Creates a coroutine.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap ws-normal-l">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>fn</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>function</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The function to create the coroutine with.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>thread</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">local update_thread = create_thread(co_update)</code></pre>
           </div>
         </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
