@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "deploy": "php index.php && gh-pages -d dist"
+  }
+}
