@@ -6326,7 +6326,7 @@ the coroutine doesn't change (for example, when passing <code>self</code>).</p> 
           <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
           <div class="prose">
             <pre class="mb0"><code class="language-lua">function Enemy:new()
-  self.thread = coroutine.create(self.wander)
+  self.thread = create_thread(self.wander)
 end
 
 function Enemy:wander(dt)
