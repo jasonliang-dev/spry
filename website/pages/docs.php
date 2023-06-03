@@ -517,6 +517,36 @@ $api_reference = [
       "args" => $draw_description,
       "return" => false,
     ],
+    "SpriteRenderer:width" => [
+      "desc" => "Get the width of a sprite in pixels.",
+      "example" => "local w = spr:width()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "SpriteRenderer:height" => [
+      "desc" => "Get the height of a sprite in pixels.",
+      "example" => "local h = spr:height()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "SpriteRenderer:set_frame" => [
+      "desc" => "Set the current frame index for a sprite renderer.",
+      "example" => "
+        if spry.mouse_click(0) then
+          sprite:set_frame(0)
+        end
+      ",
+      "args" => [
+        "frame" => ["number", "The frame index to set."],
+      ],
+      "return" => false,
+    ],
+    "SpriteRenderer:total_frames" => [
+      "desc" => "Get the total number of frames of a sprite.",
+      "example" => "local frames = sprite:total_frames()",
+      "args" => [],
+      "return" => "number",
+    ],
   ],
   "Texture Atlas" => [
     "spry.atlas_load" => [
@@ -1009,12 +1039,13 @@ $api_reference = [
       "example" => "pos = pos:lerp(other, dt)",
       "args" => [
         "rhs" => ["vec2", "Another vector."],
+        "dt" => ["number", "Delta time."],
       ],
       "return" => "vec2",
     ],
     "vec2:dot" => [
       "desc" => "The dot product of this vector and rhs.",
-      "example" => "local dt = vel:dot(normal)",
+      "example" => "local dp = vel:dot(normal)",
       "args" => [
         "rhs" => ["vec2", "Another vector."],
       ],
@@ -1149,7 +1180,7 @@ $api_reference = [
       "return" => "table",
     ],
     "World:query_near" => [
-      "desc" => "Find actors with given point. Returns a table of entities.",
+      "desc" => "Find actors close to the given point. Returns a table of entities.",
       "example" => "
         local enemies = world:query_near(self.x, self.y)
         for id, enemy in pairs(enemies) do

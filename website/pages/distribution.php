@@ -29,6 +29,7 @@ Or on Linux:
 
 ```plaintext
 cat spry my_game.zip > my_game
+chmod +x my_game
 ```
 
 <?php });

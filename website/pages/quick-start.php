@@ -2,8 +2,8 @@
 
 # Getting Started
 
-Download Spry from [GitHub](https://github.com/jasonliang-dev/spry). When you
-run the program, you'll see a window with the text: `No game!`.
+Download Spry from [GitHub](https://github.com/jasonliang-dev/spry/releases).
+When you run the program, you'll see a window with the text: `No game!`.
 
 ## Creating a Game
 
