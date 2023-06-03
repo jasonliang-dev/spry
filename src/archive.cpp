@@ -166,6 +166,7 @@ static bool zip_archive_read_entire_file(Archive *self, String *out,
     return false;
   }
 
+  buf[size] = 0;
   *out = {buf, size};
   return true;
 }
