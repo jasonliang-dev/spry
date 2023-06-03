@@ -517,6 +517,36 @@ $api_reference = [
       "args" => $draw_description,
       "return" => false,
     ],
+    "SpriteRenderer:width" => [
+      "desc" => "Get the width of a sprite in pixels.",
+      "example" => "local w = spr:width()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "SpriteRenderer:height" => [
+      "desc" => "Get the height of a sprite in pixels.",
+      "example" => "local h = spr:height()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "SpriteRenderer:set_frame" => [
+      "desc" => "Set the current frame index for a sprite renderer.",
+      "example" => "
+        if spry.mouse_click(0) then
+          sprite:set_frame(0)
+        end
+      ",
+      "args" => [
+        "frame" => ["number", "The frame index to set."],
+      ],
+      "return" => false,
+    ],
+    "SpriteRenderer:total_frames" => [
+      "desc" => "Get the total number of frames of a sprite.",
+      "example" => "local frames = sprite:total_frames()",
+      "args" => [],
+      "return" => "number",
+    ],
   ],
   "Texture Atlas" => [
     "spry.atlas_load" => [
