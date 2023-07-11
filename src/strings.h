@@ -26,6 +26,33 @@ struct SplitLines {
 SplitLinesIterator begin(SplitLines sl);
 SplitLinesIterator end(SplitLines sl);
 
+i32 utf8_size(u8 c);
+
+struct Rune {
+  u32 value;
+};
+
+u32 rune_charcode(Rune r);
+
+struct UTF8Iterator {
+  String str;
+  u64 cursor;
+  Rune rune;
+
+  Rune operator*() const { return rune; }
+  UTF8Iterator &operator++();
+};
+
+bool operator!=(UTF8Iterator lhs, UTF8Iterator rhs);
+
+struct UTF8 {
+  String str;
+  UTF8(String s) : str(s) {}
+};
+
+UTF8Iterator begin(UTF8 utf8);
+UTF8Iterator end(UTF8 utf8);
+
 struct StringBuilder {
   char *data;
   u64 len;      // does not include null term

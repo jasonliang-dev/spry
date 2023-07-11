@@ -133,9 +133,7 @@ static int mt_font_width(lua_State *L) {
   String text = luax_check_string(L, 2);
   lua_Number size = luaL_checknumber(L, 3);
 
-  font_begin(font, (u64)size);
-  float w = font_width(font, text);
-  font_end(font);
+  float w = font_width(font, size, text);
 
   lua_pushnumber(L, w);
   return 1;

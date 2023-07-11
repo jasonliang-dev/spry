@@ -97,6 +97,89 @@ SplitLinesIterator end(SplitLines sl) {
   return {str, view};
 }
 
+i32 utf8_size(u8 c) {
+  if (c == '\0') {
+    return 0;
+  }
+
+  if ((c & 0xF8) == 0xF0) {
+    return 4;
+  } else if ((c & 0xF0) == 0xE0) {
+    return 3;
+  } else if ((c & 0xE0) == 0xC0) {
+    return 2;
+  } else {
+    return 1;
+  }
+}
+
+u32 rune_charcode(Rune r) {
+  u32 charcode = 0;
+
+  u8 c0 = r.value >> 0;
+  u8 c1 = r.value >> 8;
+  u8 c2 = r.value >> 16;
+  u8 c3 = r.value >> 24;
+
+  switch (utf8_size(c0)) {
+  case 1: charcode = c0; break;
+  case 2:
+    charcode = c0 & 0x1F;
+    charcode = (charcode << 6) | (c1 & 0x3F);
+    break;
+  case 3:
+    charcode = c0 & 0x0F;
+    charcode = (charcode << 6) | (c1 & 0x3F);
+    charcode = (charcode << 6) | (c2 & 0x3F);
+    break;
+  case 4:
+    charcode = c0 & 0x07;
+    charcode = (charcode << 6) | (c1 & 0x3F);
+    charcode = (charcode << 6) | (c2 & 0x3F);
+    charcode = (charcode << 6) | (c3 & 0x3F);
+    break;
+  }
+
+  return charcode;
+}
+
+static void next_rune(UTF8Iterator *it) {
+  if (it->cursor == it->str.len) {
+    it->rune.value = 0;
+    return;
+  }
+
+  u32 rune = 0;
+  char *data = it->str.data;
+  i32 len = utf8_size(data[it->cursor]);
+  for (i32 i = len - 1; i >= 0; i--) {
+    rune <<= 8;
+    rune |= (u8)(data[it->cursor + i]);
+  }
+
+  it->cursor += len;
+  it->rune.value = rune;
+}
+
+UTF8Iterator &UTF8Iterator::operator++() {
+  next_rune(this);
+  return *this;
+}
+
+bool operator!=(UTF8Iterator lhs, UTF8Iterator rhs) {
+  return lhs.str.data != rhs.str.data || lhs.str.len != rhs.str.len ||
+         lhs.cursor != rhs.cursor || lhs.rune.value != rhs.rune.value;
+}
+
+UTF8Iterator begin(UTF8 utf8) {
+  UTF8Iterator it = {};
+  it.str = utf8.str;
+  next_rune(&it);
+  return it;
+}
+
+UTF8Iterator end(UTF8 utf8) { return {utf8.str, utf8.str.len, {}}; }
+
 static char s_empty[1] = {0};
 
 StringBuilder string_builder_make() {

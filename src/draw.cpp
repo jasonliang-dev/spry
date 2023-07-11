@@ -2,6 +2,7 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "prelude.h"
+#include "strings.h"
 #include <math.h>
 
 void draw(Image *img, DrawDescription *desc, Color c) {
@@ -65,30 +66,25 @@ void draw(SpriteRenderer *sr, DrawDescription *desc, Color c) {
   sgl_pop_matrix();
 }
 
-void draw(FontFamily *font, u64 size, float x, float y, String text, Color c) {
+void draw(FontFamily *font, float size, float x, float y, String text,
+          Color c) {
   y += size;
-  font_begin(font, size);
-
   sgl_enable_texture();
-  sgl_texture({font->current_range->image.id});
-  sgl_begin_quads();
-
   sgl_c4b(c.r, c.g, c.b, c.a);
 
-  for (char ch : text) {
-    stbtt_aligned_quad q = font_quad(font, ch);
+  for (Rune r : UTF8(text)) {
+    u32 atlas = 0;
+    stbtt_aligned_quad q =
+        font_quad(font, &atlas, &x, &y, size, rune_charcode(r));
 
+    sgl_texture({atlas});
+    sgl_begin_quads();
     sgl_v2f_t2f(x + q.x0, y + q.y0, q.s0, q.t0);
     sgl_v2f_t2f(x + q.x0, y + q.y1, q.s0, q.t1);
     sgl_v2f_t2f(x + q.x1, y + q.y1, q.s1, q.t1);
     sgl_v2f_t2f(x + q.x1, y + q.y0, q.s1, q.t0);
-
-    x += font->current_range->chars[(i32)ch].xadvance;
+    sgl_end();
   }
-
-  sgl_end();
-
-  font_end(font);
 }
 
 void draw(Tilemap *tm, Color c) {

@@ -43,7 +43,7 @@ struct Color {
 
 void draw(Image *img, DrawDescription *desc, Color c);
 void draw(SpriteRenderer *sr, DrawDescription *desc, Color c);
-void draw(FontFamily *font, u64 size, float x, float y, String text, Color c);
+void draw(FontFamily *font, float size, float x, float y, String text, Color c);
 void draw(Tilemap *tm, Color c);
 void draw_filled_rect(RectDescription *desc, Color c);
 void draw_line_rect(RectDescription *desc, Color c);

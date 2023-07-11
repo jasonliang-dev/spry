@@ -2,6 +2,7 @@
 #include "deps/sokol_gfx.h"
 #include "fonts/cousine_compressed.h"
 #include "prelude.h"
+#include "strings.h"
 #include <stdio.h>
 
 bool font_load(FontFamily *font, Archive *ar, String filepath) {
@@ -186,22 +187,42 @@ void drop(FontFamily *font) {
   mem_free(font->ttf.data);
 }
 
-static FontRange *make_font_range(FontFamily *font, u64 size) {
-  i32 width = 1024;
-  i32 height = 1024;
+struct FontKey {
+  float size;
+  i32 ch;
+};
 
-  u8 *bitmap = (u8 *)mem_alloc(width * height);
+static FontKey font_key(float size, i32 charcode) {
+  FontKey fk = {};
+  fk.size = size;
+  fk.ch =
+      (charcode / array_size(FontRange::chars)) * array_size(FontRange::chars);
+  return fk;
+}
+
+static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
+  i32 width = 128;
+  i32 height = 128;
+
+  u8 *bitmap = nullptr;
+  while (bitmap == nullptr) {
+    bitmap = (u8 *)mem_alloc(width * height);
+    i32 res = stbtt_BakeFontBitmap((u8 *)font->ttf.data, 0, key.size, bitmap,
+                                   width, height, key.ch,
+                                   array_size(out->chars), out->chars);
+    if (res < 0) {
+      mem_free(bitmap);
+      bitmap = nullptr;
+      width *= 2;
+      height *= 2;
+    }
+  }
   defer(mem_free(bitmap));
-
-  FontRange fr;
-
-  stbtt_BakeFontBitmap((u8 *)font->ttf.data, 0, (float)size, bitmap, width,
-                       height, 0, array_size(fr.chars), fr.chars);
 
   u8 *image = (u8 *)mem_alloc(width * height * 4);
   defer(mem_free(image));
 
-  for (i32 i = 0; i < width * height; i += 4) {
+  for (i32 i = 0; i < width * height * 4; i += 4) {
     image[i + 0] = 255;
     image[i + 1] = 255;
     image[i + 2] = 255;
@@ -217,46 +238,52 @@ static FontRange *make_font_range(FontFamily *font, u64 size) {
   sg_image.data.subimage[0][0].size = width * height * 4;
   u32 id = sg_make_image(sg_image).id;
 
+  out->image.id = id;
+  out->image.width = width;
+  out->image.height = height;
+
   printf("created font range with id %d\n", id);
-
-  fr.image.id = id;
-  fr.image.width = width;
-  fr.image.height = height;
-
-  FontRange *res = &font->ranges[size];
-  *res = fr;
-  return res;
 }
 
-void font_begin(FontFamily *font, u64 size) {
-  FontRange *range = get(&font->ranges, size);
+static FontRange *get_range(FontFamily *font, FontKey key) {
+  u64 hash = *(u64 *)&key;
+  FontRange *range = get(&font->ranges, hash);
   if (range == nullptr) {
-    range = make_font_range(font, size);
+    range = &font->ranges[hash];
+    make_font_range(range, font, key);
   }
 
-  font->current_range = range;
+  return range;
 }
 
-void font_end(FontFamily *font) { font->current_range = nullptr; }
-
-stbtt_aligned_quad font_quad(FontFamily *font, i32 ch) {
-  FontRange *range = font->current_range;
+stbtt_aligned_quad font_quad(FontFamily *font, u32 *img, float *x, float *y,
+                             float size, i32 ch) {
+  FontRange *range = get_range(font, font_key(size, ch));
   assert(range != nullptr);
 
-  float x = 0, y = 0;
-  stbtt_aligned_quad q;
+  ch = ch % array_size(FontRange::chars);
+
+  float xpos = 0;
+  float ypos = 0;
+  stbtt_aligned_quad q = {};
   stbtt_GetBakedQuad(range->chars, (i32)range->image.width,
-                     (i32)range->image.height, ch, &x, &y, &q, 1);
+                     (i32)range->image.height, ch, &xpos, &ypos, &q, 1);
+
+  stbtt_bakedchar *baked = range->chars + ch;
+  *img = range->image.id;
+  *x = *x + baked->xadvance;
   return q;
 }
 
-float font_width(FontFamily *font, String text) {
-  FontRange *range = font->current_range;
-  assert(range != nullptr);
-
+float font_width(FontFamily *font, float size, String text) {
   float width = 0;
-  for (char c : text) {
-    const stbtt_bakedchar *baked = range->chars + c;
+  for (Rune r : UTF8(text)) {
+    u32 code = rune_charcode(r);
+    FontRange *range = get_range(font, font_key(size, code));
+    assert(range != nullptr);
+
+    const stbtt_bakedchar *baked =
+        range->chars + (code % array_size(FontRange::chars));
     width += baked->xadvance;
   }
   return width;
