@@ -869,9 +869,9 @@ $api_reference = [
       ],
       "return" => false,
     ],
-    "b2Body:apply_linear_impulse" => [
+    "b2Body:apply_impulse" => [
       "desc" => "Apply linear impulse (immediate force) to the center of a body.",
-      "example" => "body:apply_linear_impulse(fx, fy)",
+      "example" => "body:apply_impulse(fx, fy)",
       "args" => [
         "x" => ["number", "The linear impulse x component."],
         "y" => ["number", "The linear impulse y component."],
@@ -1297,25 +1297,12 @@ $api_reference = [
     ],
   ],
   "Utility Functions" => [
-    "unsafe_require" => [
-      "desc" => "
-        This is the `require` function in vanilla Lua. It is renamed to
-        `unsafe_require` as it uses the filesystem. Direct access to the
-        filesystem might not be the desired behavior since projects can be
-        distributed as a zip file.
-      ",
-      "example" => "
-        function spry.start()
-          lume = unsafe_require 'deps.lume'
-        end
-      ",
-    ],
     "require" => [
       "desc" => "
         Include a Lua file relative to the root of the project directory. The
-        format is in the same style as the `require` function in vanilla Lua.
-        Path separators are `.` instead of `/`, and the `.lua` extension is
-        excluded.
+        format is in a similar style as the `require` function in vanilla
+        Lua. Path separators are `.` instead of `/`, and the `.lua` extension
+        is excluded.
       ",
       "example" => "
         function spry.start()

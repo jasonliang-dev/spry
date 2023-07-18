@@ -451,6 +451,7 @@ struct PhysicsUserData {
   i32 begin_contact_ref;
   i32 end_contact_ref;
 
+  i32 ref_count;
   i32 type;
   union {
     char *str;
@@ -507,6 +508,7 @@ static PhysicsUserData *physics_userdata(lua_State *L) {
     lua_pop(L, 1);
   }
 
+  pud->ref_count = 1;
   return pud;
 }
 
@@ -531,7 +533,9 @@ static void contact_run_cb(lua_State *L, i32 ref, i32 a, i32 b, i32 msgh) {
   if (ref != LUA_REFNIL) {
     assert(ref != 0);
     i32 type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-    assert(type != LUA_TNIL);
+    if (type == LUA_TNIL) {
+      luaL_error(L, "expected ref to not be nil");
+    }
     i32 top = lua_gettop(L);
     lua_pushvalue(L, top + a);
     lua_pushvalue(L, top + b);
@@ -660,6 +664,10 @@ static int mt_b2_fixture_body(lua_State *L) {
 
   b2Body *body = fixture->GetBody();
 
+  PhysicsUserData *pud = (PhysicsUserData *)body->GetUserData().pointer;
+  assert(pud != nullptr);
+  pud->ref_count++;
+
   Physics p = weak_copy(physics);
   p.body = body;
 
@@ -697,18 +705,23 @@ static int open_mt_b2_fixture(lua_State *L) {
 static int mt_b2_body_gc(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   if (physics->body != nullptr) {
-    for (b2Fixture *f = physics->body->GetFixtureList(); f != nullptr;
-         f = f->GetNext()) {
-      PhysicsUserData *ptr = (PhysicsUserData *)f->GetUserData().pointer;
-      drop(L, ptr);
-    }
-
-    PhysicsUserData *ptr =
+    PhysicsUserData *pud =
         (PhysicsUserData *)physics->body->GetUserData().pointer;
-    drop(L, ptr);
+    assert(pud != nullptr);
+    pud->ref_count--;
 
-    physics->world->DestroyBody(physics->body);
-    physics->body = nullptr;
+    if (pud->ref_count == 0) {
+      for (b2Fixture *f = physics->body->GetFixtureList(); f != nullptr;
+           f = f->GetNext()) {
+        PhysicsUserData *p = (PhysicsUserData *)f->GetUserData().pointer;
+        drop(L, p);
+      }
+
+      drop(L, pud);
+
+      physics->world->DestroyBody(physics->body);
+      physics->body = nullptr;
+    }
   }
   return 0;
 }
@@ -803,18 +816,19 @@ static int mt_b2_body_apply_force(lua_State *L) {
   float x = luaL_checknumber(L, 2);
   float y = luaL_checknumber(L, 3);
 
-  body->ApplyForceToCenter({x, y}, false);
+  body->ApplyForceToCenter({x / physics->meter, y / physics->meter}, false);
   return 0;
 }
 
-static int mt_b2_body_apply_linear_impulse(lua_State *L) {
+static int mt_b2_body_apply_impulse(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   b2Body *body = physics->body;
 
   float x = luaL_checknumber(L, 2);
   float y = luaL_checknumber(L, 3);
 
-  body->ApplyLinearImpulseToCenter({x, y}, false);
+  body->ApplyLinearImpulseToCenter({x / physics->meter, y / physics->meter},
+                                   false);
   return 0;
 }
 
@@ -825,7 +839,19 @@ static int mt_b2_body_set_position(lua_State *L) {
   float x = luaL_checknumber(L, 2);
   float y = luaL_checknumber(L, 3);
 
-  body->SetTransform({x, y}, body->GetAngle());
+  body->SetTransform({x / physics->meter, y / physics->meter},
+                     body->GetAngle());
+  return 0;
+}
+
+static int mt_b2_body_set_velocity(lua_State *L) {
+  Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
+  b2Body *body = physics->body;
+
+  float x = luaL_checknumber(L, 2);
+  float y = luaL_checknumber(L, 3);
+
+  body->SetLinearVelocity({x / physics->meter, y / physics->meter});
   return 0;
 }
 
@@ -847,7 +873,7 @@ static int mt_b2_body_set_transform(lua_State *L) {
   float y = luaL_checknumber(L, 3);
   float angle = luaL_checknumber(L, 4);
 
-  body->SetTransform({x, y}, angle);
+  body->SetTransform({x / physics->meter, y / physics->meter}, angle);
   return 0;
 }
 
@@ -911,8 +937,9 @@ static int open_mt_b2_body(lua_State *L) {
       {"velocity", mt_b2_body_velocity},
       {"angle", mt_b2_body_angle},
       {"apply_force", mt_b2_body_apply_force},
-      {"apply_linear_impulse", mt_b2_body_apply_linear_impulse},
+      {"apply_impulse", mt_b2_body_apply_impulse},
       {"set_position", mt_b2_body_set_position},
+      {"set_velocity", mt_b2_body_set_velocity},
       {"set_angle", mt_b2_body_set_angle},
       {"set_transform", mt_b2_body_set_transform},
       {"draw_fixtures", mt_b2_body_draw_fixtures},

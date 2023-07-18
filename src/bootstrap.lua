@@ -179,7 +179,7 @@ function World:update(dt)
     self.to_create[id] = nil
   end
 
-  --[[
+  ---[[
   for cell, arr in pairs(self.by_cell) do
     for id in pairs(arr) do
       arr[id] = nil
@@ -196,7 +196,7 @@ function World:update(dt)
       self.by_cell[cell][id] = obj
     end
   end
-  ]]
+  --]]
 
   for id, obj in pairs(self.by_id) do
     obj:update(dt)
