@@ -848,6 +848,12 @@ $api_reference = [
       "args" => [],
       "return" => "number, number",
     ],
+    "b2Body:velocity" => [
+      "desc" => "Get the linear velocity of a physics body.",
+      "example" => "local vx, vy = body:velocity()",
+      "args" => [],
+      "return" => "number, number",
+    ],
     "b2Body:angle" => [
       "desc" => "Get the angle of a physics body in radians.",
       "example" => "local angle = body:angle()",
@@ -1291,6 +1297,36 @@ $api_reference = [
     ],
   ],
   "Utility Functions" => [
+    "unsafe_require" => [
+      "desc" => "
+        This is the `require` function in vanilla Lua. It is renamed to
+        `unsafe_require` as it uses the filesystem. Direct access to the
+        filesystem might not be the desired behavior since projects can be
+        distributed as a zip file.
+      ",
+      "example" => "
+        function spry.start()
+          lume = unsafe_require 'deps.lume'
+        end
+      ",
+    ],
+    "require" => [
+      "desc" => "
+        Include a Lua file relative to the root of the project directory. The
+        format is in the same style as the `require` function in vanilla Lua.
+        Path separators are `.` instead of `/`, and the `.lua` extension is
+        excluded.
+      ",
+      "example" => "
+        function spry.start()
+          lume = require 'deps.lume'
+        end
+      ",
+      "args" => [
+        "value" => ["string", "The file to include"],
+      ],
+      "return" => "any",
+    ],
     "class" => [
       "desc" => "Create a new class.",
       "example" => "
@@ -1592,7 +1628,7 @@ $api_reference = [
         foreach ($api_reference as $header => $section) {
           $list = [];
           foreach ($section as $name => $func) {
-            $list[] = ["name" => $name, "signature" => func_signature($name, $func["args"])];
+            $list[] = ["name" => $name, "fn" => func_signature($name, $func["args"])];
           }
           $sections[] = ["header" => $header, "list" => $list];
         }
@@ -1657,10 +1693,10 @@ $api_reference = [
         <li>
           <span class="dib b mt3 mb2" x-text="header"></span>
           <ul class="list pl0 mt0">
-            <template x-for="{name, signature} in list" :key="name">
+            <template x-for="{name, fn} in list" :key="name">
               <li class="pv2">
                 <a :href="'#' + name" class="dark-gray dm-silver link underline-hover">
-                  <code x-text="signature"></code>
+                  <code x-text="fn"></code>
                 </a>
               </li>
             </template>

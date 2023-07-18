@@ -521,6 +521,8 @@ function sleep_for(secs, dt)
   return dt
 end
 
+unsafe_require = require
+
 function require(name)
   local path = name:gsub("%.", "/")
   if path:sub(-4) ~= ".lua" then
