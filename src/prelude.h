@@ -122,11 +122,15 @@ extern Allocator g_allocator;
 #define mem_free(ptr) g_allocator.free(&g_allocator, ptr)
 
 struct String {
-  char *data;
-  u64 len;
+  char *data = nullptr;
+  u64 len = 0;
+
+  String() = default;
+  String(const char *cstr) : data((char *)cstr), len(strlen(cstr)) {}
+  String(const char *cstr, u64 n) : data((char *)cstr), len(n) {}
 };
 
-inline String clone(String str) {
+inline String to_cstr(String str) {
   char *buf = (char *)mem_alloc(str.len + 1);
   memcpy(buf, str.data, str.len);
   buf[str.len] = 0;
@@ -149,10 +153,6 @@ inline u64 fnv1a(String str) { return fnv1a(str.data, str.len); }
 
 constexpr u64 operator"" _hash(const char *str, size_t len) {
   return fnv1a(str, len);
-}
-
-constexpr String operator"" _str(const char *str, size_t len) {
-  return {(char *)str, len};
 }
 
 inline bool operator==(String lhs, String rhs) {

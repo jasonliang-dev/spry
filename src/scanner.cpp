@@ -43,7 +43,7 @@ String next_string(Scanner *s) {
   s->pos = s->end;
 
   if (at_end(s)) {
-    return ""_str;
+    return "";
   }
 
   while (!is_whitespace(peek(s)) && peek(s) != 0) {

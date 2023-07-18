@@ -41,7 +41,7 @@ static bool entity_from_json(TilemapEntity *entity, json_object_t *value) {
   for (ObjectEl *el : value) {
     switch (hash(el->name)) {
     case "__identifier"_hash: {
-      entity->identifier = clone(as_string(el->value));
+      entity->identifier = to_cstr(as_string(el->value));
       break;
     }
     case "px"_hash: {
@@ -61,7 +61,7 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
   for (ObjectEl *el : value) {
     switch (hash(el->name)) {
     case "__identifier"_hash: {
-      layer->identifier = clone(as_string(el->value));
+      layer->identifier = to_cstr(as_string(el->value));
       break;
     }
     case "__cWid"_hash: {
@@ -178,7 +178,7 @@ static bool neighbor_from_json(TilemapNeighbor *neighbor, json_object_t *value,
   for (ObjectEl *el : value) {
     switch (hash(el->name)) {
     case "levelIid"_hash: {
-      neighbor->iid = clone(as_string(el->value));
+      neighbor->iid = to_cstr(as_string(el->value));
       break;
     }
     case "dir"_hash: {
@@ -207,11 +207,11 @@ static bool level_from_json(TilemapLevel *level, json_object_t *value,
   for (ObjectEl *el : value) {
     switch (hash(el->name)) {
     case "identifier"_hash: {
-      level->identifier = clone(as_string(el->value));
+      level->identifier = to_cstr(as_string(el->value));
       break;
     }
     case "iid"_hash: {
-      level->iid = clone(as_string(el->value));
+      level->iid = to_cstr(as_string(el->value));
       break;
     }
     case "worldX"_hash: {

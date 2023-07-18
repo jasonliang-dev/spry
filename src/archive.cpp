@@ -13,7 +13,7 @@
 #endif
 
 static bool read_entire_file_raw(String *out, String filepath) {
-  String path = clone(filepath);
+  String path = to_cstr(filepath);
   defer(mem_free(path.data));
 
   FILE *file = fopen(path.data, "rb");
@@ -75,7 +75,7 @@ static bool list_all_files(Array<String> *files, String path) {
 
 static bool fs_archive_file_exists(Archive *self, String filepath) {
   (void)self;
-  String path = clone(filepath);
+  String path = to_cstr(filepath);
   defer(mem_free(path.data));
 
   FILE *fp = fopen(path.data, "r");
@@ -95,11 +95,11 @@ static bool fs_archive_read_entire_file(Archive *self, String *out,
 
 static bool fs_archive_list_all_files(Archive *self, Array<String> *files) {
   (void)self;
-  return list_all_files(files, ""_str);
+  return list_all_files(files, "");
 }
 
-bool make_filesystem_archive(Archive *ar, String mount) {
-  String path = clone(mount);
+bool load_filesystem_archive(Archive *ar, String mount) {
+  String path = to_cstr(mount);
   defer(mem_free(path.data));
 
   if (chdir(path.data) != 0) {
@@ -121,7 +121,7 @@ static u32 read4(char *bytes) {
 }
 
 static bool zip_archive_file_exists(Archive *self, String filepath) {
-  String path = clone(filepath);
+  String path = to_cstr(filepath);
   defer(mem_free(path.data));
 
   i32 i = mz_zip_reader_locate_file(&self->zip, path.data, nullptr, 0);
@@ -140,7 +140,7 @@ static bool zip_archive_file_exists(Archive *self, String filepath) {
 
 static bool zip_archive_read_entire_file(Archive *self, String *out,
                                          String filepath) {
-  String path = clone(filepath);
+  String path = to_cstr(filepath);
   defer(mem_free(path.data));
 
   i32 file_index = mz_zip_reader_locate_file(&self->zip, path.data, nullptr, 0);
@@ -180,13 +180,13 @@ static bool zip_archive_list_all_files(Archive *self, Array<String> *files) {
     }
 
     String name = {file_stat.m_filename, strlen(file_stat.m_filename)};
-    push(files, clone(name));
+    push(files, to_cstr(name));
   }
 
   return true;
 }
 
-bool make_zip_archive(Archive *ar, String mount) {
+bool load_zip_archive(Archive *ar, String mount) {
   String contents;
   bool contents_ok = read_entire_file_raw(&contents, mount);
   if (!contents_ok) {

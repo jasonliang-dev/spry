@@ -617,7 +617,7 @@ static b2FixtureDef b2_fixture_def(lua_State *L) {
   fixture_def.density = (float)density;
   fixture_def.friction = (float)friction;
   fixture_def.restitution = (float)restitution;
-  fixture_def.userData.pointer = (u64)clone(udata).data;
+  fixture_def.userData.pointer = (u64)to_cstr(udata).data;
   return fixture_def;
 }
 
@@ -844,7 +844,7 @@ static b2BodyDef b2_body_def(lua_State *L, Physics *physics) {
   b2BodyDef body_def = {};
   body_def.position.Set((float)x / physics->meter, (float)y / physics->meter);
   body_def.angle = angle;
-  body_def.userData.pointer = (u64)clone(udata).data;
+  body_def.userData.pointer = (u64)to_cstr(udata).data;
   return body_def;
 }
 

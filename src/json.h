@@ -53,7 +53,7 @@ inline json_array_t *as_array(json_value_t *value) {
 
 inline String as_string(json_value_t *value) {
   if (value->type != json_type_string) {
-    return ""_str;
+    return "";
   }
 
   json_string_t *str = (json_string_t *)value->payload;

@@ -521,8 +521,17 @@ function sleep_for(secs, dt)
   return dt
 end
 
-function import(name)
-  return table.unpack(spry.files[name])
+function require(name)
+  local path = name:gsub("%.", "/")
+  if path:sub(-4) ~= ".lua" then
+    path = path .. ".lua"
+  end
+
+  if spry.files[path] == nil then
+    spry.require_lua_script(path)
+  end
+
+  return table.unpack(spry.files[path])
 end
 
 --)lua"--"

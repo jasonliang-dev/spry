@@ -68,22 +68,28 @@ void draw(SpriteRenderer *sr, DrawDescription *desc, Color c) {
 
 void draw(FontFamily *font, float size, float x, float y, String text,
           Color c) {
+  float start_x = x;
   y += size;
   sgl_enable_texture();
   sgl_c4b(c.r, c.g, c.b, c.a);
 
-  for (Rune r : UTF8(text)) {
-    u32 atlas = 0;
-    stbtt_aligned_quad q =
-        font_quad(font, &atlas, &x, &y, size, rune_charcode(r));
+  for (String line : SplitLines(text)) {
+    for (Rune r : UTF8(line)) {
+      u32 atlas = 0;
+      stbtt_aligned_quad q =
+          font_quad(font, &atlas, &x, &y, size, rune_charcode(r));
 
-    sgl_texture({atlas});
-    sgl_begin_quads();
-    sgl_v2f_t2f(x + q.x0, y + q.y0, q.s0, q.t0);
-    sgl_v2f_t2f(x + q.x0, y + q.y1, q.s0, q.t1);
-    sgl_v2f_t2f(x + q.x1, y + q.y1, q.s1, q.t1);
-    sgl_v2f_t2f(x + q.x1, y + q.y0, q.s1, q.t0);
-    sgl_end();
+      sgl_texture({atlas});
+      sgl_begin_quads();
+      sgl_v2f_t2f(x + q.x0, y + q.y0, q.s0, q.t0);
+      sgl_v2f_t2f(x + q.x0, y + q.y1, q.s0, q.t1);
+      sgl_v2f_t2f(x + q.x1, y + q.y1, q.s1, q.t1);
+      sgl_v2f_t2f(x + q.x1, y + q.y0, q.s1, q.t0);
+      sgl_end();
+    }
+
+    y += size;
+    x = start_x;
   }
 }
 

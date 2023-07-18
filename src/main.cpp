@@ -28,7 +28,7 @@ static lua_State *L = nullptr;
 static sgl_pipeline g_pipeline;
 
 static void fatal_error(String str) {
-  g_app->fatal_error = clone(str);
+  g_app->fatal_error = to_cstr(str);
   fprintf(stderr, "%s\n", g_app->fatal_error.data);
   g_app->error_mode = true;
 }
@@ -183,18 +183,15 @@ static void frame() {
     u64 font_size = 16;
 
     Color color = {255, 255, 255, 255};
-    draw(g_app->default_font, font_size, x, y,
-         "oh no! there's an error! :("_str, color);
+    draw(g_app->default_font, font_size, x, y, "oh no! there's an error! :(",
+         color);
     y += font_size * 2;
 
     draw(g_app->default_font, font_size, x, y, g_app->fatal_error, color);
     y += font_size * 2;
 
     if (g_app->traceback.data) {
-      for (String line : SplitLines(g_app->traceback)) {
-        draw(g_app->default_font, font_size, x, y, line, color);
-        y += font_size;
-      }
+      draw(g_app->default_font, font_size, x, y, g_app->traceback, color);
     }
   }
 
@@ -280,12 +277,12 @@ static void cleanup() {
 #endif
 }
 
-static void run_lua_script(Archive *ar, String filepath) {
+static void require_lua_script(Archive *ar, String filepath) {
   if (g_app->error_mode) {
     return;
   }
 
-  String path = clone(filepath);
+  String path = to_cstr(filepath);
   defer(mem_free(path.data));
 
   String contents;
@@ -305,6 +302,17 @@ static void run_lua_script(Archive *ar, String filepath) {
   lua_remove(L, -2);
 
   // [1] spry.files
+  // [2] any
+  i32 type = lua_getfield(L, -1, path.data);
+
+  if (type != LUA_TNIL) {
+    lua_pop(L, 2); // restore stack
+    return;
+  } else {
+    lua_pop(L, 1);
+  }
+
+  // [1] spry.files
   // [2] {}
   lua_newtable(L);
   i32 table_index = lua_gettop(L);
@@ -319,23 +327,28 @@ static void run_lua_script(Archive *ar, String filepath) {
   // ...
   // [n] any
   if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {
-    lua_pop(L, 3); // stack restored
+    lua_pop(L, 3); // restore stack
     return;
   }
 
   // [1] spry.files
-  // [2] {}
+  // [2] {...}
   i32 top = lua_gettop(L);
   for (i32 i = 1; i <= top - table_index; i++) {
     lua_seti(L, table_index, i);
   }
 
   // [1] spry.files
-  String filename = clone(substr(path, 0, -4));
-  defer(mem_free(filename.data));
-  lua_setfield(L, -2, filename.data);
+  lua_setfield(L, -2, path.data);
 
-  lua_pop(L, 1); // stack restored
+  lua_pop(L, 1); // restore stack
+}
+
+static int require_lua_script(lua_State *L) {
+  String path = luax_check_string(L, 1);
+  require_lua_script(&g_app->archive, path);
+
+  return 0;
 }
 
 static int string_cmp(const void *a, const void *b) {
@@ -358,6 +371,11 @@ sapp_desc sokol_main(int argc, char **argv) {
   // add error message handler. always at the bottom of stack.
   lua_pushcfunction(L, luax_msgh);
 
+  lua_getglobal(L, "spry");
+  lua_pushcfunction(L, require_lua_script);
+  lua_setfield(L, -2, "require_lua_script");
+  lua_pop(L, 1);
+
   const char *bootstrap =
 #include "bootstrap.lua"
       ;
@@ -373,7 +391,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   }
 
 #ifdef __EMSCRIPTEN__
-  ok = make_filesystem_archive(&g_app->archive, "data"_str);
+  ok = load_filesystem_archive(&g_app->archive, "data");
 
   if (!ok) {
     panic("failed to mount archive");
@@ -384,16 +402,16 @@ sapp_desc sokol_main(int argc, char **argv) {
   if (argc == 1) {
     String path = program_path();
     printf("program path: %s\n", path.data);
-    ok = make_zip_archive(&g_app->archive, path);
+    ok = load_zip_archive(&g_app->archive, path);
     if (ok) {
       g_app->mounted = true;
     }
   } else if (argc == 2) {
     String mount_path = {argv[1], strlen(argv[1])};
-    if (ends_with(mount_path, ".zip"_str)) {
-      ok = make_zip_archive(&g_app->archive, mount_path);
+    if (ends_with(mount_path, ".zip")) {
+      ok = load_zip_archive(&g_app->archive, mount_path);
     } else {
-      ok = make_filesystem_archive(&g_app->archive, mount_path);
+      ok = load_filesystem_archive(&g_app->archive, mount_path);
     }
 
     if (!ok) {
@@ -424,11 +442,11 @@ sapp_desc sokol_main(int argc, char **argv) {
     qsort(files.data, files.len, sizeof(String), string_cmp);
 
     for (String file : files) {
-      if (file != "main.lua"_str && ends_with(file, ".lua"_str)) {
-        run_lua_script(&g_app->archive, file);
+      if (file != "main.lua" && ends_with(file, ".lua")) {
+        require_lua_script(&g_app->archive, file);
       }
     }
-    run_lua_script(&g_app->archive, "main.lua"_str);
+    require_lua_script(&g_app->archive, "main.lua");
   }
 
   lua_newtable(L);
@@ -443,8 +461,8 @@ sapp_desc sokol_main(int argc, char **argv) {
     }
   }
 
-  bool console_attach = luax_boolean_field(L, "console_attach");
-  bool swap_interval = luax_boolean_field(L, "swap_interval");
+  bool console_attach = luax_boolean_field(L, "console_attach", false);
+  lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
   lua_Number width = luax_number_field(L, "window_width", 800);
   lua_Number height = luax_number_field(L, "window_height", 600);
   String title = luax_string_field(L, "window_title", "Spry");
@@ -461,7 +479,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   sapp.window_title = title.data;
   sapp.logger.func = slog_func;
   sapp.win32_console_attach = console_attach;
-  sapp.swap_interval = swap_interval;
+  sapp.swap_interval = (i32)swap_interval;
   sapp.allocator.alloc = sokol_alloc;
   sapp.allocator.free = sokol_free;
 

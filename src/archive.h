@@ -13,8 +13,8 @@ struct Archive {
   String zip_contents;
 };
 
-bool make_filesystem_archive(Archive *ar, String mount);
-bool make_zip_archive(Archive *ar, String mount);
+bool load_filesystem_archive(Archive *ar, String mount);
+bool load_zip_archive(Archive *ar, String mount);
 void drop(Archive *ar);
 String program_dir();
 String program_path();

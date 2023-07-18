@@ -20,7 +20,7 @@ lua_Number luax_number_field(lua_State *L, const char *key,
                              lua_Number fallback);
 String luax_string_field(lua_State *L, const char *key);
 String luax_string_field(lua_State *L, const char *key, const char *fallback);
-bool luax_boolean_field(lua_State *L, const char *key);
+bool luax_boolean_field(lua_State *L, const char *key, bool fallback = false);
 
 String luax_check_string(lua_State *L, i32 arg);
 String luax_opt_string(lua_State *L, i32 arg, String def);

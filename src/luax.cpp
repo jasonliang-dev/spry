@@ -21,7 +21,7 @@ void luax_stack_dump(lua_State *L) {
 
 int luax_msgh(lua_State *L) {
   String err = luax_check_string(L, -1);
-  g_app->fatal_error = clone(err);
+  g_app->fatal_error = to_cstr(err);
 
   lua_getglobal(L, "debug");
   lua_getfield(L, -1, "traceback");
@@ -30,7 +30,7 @@ int luax_msgh(lua_State *L) {
   lua_pushinteger(L, 2);
   lua_call(L, 2, 1);
   String traceback = luax_check_string(L, -1);
-  g_app->traceback = clone(traceback);
+  g_app->traceback = to_cstr(traceback);
 
   for (u64 i = 0; i < g_app->traceback.len; i++) {
     if (g_app->traceback.data[i] == '\t') {
@@ -64,8 +64,13 @@ lua_Number luax_number_field(lua_State *L, const char *key) {
 
 lua_Number luax_number_field(lua_State *L, const char *key,
                              lua_Number fallback) {
-  lua_getfield(L, -1, key);
-  lua_Number num = luaL_optnumber(L, -1, fallback);
+  i32 type = lua_getfield(L, -1, key);
+
+  lua_Number num = fallback;
+  if (type != LUA_TNIL) {
+    num = luaL_optnumber(L, -1, fallback);
+  }
+
   lua_pop(L, 1);
   return num;
 }
@@ -86,11 +91,16 @@ String luax_string_field(lua_State *L, const char *key, const char *fallback) {
   return {str, len};
 }
 
-bool luax_boolean_field(lua_State *L, const char *key) {
-  lua_getfield(L, -1, key);
-  bool num = lua_toboolean(L, -1);
+bool luax_boolean_field(lua_State *L, const char *key, bool fallback) {
+  i32 type = lua_getfield(L, -1, key);
+
+  bool b = fallback;
+  if (type != LUA_TNIL) {
+    b = lua_toboolean(L, -1);
+  }
+
   lua_pop(L, 1);
-  return num;
+  return b;
 }
 
 String luax_check_string(lua_State *L, i32 arg) {
