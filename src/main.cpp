@@ -214,6 +214,7 @@ static void frame() {
   }
 
   lua_pop(L, 1);
+  assert(lua_gettop(L) == 1);
 
   sgl_draw();
 

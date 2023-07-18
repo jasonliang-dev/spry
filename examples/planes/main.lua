@@ -2,7 +2,7 @@ function spry.conf(t)
   t.window_width = 1366
   t.window_height = 768
   t.window_title = "Plane Game"
-  t.swap_interval = false
+  t.swap_interval = 0
 end
 
 function spry.start()

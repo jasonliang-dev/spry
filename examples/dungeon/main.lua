@@ -1,5 +1,5 @@
 function spry.conf(t)
-  t.swap_interval = false
+  t.swap_interval = 0
   t.window_width = 1280
   t.window_height = 720
 end

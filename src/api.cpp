@@ -22,56 +22,6 @@
 #include "sprite.h"
 #include "tilemap.h"
 
-struct PhysicsContactListener;
-struct Physics {
-  b2World *world;
-  PhysicsContactListener *contact_listener;
-  b2Body *body;
-  b2Fixture *fixture;
-  float meter;
-};
-
-Physics weak_copy(Physics *p) {
-  Physics physics = {};
-  physics.world = p->world;
-  physics.contact_listener = p->contact_listener;
-  physics.meter = p->meter;
-  return physics;
-}
-
-struct PhysicsContactListener : public b2ContactListener {
-  lua_State *L = nullptr;
-  Physics physics = {};
-  i32 begin_contact_ref = LUA_REFNIL;
-  i32 end_contact_ref = LUA_REFNIL;
-
-  void on_contact(b2Contact *contact, i32 func_ref) {
-    if (func_ref == LUA_REFNIL) {
-      return;
-    }
-
-    lua_pushcfunction(L, luax_msgh);
-    i32 msgh = lua_gettop(L);
-
-    Physics a = weak_copy(&physics);
-    a.fixture = contact->GetFixtureA();
-
-    Physics b = weak_copy(&physics);
-    b.fixture = contact->GetFixtureB();
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
-    luax_newuserdata(L, a, "mt_b2_fixture");
-    luax_newuserdata(L, b, "mt_b2_fixture");
-    lua_pcall(L, 2, 0, msgh);
-  }
-
-  void BeginContact(b2Contact *contact) {
-    on_contact(contact, begin_contact_ref);
-  }
-
-  void EndContact(b2Contact *contact) { on_contact(contact, end_contact_ref); }
-};
-
 static Color top_color() {
   return g_app->draw_colors[g_app->draw_colors_len - 1];
 }
@@ -485,6 +435,169 @@ static int open_mt_tilemap(lua_State *L) {
   return 1;
 }
 
+struct PhysicsContactListener;
+struct Physics {
+  b2World *world;
+  PhysicsContactListener *contact_listener;
+  float meter;
+
+  union {
+    b2Body *body;
+    b2Fixture *fixture;
+  };
+};
+
+struct PhysicsUserData {
+  i32 begin_contact_ref;
+  i32 end_contact_ref;
+
+  i32 type;
+  union {
+    char *str;
+    lua_Number num;
+  };
+};
+
+static void drop(lua_State *L, PhysicsUserData *pud) {
+  if (pud == nullptr) {
+    return;
+  }
+
+  if (pud->type == LUA_TSTRING) {
+    mem_free(pud->str);
+  }
+
+  if (pud->begin_contact_ref != LUA_REFNIL) {
+    assert(pud->begin_contact_ref != 0);
+    luaL_unref(L, LUA_REGISTRYINDEX, pud->begin_contact_ref);
+  }
+
+  if (pud->end_contact_ref != LUA_REFNIL) {
+    assert(pud->end_contact_ref != 0);
+    luaL_unref(L, LUA_REGISTRYINDEX, pud->end_contact_ref);
+  }
+
+  mem_free(pud);
+}
+
+static PhysicsUserData *physics_userdata(lua_State *L) {
+  PhysicsUserData *pud = (PhysicsUserData *)mem_alloc(sizeof(PhysicsUserData));
+
+  pud->type = lua_getfield(L, -1, "udata");
+  switch (pud->type) {
+  case LUA_TNUMBER: pud->num = luaL_checknumber(L, -1); break;
+  case LUA_TSTRING: pud->str = to_cstr(luaL_checkstring(L, -1)).data; break;
+  default: break;
+  }
+  lua_pop(L, 1);
+
+  i32 type = lua_getfield(L, -1, "begin_contact");
+  if (type == LUA_TFUNCTION) {
+    pud->begin_contact_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  } else {
+    pud->begin_contact_ref = LUA_REFNIL;
+    lua_pop(L, 1);
+  }
+
+  type = lua_getfield(L, -1, "end_contact");
+  if (type == LUA_TFUNCTION) {
+    pud->end_contact_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  } else {
+    pud->end_contact_ref = LUA_REFNIL;
+    lua_pop(L, 1);
+  }
+
+  return pud;
+}
+
+static void physics_push_userdata(lua_State *L, u64 ptr) {
+  PhysicsUserData *pud = (PhysicsUserData *)ptr;
+  switch (pud->type) {
+  case LUA_TNUMBER: lua_pushnumber(L, pud->num); break;
+  case LUA_TSTRING: lua_pushstring(L, pud->str); break;
+  default: break;
+  }
+}
+
+Physics weak_copy(Physics *p) {
+  Physics physics = {};
+  physics.world = p->world;
+  physics.contact_listener = p->contact_listener;
+  physics.meter = p->meter;
+  return physics;
+}
+
+static void contact_run_cb(lua_State *L, i32 ref, i32 a, i32 b, i32 msgh) {
+  if (ref != LUA_REFNIL) {
+    assert(ref != 0);
+    i32 type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+    assert(type != LUA_TNIL);
+    i32 top = lua_gettop(L);
+    lua_pushvalue(L, top + a);
+    lua_pushvalue(L, top + b);
+    lua_pcall(L, 2, 0, msgh);
+  }
+}
+
+struct PhysicsContactListener : public b2ContactListener {
+  lua_State *L = nullptr;
+  Physics physics = {};
+  i32 begin_contact_ref = LUA_REFNIL;
+  i32 end_contact_ref = LUA_REFNIL;
+
+  void setup_contact(b2Contact *contact, i32 *msgh, PhysicsUserData **pud_a,
+                     PhysicsUserData **pud_b) {
+    lua_pushcfunction(L, luax_msgh);
+    *msgh = lua_gettop(L);
+
+    Physics a = weak_copy(&physics);
+    a.fixture = contact->GetFixtureA();
+
+    Physics b = weak_copy(&physics);
+    b.fixture = contact->GetFixtureB();
+
+    luax_newuserdata(L, a, "mt_b2_fixture");
+    luax_newuserdata(L, b, "mt_b2_fixture");
+
+    *pud_a = (PhysicsUserData *)a.fixture->GetUserData().pointer;
+    *pud_b = (PhysicsUserData *)b.fixture->GetUserData().pointer;
+  }
+
+  void BeginContact(b2Contact *contact) {
+    i32 msgh = 0;
+    PhysicsUserData *pud_a = nullptr;
+    PhysicsUserData *pud_b = nullptr;
+    setup_contact(contact, &msgh, &pud_a, &pud_b);
+
+    contact_run_cb(L, begin_contact_ref, -2, -1, msgh);
+    if (pud_a) {
+      contact_run_cb(L, pud_a->begin_contact_ref, -2, -1, msgh);
+    }
+    if (pud_b) {
+      contact_run_cb(L, pud_b->begin_contact_ref, -1, -2, msgh);
+    }
+
+    lua_pop(L, 2);
+  }
+
+  void EndContact(b2Contact *contact) {
+    i32 msgh = 0;
+    PhysicsUserData *pud_a = nullptr;
+    PhysicsUserData *pud_b = nullptr;
+    setup_contact(contact, &msgh, &pud_a, &pud_b);
+
+    contact_run_cb(L, end_contact_ref, -3, -2, msgh);
+    if (pud_a) {
+      contact_run_cb(L, pud_a->end_contact_ref, -3, -2, msgh);
+    }
+    if (pud_b) {
+      contact_run_cb(L, pud_b->end_contact_ref, -2, -3, msgh);
+    }
+
+    lua_pop(L, 2);
+  }
+};
+
 // box2d fixture
 
 static int mt_b2_fixture_friction(lua_State *L) {
@@ -558,9 +671,7 @@ static int mt_b2_fixture_udata(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_fixture");
   b2Fixture *fixture = physics->fixture;
 
-  b2FixtureUserData udata = fixture->GetUserData();
-  char *str = (char *)udata.pointer;
-  lua_pushstring(L, str);
+  physics_push_userdata(L, fixture->GetUserData().pointer);
   return 1;
 }
 
@@ -588,16 +699,13 @@ static int mt_b2_body_gc(lua_State *L) {
   if (physics->body != nullptr) {
     for (b2Fixture *f = physics->body->GetFixtureList(); f != nullptr;
          f = f->GetNext()) {
-      void *ptr = (void *)f->GetUserData().pointer;
-      if (ptr != nullptr) {
-        mem_free(ptr);
-      }
+      PhysicsUserData *ptr = (PhysicsUserData *)f->GetUserData().pointer;
+      drop(L, ptr);
     }
 
-    void *ptr = (void *)physics->body->GetUserData().pointer;
-    if (ptr != nullptr) {
-      mem_free(ptr);
-    }
+    PhysicsUserData *ptr =
+        (PhysicsUserData *)physics->body->GetUserData().pointer;
+    drop(L, ptr);
 
     physics->world->DestroyBody(physics->body);
     physics->body = nullptr;
@@ -610,14 +718,14 @@ static b2FixtureDef b2_fixture_def(lua_State *L) {
   lua_Number density = luax_number_field(L, "density", 1);
   lua_Number friction = luax_number_field(L, "friction", 0.2);
   lua_Number restitution = luax_number_field(L, "restitution", 0);
-  String udata = luax_string_field(L, "udata", nullptr);
+  PhysicsUserData *pud = physics_userdata(L);
 
   b2FixtureDef fixture_def;
   fixture_def.isSensor = sensor;
   fixture_def.density = (float)density;
   fixture_def.friction = (float)friction;
   fixture_def.restitution = (float)restitution;
-  fixture_def.userData.pointer = (u64)to_cstr(udata).data;
+  fixture_def.userData.pointer = (u64)pud;
   return fixture_def;
 }
 
@@ -666,6 +774,17 @@ static int mt_b2_body_position(lua_State *L) {
 
   lua_pushnumber(L, pos.x * physics->meter);
   lua_pushnumber(L, pos.y * physics->meter);
+  return 2;
+}
+
+static int mt_b2_body_velocity(lua_State *L) {
+  Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
+  b2Body *body = physics->body;
+
+  b2Vec2 vel = body->GetLinearVelocity();
+
+  lua_pushnumber(L, vel.x * physics->meter);
+  lua_pushnumber(L, vel.y * physics->meter);
   return 2;
 }
 
@@ -778,9 +897,7 @@ static int mt_b2_body_udata(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   b2Body *body = physics->body;
 
-  b2BodyUserData udata = body->GetUserData();
-  char *str = (char *)udata.pointer;
-  lua_pushstring(L, str);
+  physics_push_userdata(L, body->GetUserData().pointer);
   return 1;
 }
 
@@ -791,6 +908,7 @@ static int open_mt_b2_body(lua_State *L) {
       {"make_box_fixture", mt_b2_body_make_box_fixture},
       {"make_circle_fixture", mt_b2_body_make_circle_fixture},
       {"position", mt_b2_body_position},
+      {"velocity", mt_b2_body_velocity},
       {"angle", mt_b2_body_angle},
       {"apply_force", mt_b2_body_apply_force},
       {"apply_linear_impulse", mt_b2_body_apply_linear_impulse},
@@ -839,12 +957,12 @@ static b2BodyDef b2_body_def(lua_State *L, Physics *physics) {
   lua_Number x = luax_number_field(L, "x");
   lua_Number y = luax_number_field(L, "y");
   lua_Number angle = luax_number_field(L, "angle", 0);
-  String udata = luax_string_field(L, "udata", nullptr);
+  PhysicsUserData *pud = physics_userdata(L);
 
   b2BodyDef body_def = {};
   body_def.position.Set((float)x / physics->meter, (float)y / physics->meter);
   body_def.angle = angle;
-  body_def.userData.pointer = (u64)to_cstr(udata).data;
+  body_def.userData.pointer = (u64)pud;
   return body_def;
 }
 
