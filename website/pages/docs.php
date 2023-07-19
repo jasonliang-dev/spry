@@ -45,7 +45,9 @@ $b2fixture_def = [
   " .density" => ["number", "The fixture's density.", 1],
   " .friction" => ["number", "The fixture's friction.", 0.2],
   " .restitution" => ["number", "The fixture's restitution.", 0],
-  " .udata" => ["string", "Attach a string as user data to this fixture.", "nil"],
+  " .udata" => ["any", "Custom user data for this fixture.", "nil"],
+  " .begin_contact" => ["function", "Run a callback function when this fixture touches another", "nil"],
+  " .end_contact" => ["function", "Run a callback function when this fixture stops touching another", "nil"],
 ];
 
 $api_reference = [
@@ -786,10 +788,10 @@ $api_reference = [
       "args" => $b2body_def,
       "return" => "b2Body",
     ],
-    "b2World:on_begin_contact" => [
+    "b2World:begin_contact" => [
       "desc" => "Run a given callback function when two fixtures touch each other.",
       "example" => "
-        b2_world:on_begin_contact(function(a, b)
+        b2_world:begin_contact(function(a, b)
           local sensor
           local other
           if a:udata() == 'sensor' then
@@ -809,10 +811,10 @@ $api_reference = [
       ],
       "return" => false,
     ],
-    "b2World:on_end_contact" => [
+    "b2World:end_contact" => [
       "desc" => "Run a given callback function when two fixtures stop touching each other.",
       "example" => "
-        b2_world:on_end_contact(function(a, b)
+        b2_world:end_contact(function(a, b)
           local sensor
           if a:udata() == 'sensor' then
             sensor = a

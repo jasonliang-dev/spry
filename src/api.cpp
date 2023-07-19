@@ -1046,7 +1046,7 @@ static int mt_b2_world_make_dynamic_body(lua_State *L) {
   return b2_make_body(L, b2_dynamicBody);
 }
 
-static int mt_b2_world_on_begin_contact(lua_State *L) {
+static int mt_b2_world_begin_contact(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_world");
   if (lua_type(L, 2) != LUA_TFUNCTION) {
     return luaL_error(L, "expected argument 2 to be a function");
@@ -1063,7 +1063,7 @@ static int mt_b2_world_on_begin_contact(lua_State *L) {
   return 0;
 }
 
-static int mt_b2_world_on_end_contact(lua_State *L) {
+static int mt_b2_world_end_contact(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_world");
   if (lua_type(L, 2) != LUA_TFUNCTION) {
     return luaL_error(L, "expected argument 2 to be a function");
@@ -1087,8 +1087,8 @@ static int open_mt_b2_world(lua_State *L) {
       {"make_static_body", mt_b2_world_make_static_body},
       {"make_kinematic_body", mt_b2_world_make_kinematic_body},
       {"make_dynamic_body", mt_b2_world_make_dynamic_body},
-      {"on_begin_contact", mt_b2_world_on_begin_contact},
-      {"on_end_contact", mt_b2_world_on_end_contact},
+      {"begin_contact", mt_b2_world_begin_contact},
+      {"end_contact", mt_b2_world_end_contact},
       {nullptr, nullptr},
   };
 
