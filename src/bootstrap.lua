@@ -177,6 +177,10 @@ function World:update(dt)
     self.by_mt[mt][id] = obj
     self.by_id[id] = obj
     self.to_create[id] = nil
+
+    if obj.on_create then
+      obj:on_create()
+    end
   end
 
   ---[[

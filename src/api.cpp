@@ -517,7 +517,7 @@ static void physics_push_userdata(lua_State *L, u64 ptr) {
   switch (pud->type) {
   case LUA_TNUMBER: lua_pushnumber(L, pud->num); break;
   case LUA_TSTRING: lua_pushstring(L, pud->str); break;
-  default: break;
+  default: lua_pushnil(L); break;
   }
 }
 
@@ -702,15 +702,15 @@ static int open_mt_b2_fixture(lua_State *L) {
 
 // box2d body
 
-static int mt_b2_body_gc(lua_State *L) {
-  Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
+static void b2_body_unref(lua_State *L, bool destroy) {
+    Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   if (physics->body != nullptr) {
     PhysicsUserData *pud =
         (PhysicsUserData *)physics->body->GetUserData().pointer;
     assert(pud != nullptr);
     pud->ref_count--;
 
-    if (pud->ref_count == 0) {
+    if (pud->ref_count == 0 || destroy) {
       for (b2Fixture *f = physics->body->GetFixtureList(); f != nullptr;
            f = f->GetNext()) {
         PhysicsUserData *p = (PhysicsUserData *)f->GetUserData().pointer;
@@ -723,6 +723,16 @@ static int mt_b2_body_gc(lua_State *L) {
       physics->body = nullptr;
     }
   }
+
+}
+
+static int mt_b2_body_gc(lua_State *L) {
+  b2_body_unref(L, false);
+  return 0;
+}
+
+static int mt_b2_body_destroy(lua_State *L) {
+  b2_body_unref(L, true);
   return 0;
 }
 
@@ -809,6 +819,14 @@ static int mt_b2_body_angle(lua_State *L) {
   return 1;
 }
 
+static int mt_b2_body_fixed_rotation(lua_State *L) {
+  Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
+  b2Body *body = physics->body;
+
+  lua_pushboolean(L, body->IsFixedRotation());
+  return 1;
+}
+
 static int mt_b2_body_apply_force(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   b2Body *body = physics->body;
@@ -862,6 +880,16 @@ static int mt_b2_body_set_angle(lua_State *L) {
   float angle = luaL_checknumber(L, 2);
 
   body->SetTransform(body->GetPosition(), angle);
+  return 0;
+}
+
+static int mt_b2_body_set_fixed_rotation(lua_State *L) {
+  Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
+  b2Body *body = physics->body;
+
+  bool fixed = lua_toboolean(L, 2);
+
+  body->SetFixedRotation(fixed);
   return 0;
 }
 
@@ -930,17 +958,19 @@ static int mt_b2_body_udata(lua_State *L) {
 static int open_mt_b2_body(lua_State *L) {
   luaL_Reg reg[] = {
       {"__gc", mt_b2_body_gc},
-      {"destroy", mt_b2_body_gc},
+      {"destroy", mt_b2_body_destroy},
       {"make_box_fixture", mt_b2_body_make_box_fixture},
       {"make_circle_fixture", mt_b2_body_make_circle_fixture},
       {"position", mt_b2_body_position},
       {"velocity", mt_b2_body_velocity},
       {"angle", mt_b2_body_angle},
+      {"fixed_rotation", mt_b2_body_fixed_rotation},
       {"apply_force", mt_b2_body_apply_force},
       {"apply_impulse", mt_b2_body_apply_impulse},
       {"set_position", mt_b2_body_set_position},
       {"set_velocity", mt_b2_body_set_velocity},
       {"set_angle", mt_b2_body_set_angle},
+      {"set_fixed_rotation", mt_b2_body_set_fixed_rotation},
       {"set_transform", mt_b2_body_set_transform},
       {"draw_fixtures", mt_b2_body_draw_fixtures},
       {"udata", mt_b2_body_udata},
@@ -984,11 +1014,13 @@ static b2BodyDef b2_body_def(lua_State *L, Physics *physics) {
   lua_Number x = luax_number_field(L, "x");
   lua_Number y = luax_number_field(L, "y");
   lua_Number angle = luax_number_field(L, "angle", 0);
+  bool fixed_rotation = luax_boolean_field(L, "fixed_rotation");
   PhysicsUserData *pud = physics_userdata(L);
 
   b2BodyDef body_def = {};
   body_def.position.Set((float)x / physics->meter, (float)y / physics->meter);
   body_def.angle = angle;
+  body_def.fixedRotation = fixed_rotation;
   body_def.userData.pointer = (u64)pud;
   return body_def;
 }

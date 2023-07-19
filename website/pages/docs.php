@@ -34,6 +34,7 @@ $b2body_def = [
   " .x" => ["number", "The centered x position of the physics body."],
   " .y" => ["number", "The centered y position of the physics body."],
   " .angle" => ["number", "The angle of the physics body in radians.", 0],
+  " .fixed_rotation" => ["boolean", "If true, prevent the physics body from rotating.", 0],
   " .udata" => ["string", "Custom user data for this body.", "nil"],
 ];
 
@@ -823,6 +824,16 @@ $api_reference = [
     ],
   ],
   "Box2D Body" => [
+    "b2Body:destroy" => [
+      "desc" => "Immediately destroy a physics body.",
+      "example" => "
+        function Box:on_death()
+          self.body:destroy()
+        end
+      ",
+      "args" => [],
+      "return" => false,
+    ],
     "b2Body:make_box_fixture" => [
       "desc" => "Attach a box shaped fixture to a body.",
       "example" => "ground.body:make_box_fixture { w = 100, h = 50, friction = 1 }",
@@ -860,6 +871,12 @@ $api_reference = [
       "args" => [],
       "return" => "number",
     ],
+    "b2Body:fixed_rotation" => [
+      "desc" => "See if the physics body uses fixed rotation.",
+      "example" => "local fixed = body:fixed_rotation()",
+      "args" => [],
+      "return" => "boolean",
+    ],
     "b2Body:apply_force" => [
       "desc" => "Apply the given force to the center of a body.",
       "example" => "body:apply_force(fx, fy)",
@@ -892,6 +909,14 @@ $api_reference = [
       "example" => "body:set_angle(angle)",
       "args" => [
         "angle" => ["number", "The angle to set."],
+      ],
+      "return" => false,
+    ],
+    "b2Body:set_fixed_rotation" => [
+      "desc" => "Fix the rotation of a physics body.",
+      "example" => "body:set_fixed_rotation(true)",
+      "args" => [
+        "angle" => ["boolean", "If true, prevent the body from rotating."],
       ],
       "return" => false,
     ],
