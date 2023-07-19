@@ -703,7 +703,7 @@ static int open_mt_b2_fixture(lua_State *L) {
 // box2d body
 
 static void b2_body_unref(lua_State *L, bool destroy) {
-    Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
+  Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   if (physics->body != nullptr) {
     PhysicsUserData *pud =
         (PhysicsUserData *)physics->body->GetUserData().pointer;
@@ -723,7 +723,6 @@ static void b2_body_unref(lua_State *L, bool destroy) {
       physics->body = nullptr;
     }
   }
-
 }
 
 static int mt_b2_body_gc(lua_State *L) {
@@ -1013,21 +1012,26 @@ static int mt_b2_world_step(lua_State *L) {
 static b2BodyDef b2_body_def(lua_State *L, Physics *physics) {
   lua_Number x = luax_number_field(L, "x");
   lua_Number y = luax_number_field(L, "y");
+  lua_Number vx = luax_number_field(L, "vx", 0);
+  lua_Number vy = luax_number_field(L, "vy", 0);
   lua_Number angle = luax_number_field(L, "angle", 0);
   bool fixed_rotation = luax_boolean_field(L, "fixed_rotation");
   PhysicsUserData *pud = physics_userdata(L);
 
   b2BodyDef body_def = {};
   body_def.position.Set((float)x / physics->meter, (float)y / physics->meter);
+  body_def.linearVelocity.Set((float)vx / physics->meter,
+                              (float)vy / physics->meter);
   body_def.angle = angle;
   body_def.fixedRotation = fixed_rotation;
   body_def.userData.pointer = (u64)pud;
   return body_def;
 }
 
-static int mt_b2_world_make_static_body(lua_State *L) {
+static int b2_make_body(lua_State *L, b2BodyType type) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_world");
   b2BodyDef body_def = b2_body_def(L, physics);
+  body_def.type = type;
 
   Physics p = weak_copy(physics);
   p.body = physics->world->CreateBody(&body_def);
@@ -1036,16 +1040,16 @@ static int mt_b2_world_make_static_body(lua_State *L) {
   return 1;
 }
 
+static int mt_b2_world_make_static_body(lua_State *L) {
+  return b2_make_body(L, b2_staticBody);
+}
+
+static int mt_b2_world_make_kinematic_body(lua_State *L) {
+  return b2_make_body(L, b2_kinematicBody);
+}
+
 static int mt_b2_world_make_dynamic_body(lua_State *L) {
-  Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_world");
-  b2BodyDef body_def = b2_body_def(L, physics);
-  body_def.type = b2_dynamicBody;
-
-  Physics p = weak_copy(physics);
-  p.body = physics->world->CreateBody(&body_def);
-
-  luax_newuserdata(L, p, "mt_b2_body");
-  return 1;
+  return b2_make_body(L, b2_dynamicBody);
 }
 
 static int mt_b2_world_on_begin_contact(lua_State *L) {
@@ -1087,6 +1091,7 @@ static int open_mt_b2_world(lua_State *L) {
       {"__gc", mt_b2_world_gc},
       {"step", mt_b2_world_step},
       {"make_static_body", mt_b2_world_make_static_body},
+      {"make_kinematic_body", mt_b2_world_make_kinematic_body},
       {"make_dynamic_body", mt_b2_world_make_dynamic_body},
       {"on_begin_contact", mt_b2_world_on_begin_contact},
       {"on_end_contact", mt_b2_world_on_end_contact},

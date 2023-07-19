@@ -31,8 +31,10 @@ $uv_coords = [
 
 $b2body_def = [
   "t" => ["table", "Body definition."],
-  " .x" => ["number", "The centered x position of the physics body."],
-  " .y" => ["number", "The centered y position of the physics body."],
+  " .x" => ["number", "The x position of the physics body."],
+  " .y" => ["number", "The y position of the physics body."],
+  " .vx" => ["number", "The x velocity of the physics body."],
+  " .vy" => ["number", "The y velocity of the physics body."],
   " .angle" => ["number", "The angle of the physics body in radians.", 0],
   " .fixed_rotation" => ["boolean", "If true, prevent the physics body from rotating.", 0],
   " .udata" => ["string", "Custom user data for this body.", "nil"],
@@ -772,6 +774,12 @@ $api_reference = [
       "args" => $b2body_def,
       "return" => "b2Body",
     ],
+    "b2World:make_kinematic_body" => [
+      "desc" => "Create a kinematic physics body.",
+      "example" => "b2_world:make_kinematic_body { x = 300, y = 400, vx = 10 }",
+      "args" => $b2body_def,
+      "return" => "b2Body",
+    ],
     "b2World:make_dynamic_body" => [
       "desc" => "Create a dynamic physics body.",
       "example" => "b2_world:make_dynamic_body { x = 300, y = 400 }",
@@ -901,6 +909,15 @@ $api_reference = [
       "args" => [
         "x" => ["number", "The x position to move the body to."],
         "y" => ["number", "The y position to move the body to."],
+      ],
+      "return" => false,
+    ],
+    "b2Body:set_velocity" => [
+      "desc" => "Set the physics body's velocity.",
+      "example" => "body:set_velocity(move_x, move_y)",
+      "args" => [
+        "x" => ["number", "The x velocity."],
+        "y" => ["number", "The y velocity."],
       ],
       "return" => false,
     ],
