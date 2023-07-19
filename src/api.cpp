@@ -460,10 +460,6 @@ struct PhysicsUserData {
 };
 
 static void drop(lua_State *L, PhysicsUserData *pud) {
-  if (pud == nullptr) {
-    return;
-  }
-
   if (pud->type == LUA_TSTRING) {
     mem_free(pud->str);
   }
@@ -477,8 +473,6 @@ static void drop(lua_State *L, PhysicsUserData *pud) {
     assert(pud->end_contact_ref != 0);
     luaL_unref(L, LUA_REGISTRYINDEX, pud->end_contact_ref);
   }
-
-  mem_free(pud);
 }
 
 static PhysicsUserData *physics_userdata(lua_State *L) {
@@ -492,21 +486,11 @@ static PhysicsUserData *physics_userdata(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  i32 type = lua_getfield(L, -1, "begin_contact");
-  if (type == LUA_TFUNCTION) {
-    pud->begin_contact_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  } else {
-    pud->begin_contact_ref = LUA_REFNIL;
-    lua_pop(L, 1);
-  }
+  lua_getfield(L, -1, "begin_contact");
+  pud->begin_contact_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  type = lua_getfield(L, -1, "end_contact");
-  if (type == LUA_TFUNCTION) {
-    pud->end_contact_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  } else {
-    pud->end_contact_ref = LUA_REFNIL;
-    lua_pop(L, 1);
-  }
+  lua_getfield(L, -1, "end_contact");
+  pud->end_contact_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   pud->ref_count = 1;
   return pud;
@@ -514,6 +498,8 @@ static PhysicsUserData *physics_userdata(lua_State *L) {
 
 static void physics_push_userdata(lua_State *L, u64 ptr) {
   PhysicsUserData *pud = (PhysicsUserData *)ptr;
+  assert(pud != nullptr);
+
   switch (pud->type) {
   case LUA_TNUMBER: lua_pushnumber(L, pud->num); break;
   case LUA_TSTRING: lua_pushstring(L, pud->str); break;
@@ -533,8 +519,9 @@ static void contact_run_cb(lua_State *L, i32 ref, i32 a, i32 b, i32 msgh) {
   if (ref != LUA_REFNIL) {
     assert(ref != 0);
     i32 type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-    if (type == LUA_TNIL) {
-      luaL_error(L, "expected ref to not be nil");
+    if (type != LUA_TFUNCTION) {
+      luaL_error(L, "expected contact listener to be a callback");
+      return;
     }
     i32 top = lua_gettop(L);
     lua_pushvalue(L, top + a);
@@ -590,12 +577,12 @@ struct PhysicsContactListener : public b2ContactListener {
     PhysicsUserData *pud_b = nullptr;
     setup_contact(contact, &msgh, &pud_a, &pud_b);
 
-    contact_run_cb(L, end_contact_ref, -3, -2, msgh);
+    contact_run_cb(L, end_contact_ref, -2, -1, msgh);
     if (pud_a) {
-      contact_run_cb(L, pud_a->end_contact_ref, -3, -2, msgh);
+      contact_run_cb(L, pud_a->end_contact_ref, -2, -1, msgh);
     }
     if (pud_b) {
-      contact_run_cb(L, pud_b->end_contact_ref, -2, -3, msgh);
+      contact_run_cb(L, pud_b->end_contact_ref, -1, -2, msgh);
     }
 
     lua_pop(L, 2);
@@ -711,16 +698,23 @@ static void b2_body_unref(lua_State *L, bool destroy) {
     pud->ref_count--;
 
     if (pud->ref_count == 0 || destroy) {
+      Array<PhysicsUserData *> puds = {};
+      defer(drop(&puds));
+
       for (b2Fixture *f = physics->body->GetFixtureList(); f != nullptr;
            f = f->GetNext()) {
         PhysicsUserData *p = (PhysicsUserData *)f->GetUserData().pointer;
-        drop(L, p);
+        push(&puds, p);
       }
-
-      drop(L, pud);
+      push(&puds, pud);
 
       physics->world->DestroyBody(physics->body);
       physics->body = nullptr;
+
+      for (PhysicsUserData *pud : puds) {
+        drop(L, pud);
+        mem_free(pud);
+      }
     }
   }
 }

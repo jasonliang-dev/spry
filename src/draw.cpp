@@ -76,8 +76,10 @@ void draw(FontFamily *font, float size, float x, float y, String text,
   for (String line : SplitLines(text)) {
     for (Rune r : UTF8(line)) {
       u32 atlas = 0;
+      float xpos = x;
+      float ypos = y;
       stbtt_aligned_quad q =
-          font_quad(font, &atlas, &x, &y, size, rune_charcode(r));
+          font_quad(font, &atlas, &xpos, &ypos, size, rune_charcode(r));
 
       sgl_texture({atlas});
       sgl_begin_quads();
@@ -86,6 +88,9 @@ void draw(FontFamily *font, float size, float x, float y, String text,
       sgl_v2f_t2f(x + q.x1, y + q.y1, q.s1, q.t1);
       sgl_v2f_t2f(x + q.x1, y + q.y0, q.s1, q.t0);
       sgl_end();
+
+      x = xpos;
+      y = ypos;
     }
 
     y += size;
