@@ -15,7 +15,6 @@ function Player:on_create()
   self.body = b2:make_dynamic_body {
     x = self.x,
     y = self.y,
-    fixed_rotation = true,
   }
 
   self.body:make_box_fixture {
@@ -27,26 +26,42 @@ function Player:on_create()
   }
 end
 
+function Player:on_death()
+  self.body:destroy()
+end
+
 function Player:update(dt)
   -- self.sprite:update(dt)
   self.spring:update(dt)
 
   self.x, self.y = self.body:position()
 
-
-  local right, top = camera:to_world_space(spry.window_width(), spry.window_height())
-  right = right + 8
-  local left = -right
-  if self.x < left then
-    self.x = right
-  elseif self.x > right then
-    self.x = left
+  if self.y < max_height then
+    max_height = self.y
+  elseif jump.death_barrier(self.y) then
+    world:kill(self)
+    game_over = true
   end
-  self.body:set_position(self.x, self.y)
+
+  do
+    local right, top = camera:to_world_space(spry.window_width(), spry.window_height())
+    right = right + 8
+    local left = -right
+    if self.x < left then
+      self.x = right
+    elseif self.x > right then
+      self.x = left
+    end
+    self.body:set_position(self.x, self.y)
+  end
 
   local dx = 0
-  if spry.key_down "a" then dx = dx - 1 end
-  if spry.key_down "d" then dx = dx + 1 end
+  do
+    local left = spry.key_down "a" or spry.key_down "left"
+    local right = spry.key_down "d" or spry.key_down "right"
+    if left then dx = dx - 1 end
+    if right then dx = dx + 1 end
+  end
 
   self.body:apply_force(dx * 50, 0)
 

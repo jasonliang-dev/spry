@@ -26,7 +26,7 @@ function MovingPlatform:on_death()
 end
 
 function MovingPlatform:update(dt)
-  if self.y > max_height + 300 then
+  if jump.death_barrier(self.y) then
     world:kill(self)
   end
 

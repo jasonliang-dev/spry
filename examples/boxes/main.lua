@@ -54,7 +54,7 @@ function spry.start()
     udata = "sensor box",
   }
 
-  b2_world:on_begin_contact(function (a, b)
+  b2_world:begin_contact(function (a, b)
     local sensor
     local other
     if a:udata() == "sensor box" then
@@ -68,7 +68,7 @@ function spry.start()
     end
   end)
 
-  b2_world:on_end_contact(function (a, b)
+  b2_world:end_contact(function (a, b)
     local sensor
     if a:udata() == "sensor box" then
       sensor = a
