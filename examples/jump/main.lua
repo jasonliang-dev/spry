@@ -1,7 +1,7 @@
 function spry.conf(t)
   t.swap_interval = 1
-  t.window_width = 540
-  t.window_height = 960
+  t.window_width = 800
+  t.window_height = 600
   t.window_title = "Jump Game"
 end
 
@@ -9,8 +9,14 @@ function spry.start()
   font = spry.default_font()
   atlas = spry.atlas_load "atlas.rtpa"
 
+  music = spry.audio_load "king-around-here.ogg"
+  beep = spry.audio_load "beep.ogg"
+  sparkle = spry.audio_load "sparkle.ogg"
+
   spry.clear_color(252, 223, 205, 255)
   jump:reset()
+
+  music:play_loop()
 end
 
 function spry.frame(dt)
@@ -37,7 +43,7 @@ function spry.frame(dt)
   camera:end_draw()
 
   spry.push_color(0, 0, 0, 255)
-    font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+    -- font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
 
     local text_size = 80
     local text = ("%.0f"):format(-max_height)
