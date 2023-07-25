@@ -3,13 +3,13 @@
 # Distribution
 
 There are two main ways you can share your game made with Spry. On desktop,
-you can fusing your game with the Spry executable. On the web, you can serve
-your game files on a web server.
+you can combine your game files with the Spry executable. On the web, you can
+serve your game files on a web server.
 
 ## Spry on Desktop
 
 You can send a copy of your game to others as a single program by packaging
-your game files into a zip file, and fusing it into the Spry executable. The
+your game files into a zip file, and combine it into the Spry executable. The
 zip file should contain all of the files in your game's directory, where
 `main.lua` is in the root of the zip archive.
 

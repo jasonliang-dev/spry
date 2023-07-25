@@ -27,8 +27,10 @@ This repository includes some project examples. You can run them with the
 following commands:
 
 ```sh
+spry examples/basic
 spry examples/planes
 spry examples/dungeon
+spry examples/jump
 spry examples/boxes
 ```
 
