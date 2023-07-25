@@ -689,7 +689,7 @@ static int open_mt_b2_fixture(lua_State *L) {
 
 // box2d body
 
-static void b2_body_unref(lua_State *L, bool destroy) {
+static int b2_body_unref(lua_State *L, bool destroy) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   if (physics->body != nullptr) {
     PhysicsUserData *pud =
@@ -717,17 +717,13 @@ static void b2_body_unref(lua_State *L, bool destroy) {
       }
     }
   }
-}
 
-static int mt_b2_body_gc(lua_State *L) {
-  b2_body_unref(L, false);
   return 0;
 }
 
-static int mt_b2_body_destroy(lua_State *L) {
-  b2_body_unref(L, true);
-  return 0;
-}
+static int mt_b2_body_gc(lua_State *L) { return b2_body_unref(L, false); }
+
+static int mt_b2_body_destroy(lua_State *L) { return b2_body_unref(L, true); }
 
 static b2FixtureDef b2_fixture_def(lua_State *L) {
   bool sensor = luax_boolean_field(L, "sensor");
@@ -979,17 +975,22 @@ static int open_mt_b2_body(lua_State *L) {
 static int mt_b2_world_gc(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_world");
 
-  if (physics->contact_listener->begin_contact_ref != LUA_REFNIL) {
-    luaL_unref(L, LUA_REGISTRYINDEX,
-               physics->contact_listener->begin_contact_ref);
-  }
-  if (physics->contact_listener->end_contact_ref != LUA_REFNIL) {
-    luaL_unref(L, LUA_REGISTRYINDEX,
-               physics->contact_listener->end_contact_ref);
+  if (physics->world != nullptr) {
+    if (physics->contact_listener->begin_contact_ref != LUA_REFNIL) {
+      luaL_unref(L, LUA_REGISTRYINDEX,
+                 physics->contact_listener->begin_contact_ref);
+    }
+    if (physics->contact_listener->end_contact_ref != LUA_REFNIL) {
+      luaL_unref(L, LUA_REGISTRYINDEX,
+                 physics->contact_listener->end_contact_ref);
+    }
+
+    delete physics->contact_listener;
+    delete physics->world;
+    physics->contact_listener = nullptr;
+    physics->world = nullptr;
   }
 
-  delete physics->contact_listener;
-  delete physics->world;
   return 0;
 }
 
@@ -1083,6 +1084,7 @@ static int mt_b2_world_end_contact(lua_State *L) {
 static int open_mt_b2_world(lua_State *L) {
   luaL_Reg reg[] = {
       {"__gc", mt_b2_world_gc},
+      {"destroy", mt_b2_world_gc},
       {"step", mt_b2_world_step},
       {"make_static_body", mt_b2_world_make_static_body},
       {"make_kinematic_body", mt_b2_world_make_kinematic_body},
@@ -1102,6 +1104,17 @@ static int quit(lua_State *L) {
   (void)L;
   sapp_request_quit();
   return 0;
+}
+
+static int platform(lua_State *L) {
+#if defined(__EMSCRIPTEN__)
+  lua_pushliteral(L, "html5");
+#elif defined(_WIN32)
+  lua_pushliteral(L, "windows");
+#elif defined(__linux__) || defined(__unix__)
+  lua_pushliteral(L, "linux");
+#endif
+  return 1;
 }
 
 static int dt(lua_State *L) {
@@ -1550,6 +1563,7 @@ static int b2_world(lua_State *L) {
 static int open_spry(lua_State *L) {
   luaL_Reg reg[] = {
       {"quit", quit},
+      {"platform", platform},
       {"dt", dt},
       {"window_width", window_width},
       {"window_height", window_height},

@@ -118,6 +118,16 @@ $api_reference = [
       "args" => [],
       "return" => false,
     ],
+    "spry.platform" => [
+      "desc" => "Returns the platform as a string. One of `html5`, `windows`, or `linux`",
+      "example" => "
+        if spry.platform() ~= 'html5' then
+          display_quit_button()
+        end
+      ",
+      "args" => [],
+      "return" => "string",
+    ],
     "spry.dt" => [
       "desc" => "Returns delta time. The time (in seconds) between this frame and last frame.",
       "example" => "self.x = self.x + vel_x * spry.dt()",

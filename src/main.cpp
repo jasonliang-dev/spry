@@ -24,6 +24,10 @@
 #include "strings.h"
 #include "tilemap.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 static lua_State *L = nullptr;
 static sgl_pipeline g_pipeline;
 
@@ -355,6 +359,44 @@ static int require_lua_script(lua_State *L) {
   return 0;
 }
 
+#ifdef __EMSCRIPTEN__
+EM_ASYNC_JS(char *, web_mount_fs, (), {
+  let jobs = [];
+
+  function spryWalkFiles(files, leading) {
+    let path = leading.join('/');
+    if (path != '') {
+      FS.mkdir(path);
+    }
+
+    for (let entry of Object.entries(files)) {
+      let key = entry[0];
+      let value = entry[1];
+      let filepath = [... leading, key ];
+      if (typeof value == 'object') {
+        spryWalkFiles(value, filepath);
+      } else if (value == 1) {
+        let file = filepath.join('/');
+
+        let job = fetch(file).then(async function(res) {
+          if (!res.ok) {
+            throw new Error('failed to fetch ' + file);
+          }
+          let data = await res.arrayBuffer();
+          FS.writeFile(file, new Uint8Array(data));
+        });
+
+        jobs.push(job);
+      }
+    }
+  }
+  spryWalkFiles(spryFiles, []);
+
+  await Promise.all(jobs);
+  return stringToNewUTF8(spryMountDir);
+});
+#endif
+
 static int string_cmp(const void *a, const void *b) {
   String *lhs = (String *)a;
   String *rhs = (String *)b;
@@ -395,8 +437,10 @@ sapp_desc sokol_main(int argc, char **argv) {
   }
 
 #ifdef __EMSCRIPTEN__
-  ok = load_filesystem_archive(&g_app->archive, "data");
+  char *mount_dir = web_mount_fs();
+  defer(free(mount_dir));
 
+  ok = load_filesystem_archive(&g_app->archive, mount_dir);
   if (!ok) {
     panic("failed to mount archive");
   }

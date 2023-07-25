@@ -142,6 +142,14 @@ function World:new()
   self.to_kill = {}
 end
 
+function World:destroy_all()
+  for id, obj in pairs(self.by_id) do
+    if obj.on_death then
+      obj:on_death()
+    end
+  end
+end
+
 function World:add(obj)
   obj.id = self.next_id
 
