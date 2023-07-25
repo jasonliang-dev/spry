@@ -46,8 +46,8 @@ $b2fixture_def = [
   " .friction" => ["number", "The fixture's friction.", 0.2],
   " .restitution" => ["number", "The fixture's restitution.", 0],
   " .udata" => ["any", "Custom user data for this fixture.", "nil"],
-  " .begin_contact" => ["function", "Run a callback function when this fixture touches another", "nil"],
-  " .end_contact" => ["function", "Run a callback function when this fixture stops touching another", "nil"],
+  " .begin_contact" => ["function", "Run a callback function when this fixture touches another.", "nil"],
+  " .end_contact" => ["function", "Run a callback function when this fixture stops touching another.", "nil"],
 ];
 
 $api_reference = [
@@ -119,7 +119,7 @@ $api_reference = [
       "return" => false,
     ],
     "spry.platform" => [
-      "desc" => "Returns the platform as a string. One of `html5`, `windows`, or `linux`",
+      "desc" => "Returns the platform as a string. One of `html5`, `windows`, or `linux`.",
       "example" => "
         if spry.platform() ~= 'html5' then
           display_quit_button()
@@ -1364,7 +1364,7 @@ $api_reference = [
         end
       ",
       "args" => [
-        "value" => ["string", "The file to include"],
+        "file" => ["string", "The file to include."],
       ],
       "return" => "any",
     ],
@@ -1661,6 +1661,7 @@ $api_reference = [
 ?>
 <div class="mw8 center">
   <div
+    x-cloak
     x-data="{
       search: '',
       sections:
@@ -1724,9 +1725,10 @@ $api_reference = [
         id="search"
         x-model="search"
         autocomplete="off"
-        class="input-reset shadow-sm ba b--black-20 dm-b--white-20 placeholder black dm-white br2 pv1 pl4 pr2 w-100 bg-white dm-bg-black"
+        class="input-reset shadow-sm ba b--black-20 dm-b--white-20 placeholder black dm-white br2 pv2 pl4 pr2 w-100 bg-white dm-bg-black"
         type="text"
         placeholder="Search"
+        style="outline-offset: 2px"
       />
     </form>
     <ul class="list pl1 mt0" style="margin-top: -1rem">

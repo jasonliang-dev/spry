@@ -59,7 +59,7 @@ $examples = [
 </div>
 
 <div class="mw8 center">
-  <h4 class="mt3">Hello, World!</h4>
+  <h4 class="mt4">Hello, World!</h4>
   <?php code("
     function spry.start()
       font = spry.font_load 'roboto.ttf'
@@ -70,7 +70,8 @@ $examples = [
     end
   ") ?>
 
-  <h4 class="mt3">Draw a moving image</h4>
+  <h4 class="mt4">Moving image</h4>
+  <p>Load an image and move it to the left over time.</p>
   <?php code("
     function spry.start()
       img = spry.image_load 'tile.png'
@@ -83,32 +84,36 @@ $examples = [
     end
   ") ?>
 
-  <h4 class="mt3">Player movement with keyboard</h4>
+  <h4 class="mt4">Integration with other programs</h4>
+  <p>Load Aseprite, LDtk, and rTexPacker files directly.</p>
+  <p></p>
   <?php code("
-    class 'Player'
+    function startup()
+      -- load an aseprite file
+      sprite = spry.sprite_load 'player.ase'
 
-    function Player:new(x, y, img)
-      self.x = x
-      self.y = y
-      self.img = img
+      -- load a tilemap
+      tilemap = spry.tilemap_load 'world.ldtk'
+
+      -- load a texture atlas
+      atlas = spry.atlas_load 'atlas.rtpa'
     end
 
-    function Player:update(dt)
-      local vx, vy = 0, 0
-
-      if spry.key_down 'w' then vy = vy - 1 end
-      if spry.key_down 's' then vy = vy + 1 end
-      if spry.key_down 'a' then vx = vx - 1 end
-      if spry.key_down 'd' then vx = vx + 1 end
-
-      local move_speed = 200
-      vx, vy = normalize(vx, vy)
-      self.x = self.x + vx * move_speed * dt
-      self.y = self.y + vy * move_speed * dt
+    function update(dt)
+      -- update sprite animation
+      sprite:update(dt)
     end
 
-    function Player:draw()
-      self.img:draw(self.x, self.y)
+    function draw()
+      -- draw sprite
+      sprite:draw(x, y, angle, 1, 1, sprite:width() / 2, sprite:height() / 2)
+
+      -- draw tilemap
+      tilemap:draw()
+
+      -- draw a subsection of a texture atlas
+      img = atlas:get_image 'arrow'
+      img:draw(x, y, angle, 1, 1, img:width() / 2, img:height() / 2)
     end
   ") ?>
 

@@ -50,7 +50,7 @@ function render(string $page) {
   global $pages;
   ?>
   <!DOCTYPE html>
-  <html lang="en" style="scroll-behavior: smooth">
+  <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,129 +75,7 @@ function render(string $page) {
       <?php endif ?>
       Spry
     </title>
-    <style>
-      body {
-        font-family: "Poppins", sans-serif;
-      }
-
-      code {
-        font-family: "Roboto Mono", monospace;
-        font-size: 0.95em;
-      }
-
-      pre > code {
-        line-height: 1.25;
-      }
-
-      .shadow {
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-      }
-
-      .shadow-sm {
-        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      }
-
-      h1, h2, h3, h4, h5, h6 {
-        margin: 0;
-      }
-
-      .break-words {
-        overflow-wrap: break-word;
-      }
-
-      .bg-off-white {
-        background-color: #fafafa;
-      }
-
-      .dark-mode .dm-dn {
-        display: none;
-      }
-
-      .dark-mode .dm-dib {
-        display: inline-block;
-      }
-
-      .prose h1,
-      .prose h2,
-      .prose h3,
-      .prose h4,
-      .prose h5,
-      .prose h6 {
-        margin-top: 2rem;
-        margin-bottom: 0.5rem;
-      }
-
-      @media screen and (min-width: 60em) {
-        .ml-300px-l {
-          margin-left: 300px;
-        }
-      }
-
-      .prose p {
-        line-height: 1.5;
-      }
-
-      .prose ul,
-      .prose ol {
-        padding-left: 1rem;
-      }
-
-      .prose li {
-        line-height: 1.5;
-      }
-
-      .prose li > p {
-        margin-top: 0;
-        margin-bottom: 0.5rem;
-      }
-
-      .prose a {
-        color: #357EDD;
-        text-decoration: none;
-      }
-
-      .prose a:hover, .prose a:focus {
-        text-decoration: underline;
-      }
-
-      .prose :not(pre) > code {
-        background-color: rgba(0, 0, 0, 0.05);
-        padding-left: 0.2rem;
-        padding-right: 0.2rem;
-        border-radius: 0.25rem;
-      }
-
-      .dark-mode .prose :not(pre) > code {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-
-      .prose pre > code {
-        border-radius: 0.5rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-      }
-
-      .dark-mode .prose pre > code {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .bg-fade-down {
-        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #f4f4f4 50%);
-      }
-
-      .dark-mode .bg-fade-down {
-        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #111111 50%);
-      }
-
-      .placeholder::placeholder {
-        color: #000000;
-        opacity: 0.5;
-      }
-
-      .dark-mode .placeholder::placeholder {
-        color: #ffffff;
-        opacity: 0.5;
-      }
-    </style>
+    <link rel="stylesheet" href="static/style.css">
     <script>
       const doc = document.documentElement
       const prefersDark = localStorage.theme === undefined && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -246,6 +124,7 @@ function render(string $page) {
                 </svg>
               </button>
               <ul
+                x-cloak
                 x-show="open"
                 @click.outside="open = false"
                 class="absolute right-0 list shadow-sm ba pv1 b--black-10 dm-b--white-10 pl0 mv0 bg-white dm-bg-near-black nowrap br2"
