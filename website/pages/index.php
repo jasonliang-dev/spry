@@ -15,6 +15,10 @@ $examples = [
     "video" => "example-dungeon.webm",
     "link" => "https://github.com/jasonliang-dev/spry/tree/master/examples/dungeon",
   ],
+  "Jump" => [
+    "video" => "example-jump.webm",
+    "link" => "https://github.com/jasonliang-dev/spry/tree/master/examples/jump",
+  ],
   "Physics" => [
     "video" => "example-physics.webm",
     "link" => "https://github.com/jasonliang-dev/spry/tree/master/examples/boxes",
@@ -41,10 +45,10 @@ $examples = [
   </a>
 </div>
 
-<div class="mw9 center pv2">
+<div class="mw8 center pv2">
   <div class="flex flex-wrap na2">
     <?php foreach ($examples as $title => $example): ?>
-      <div class="pa2 w-100 w-50-m w-third-l">
+      <div class="pa2 w-100 w-50-ns">
         <a href="<?= $example["link"] ?>" class="dib relative z-0 hide-child br3 ba b--black-10 db-b--white-10">
           <div class="absolute absolute--fill child flex items-center justify-center br3 bg-black-40 white">
             <h3><?= $title ?></h3>
