@@ -75,6 +75,7 @@ static void init() {
 
   saudio_desc saudio = {};
   saudio.logger.func = slog_func;
+  saudio.num_channels = 2;
   saudio.allocator.alloc = sokol_alloc;
   saudio.allocator.free = sokol_free;
   saudio_setup(saudio);

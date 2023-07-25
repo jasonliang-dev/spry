@@ -117,34 +117,30 @@ static int open_mt_font(lua_State *L) {
 // mt_audio
 
 static int mt_audio_gc(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_audio");
-  u64 index = *udata;
-
-  index = index - 1;
-
-  drop(&g_app->audio_sources.waves[index]);
-  g_app->audio_sources.waves[index] = {};
+  i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
+  if (*udata != -1) {
+    drop(&g_app->audio_sources, *udata);
+    *udata = -1;
+  }
   return 0;
 }
 
 static int mt_audio_play(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_audio");
-  u64 index = *udata;
+  i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
+  audio_play(&g_app->audio_sources, *udata);
+  return 0;
+}
 
-  index = index - 1;
-
-  AudioSource src;
-  src.index = (i32)index;
-  src.cursor = 0;
-  push(&g_app->audio_sources.playing, src);
-
+static int mt_audio_play_loop(lua_State *L) {
+  i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
+  audio_play_loop(&g_app->audio_sources, *udata);
   return 0;
 }
 
 static int open_mt_audio(lua_State *L) {
   luaL_Reg reg[] = {
-      {"__gc", mt_audio_gc},
-      {"play", mt_audio_play},
+      {"__gc", mt_audio_gc},   {"destroy", mt_audio_gc},
+      {"play", mt_audio_play}, {"play_loop", mt_audio_play_loop},
       {nullptr, nullptr},
   };
 
@@ -1482,15 +1478,12 @@ static int font_load(lua_State *L) {
 static int audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  AudioWave wave;
-  bool ok = audio_wave_load(&wave, &g_app->archive, str);
-  if (!ok) {
+  i64 index = audio_load(&g_app->audio_sources, &g_app->archive, str);
+  if (index == -1) {
     return 0;
   }
 
-  push(&g_app->audio_sources.waves, wave);
-  u64 len = g_app->audio_sources.waves.len;
-  luax_newuserdata(L, len, "mt_audio");
+  luax_newuserdata(L, index, "mt_audio");
   return 1;
 }
 

@@ -482,9 +482,24 @@ $api_reference = [
       ],
       "return" => "Audio",
     ],
+    "Audio:destroy" => [
+      "desc" => "Immediately stop playing a sound.",
+      "example" => "click_sound:destroy()",
+      "args" => [],
+      "return" => false,
+    ],
     "Audio:play" => [
       "desc" => "Play a sound.",
       "example" => "click_sound:play()",
+      "args" => [],
+      "return" => false,
+    ],
+    "Audio:play_loop" => [
+      "desc" => "
+        Play a sound that loops back to the start. Suitable for background
+        music.
+      ",
+      "example" => "music:play_loop()",
       "args" => [],
       "return" => false,
     ],
