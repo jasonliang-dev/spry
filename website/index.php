@@ -42,7 +42,7 @@ function article(callable $fn) {
   $fn();
   $contents = ob_get_clean();
   ?>
-  <div class="mw8 center prose pt3"><?= Parsedown::instance()->text($contents) ?></div>
+  <div class="mw7 center prose pt3"><?= Parsedown::instance()->text($contents) ?></div>
   <?php
 }
 
