@@ -2,7 +2,7 @@
 
 function code(string $code) {
   ?>
-  <pre><code class="language-lua shadow-sm br3 ba b--black-10 dm-b--white-10"><?= multiline_trim($code) ?></code></pre>
+  <pre><code class="language-lua br3 ba b--black-10 dm-b--white-10"><?= multiline_trim($code) ?></code></pre>
   <?php
 }
 
@@ -77,7 +77,7 @@ $features = [
     and game jams. Inspired by
     <a class="blue link underline-hover" href="https://love2d.org/">LÖVE</a>.
   </p>
-  <a class="mb2 bg-blue white ba b--black-10 b br2 ph3 pv2 link underline-hover inline-flex items-center" href="quick-start.html">
+  <a class="mb2 mr2 bg-blue white ba b--black-10 b br2 ph3 pv2 link underline-hover inline-flex items-center" href="quick-start.html">
     Get started with Spry
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
       <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
@@ -94,16 +94,24 @@ $features = [
     <?php foreach ($examples as $title => $example): ?>
       <div class="pa2 w-100 w-50-ns">
         <div href="<?= $example["link"] ?>" class="dib br3 shadow-sm ba b--black-10 dm-b--white-20">
-          <video autoplay muted loop class="w-100 db br3 br--top">
-            <source src="static/<?= $example["video"] ?>" type="video/webm">
-          </video>
+          <div class="relative">
+            <div
+              class="absolute absolute--fill flex justify-start items-end white pa3 pa4-l f3"
+              style="background: linear-gradient(5deg, rgb(6.667% 6.667% 6.667% / 0.75) 0%, rgb(5.493% 5.493% 5.493% / 0.61798095703125) 6.25%, rgb(4.466% 4.466% 4.466% / 0.50244140625) 12.5%, rgb(3.576% 3.576% 3.576% / 0.40228271484375) 18.75%, rgb(2.812% 2.812% 2.812% / 0.31640625) 25%, rgb(2.166% 2.166% 2.166% / 0.24371337890625) 31.25%, rgb(1.628% 1.628% 1.628% / 0.18310546875) 37.5%, rgb(1.187% 1.187% 1.187% / 0.13348388671875) 43.75%, rgb(0.833% 0.833% 0.833% / 0.09375) 50%, rgb(0.558% 0.558% 0.558% / 0.06280517578125) 56.25%, rgb(0.352% 0.352% 0.352% / 0.03955078125) 62.5%, rgb(0.203% 0.203% 0.203% / 0.02288818359375) 68.75%, rgb(0.104% 0.104% 0.104% / 0.01171875) 75%, rgb(0.044% 0.044% 0.044% / 0.00494384765625) 81.25%, rgb(0.013% 0.013% 0.013% / 0.00146484375) 87.5%, rgb(0.002% 0.002% 0.002% / 0.00018310546875) 93.75%, rgb(0% 0% 0% / 0) 100% );"
+            >
+              <?= $title ?>
+            </div>
+            <video autoplay muted loop class="w-100 db br3 br--top">
+              <source src="static/<?= $example["video"] ?>" type="video/webm">
+            </video>
+          </div>
           <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex">
             <a class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center" href="<?= $example["play"] ?>">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
                 <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
                 <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
               </svg>
-              <span class="ml2">
+              <span class="ml2" style="margin-top: 1px">
                 Play Demo
               </span>
             </a>
@@ -111,7 +119,7 @@ $features = [
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
                 <path fill-rule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z" clip-rule="evenodd" />
               </svg>
-              <span class="ml2">
+              <span class="ml2" style="margin-top: 1px">
                 Read Code
               </span>
             </a>
