@@ -72,6 +72,7 @@ static int mt_font_gc(lua_State *L) {
 
   if (font != g_app->default_font) {
     drop(font);
+    mem_free(font);
   }
   return 0;
 }
