@@ -361,29 +361,51 @@ static int require_lua_script(lua_State *L) {
 }
 
 #ifdef __EMSCRIPTEN__
-EM_ASYNC_JS(char *, web_mount_fs, (), {
-  let jobs = [];
+EM_JS(char *, web_mount_dir, (), { return stringToNewUTF8(spryMount); });
+
+EM_ASYNC_JS(void, web_load_zip, (), {
+  var dirs = spryMount.split('/');
+  dirs.pop();
+
+  var path = [];
+  for (var dir of dirs) {
+    path.push(dir);
+    FS.mkdir(path.join('/'));
+  }
+
+  await fetch(spryMount).then(async function(res) {
+    if (!res.ok) {
+      throw new Error('failed to fetch ' + spryMount);
+    }
+
+    var data = await res.arrayBuffer();
+    FS.writeFile(spryMount, new Uint8Array(data));
+  });
+});
+
+EM_ASYNC_JS(void, web_load_files, (), {
+  var jobs = [];
 
   function spryWalkFiles(files, leading) {
-    let path = leading.join('/');
+    var path = leading.join('/');
     if (path != '') {
       FS.mkdir(path);
     }
 
-    for (let entry of Object.entries(files)) {
-      let key = entry[0];
-      let value = entry[1];
-      let filepath = [... leading, key ];
+    for (var entry of Object.entries(files)) {
+      var key = entry[0];
+      var value = entry[1];
+      var filepath = [... leading, key ];
       if (typeof value == 'object') {
         spryWalkFiles(value, filepath);
       } else if (value == 1) {
-        let file = filepath.join('/');
+        var file = filepath.join('/');
 
-        let job = fetch(file).then(async function(res) {
+        var job = fetch(file).then(async function(res) {
           if (!res.ok) {
             throw new Error('failed to fetch ' + file);
           }
-          let data = await res.arrayBuffer();
+          var data = await res.arrayBuffer();
           FS.writeFile(file, new Uint8Array(data));
         });
 
@@ -394,7 +416,6 @@ EM_ASYNC_JS(char *, web_mount_fs, (), {
   spryWalkFiles(spryFiles, []);
 
   await Promise.all(jobs);
-  return stringToNewUTF8(spryMountDir);
 });
 #endif
 
@@ -405,8 +426,6 @@ static int string_cmp(const void *a, const void *b) {
 }
 
 sapp_desc sokol_main(int argc, char **argv) {
-  bool ok;
-
   g_app = (App *)mem_alloc(sizeof(App));
   *g_app = {};
 
@@ -437,45 +456,42 @@ sapp_desc sokol_main(int argc, char **argv) {
     panic("failed to run bootstrap");
   }
 
+  bool ok = false;
+
 #ifdef __EMSCRIPTEN__
-  char *mount_dir = web_mount_fs();
-  defer(free(mount_dir));
+  String mount_dir = web_mount_dir();
+  defer(free(mount_dir.data));
 
-  ok = load_filesystem_archive(&g_app->archive, mount_dir);
-  if (!ok) {
-    panic("failed to mount archive");
+  if (ends_with(mount_dir, ".zip")) {
+    web_load_zip();
+    ok = load_zip_archive(&g_app->archive, mount_dir);
+  } else {
+    web_load_files();
+    ok = load_filesystem_archive(&g_app->archive, mount_dir);
   }
-
-  g_app->mounted = true;
 #else
   if (argc == 1) {
     String path = program_path();
     printf("program path: %s\n", path.data);
     ok = load_zip_archive(&g_app->archive, path);
-    if (ok) {
-      g_app->mounted = true;
-    }
   } else if (argc == 2) {
-    String mount_path = {argv[1], strlen(argv[1])};
-    if (ends_with(mount_path, ".zip")) {
-      ok = load_zip_archive(&g_app->archive, mount_path);
-    } else {
-      ok = load_filesystem_archive(&g_app->archive, mount_path);
-    }
+    String mount_dir = argv[1];
 
-    if (!ok) {
-      StringBuilder sb = string_builder_make();
-      defer(drop(&sb));
-
-      format(&sb, "failed to mount: %s", argv[1]);
-      fatal_error(as_string(&sb));
+    if (ends_with(mount_dir, ".zip")) {
+      ok = load_zip_archive(&g_app->archive, mount_dir);
     } else {
-      g_app->mounted = true;
+      ok = load_filesystem_archive(&g_app->archive, mount_dir);
     }
   }
 #endif
 
-  if (g_app->mounted) {
+  if (!ok) {
+    StringBuilder sb = string_builder_make();
+    defer(drop(&sb));
+
+    format(&sb, "failed to mount: %s", argv[1]);
+    fatal_error(as_string(&sb));
+  } else {
     Array<String> files = {};
     defer({
       for (String str : files) {

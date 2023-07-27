@@ -8,7 +8,6 @@ struct App {
   u64 time_begin;
   double delta_time;
 
-  bool mounted;
   Archive archive;
 
   FontFamily *default_font;
