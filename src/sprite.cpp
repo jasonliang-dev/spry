@@ -38,17 +38,20 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
     memcpy(pixels.data + (i * rect), &frame.pixels[0].r, rect);
   }
 
-  sg_image_desc sg_image = {};
-  sg_image.width = ase->w;
-  sg_image.height = ase->h * ase->frame_count;
-  sg_image.data.subimage[0][0].ptr = pixels.data;
-  sg_image.data.subimage[0][0].size = ase->frame_count * rect;
-  u32 id = sg_make_image(sg_image).id;
+  sg_image_desc desc = {};
+  desc.width = ase->w;
+  desc.height = ase->h * ase->frame_count;
+  desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+  desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+  desc.wrap_w = SG_WRAP_CLAMP_TO_EDGE;
+  desc.data.subimage[0][0].ptr = pixels.data;
+  desc.data.subimage[0][0].size = ase->frame_count * rect;
+  u32 id = sg_make_image(desc).id;
 
   Image img = {};
   img.id = id;
-  img.width = sg_image.width;
-  img.height = sg_image.height;
+  img.width = desc.width;
+  img.height = desc.height;
 
   HashMap<SpriteLoop> by_tag;
   reserve(&by_tag, hash_map_reserve_size((u64)ase->tag_count));
