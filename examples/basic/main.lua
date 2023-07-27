@@ -7,10 +7,6 @@ function spry.start()
 end
 
 function spry.frame(dt)
-  if spry.key_down "esc" then
-    spry.quit()
-  end
-
   player:update(dt)
   player:draw()
 

@@ -39,7 +39,7 @@ function spry.start()
 end
 
 function spry.frame(dt)
-  if spry.key_down "esc" then
+  if spry.platform() ~= "html5" and spry.key_down "esc" then
     spry.quit()
   end
 
@@ -67,9 +67,9 @@ function spry.frame(dt)
     end
   camera:end_draw()
 
-  font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+  -- font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
 
-  local mx, my = spry.mouse_pos()
-  local dx, dy = spry.mouse_delta()
-  font:draw(("(%.2f, %.2f) (%.2f, %.2f)"):format(mx, my, dx, dy), 0, 24)
+  -- local mx, my = spry.mouse_pos()
+  -- local dx, dy = spry.mouse_delta()
+  -- font:draw(("(%.2f, %.2f) (%.2f, %.2f)"):format(mx, my, dx, dy), 0, 24)
 end

@@ -43,7 +43,7 @@ function spry.frame(dt)
   camera:end_draw()
 
   spry.push_color(0, 0, 0, 255)
-    font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+    -- font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
 
     local text_size = 80
     local text = ("%.0f"):format(-max_height)

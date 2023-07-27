@@ -1,8 +1,8 @@
 function spry.conf(t)
+  t.swap_interval = 0
   t.window_width = 1366
   t.window_height = 768
   t.window_title = "Plane Game"
-  t.swap_interval = 0
 end
 
 function spry.start()
@@ -18,7 +18,7 @@ function spry.start()
 end
 
 function spry.frame(dt)
-  if spry.key_down "esc" then
+  if spry.platform() ~= "html5" and spry.key_down "esc" then
     spry.quit()
   end
 

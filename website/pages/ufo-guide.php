@@ -1,6 +1,6 @@
 <?php article(function () { ?>
 
-# UFO Demo
+# UFO Game
 
 <video controls class="w-100 mw7 center db">
   <source src="static/ufo-demo.webm" type="video/webm">

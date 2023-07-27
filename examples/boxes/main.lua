@@ -1,5 +1,5 @@
 function spry.conf(t)
-  t.swap_interval = 0
+  t.swap_interval = 1
   t.window_width = 1280
   t.window_height = 720
 end
@@ -85,7 +85,7 @@ function spry.start()
 end
 
 function spry.frame(dt)
-  if spry.key_down "esc" then
+  if spry.platform() ~= "html5" and spry.key_down "esc" then
     spry.quit()
   end
 
@@ -127,6 +127,6 @@ function spry.frame(dt)
     spry.pop_color()
   spry.pop_matrix()
 
-  font:draw("Left click: box, Right click: ball", 10, 10)
-  font:draw(("fps: %.2f"):format(1 / dt, dt * 1000), 10, 26)
+  -- font:draw("Left click: box, Right click: ball", 10, 10)
+  -- font:draw(("fps: %.2f"):format(1 / dt, dt * 1000), 10, 26)
 end

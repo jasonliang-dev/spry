@@ -1721,7 +1721,7 @@ $api_reference = [
       },
     }"
     class="dn db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden"
-    style="width: 300px; top: <?= $nav_height ?>"
+    style="width: 300px; top: <?= data()->nav_height ?>"
   >
     <form
       @submit.prevent="e => {
@@ -1749,7 +1749,7 @@ $api_reference = [
     <ul class="list pl1 mt0" style="margin-top: -1rem">
       <template x-for="{header, list} in filtered" :key="header">
         <li>
-          <span class="dib b mt3 mb2" x-text="header"></span>
+          <span class="dib fw6 mt3 mb2" x-text="header"></span>
           <ul class="list pl0 mt0">
             <template x-for="{name, fn} in list" :key="name">
               <li class="pv2">
@@ -1768,7 +1768,7 @@ $api_reference = [
       <?php foreach ($section as $name => $func): ?>
         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="<?= $name ?>" style="position: relative; top: -5rem"></span>
-          <p class="mv0 f6 b gray">
+          <p class="mv0 f6 fw6 gray">
             <?= $header ?>
           </p>
           <h2 class="mb2">
