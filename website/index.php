@@ -253,6 +253,7 @@ function render(string $page) {
                 x-cloak
                 x-show="open"
                 @click.outside="open = false"
+                x-transition.opacity.scale.origin.top.right
                 class="absolute right-0 list shadow-sm ba pv1 b--black-10 dm-b--white-10 pl0 mv0 bg-white dm-bg-near-black nowrap br2"
               >
                 <?php foreach (data()->guides as $name => $title): ?>

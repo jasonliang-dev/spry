@@ -132,3 +132,19 @@ input:focus {
   color: #ffffff;
   opacity: 0.5;
 }
+
+.video-overlay {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.video-overlay video {
+  transition: transform 150ms;
+}
+
+.video-overlay:focus video,
+.video-overlay:hover video {
+  transform: scale(1.05);
+}

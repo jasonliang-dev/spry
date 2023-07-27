@@ -71,17 +71,17 @@ $features = [
     <?php foreach (data()->demos as $title => $demo): ?>
       <div class="pa2 w-100 w-50-ns">
         <div class="br3 shadow-sm ba b--black-10 dm-b--white-20">
-          <div class="relative" style="aspect-ratio: 4 / 3;">
+          <a href="<?= $demo["page"] ?>.html" class="video-overlay">
             <div
-              class="absolute absolute--fill flex justify-start items-end white pa3 pa4-l f3 fw6"
+              class="absolute z-1 absolute--fill flex justify-start items-end white pa3 pa4-l f3 fw6"
               style="background: linear-gradient(5deg, rgb(6.667% 6.667% 6.667% / 0.75) 0%, rgb(5.493% 5.493% 5.493% / 0.61798095703125) 6.25%, rgb(4.466% 4.466% 4.466% / 0.50244140625) 12.5%, rgb(3.576% 3.576% 3.576% / 0.40228271484375) 18.75%, rgb(2.812% 2.812% 2.812% / 0.31640625) 25%, rgb(2.166% 2.166% 2.166% / 0.24371337890625) 31.25%, rgb(1.628% 1.628% 1.628% / 0.18310546875) 37.5%, rgb(1.187% 1.187% 1.187% / 0.13348388671875) 43.75%, rgb(0.833% 0.833% 0.833% / 0.09375) 50%, rgb(0.558% 0.558% 0.558% / 0.06280517578125) 56.25%, rgb(0.352% 0.352% 0.352% / 0.03955078125) 62.5%, rgb(0.203% 0.203% 0.203% / 0.02288818359375) 68.75%, rgb(0.104% 0.104% 0.104% / 0.01171875) 75%, rgb(0.044% 0.044% 0.044% / 0.00494384765625) 81.25%, rgb(0.013% 0.013% 0.013% / 0.00146484375) 87.5%, rgb(0.002% 0.002% 0.002% / 0.00018310546875) 93.75%, rgb(0% 0% 0% / 0) 100% );"
             >
               <?= $title ?>
             </div>
-            <video autoplay muted loop class="w-100 db br3 br--top">
+            <video autoplay muted loop class="w-100 z-0 db br3 br--top">
               <source src="<?= $demo["video"] ?>" type="video/webm">
             </video>
-          </div>
+          </a>
           <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex">
             <a
               class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
@@ -120,7 +120,7 @@ $features = [
     <div class="w-100 w-50-l">
       <?php foreach ($features as $title => $feature): ?>
         <button
-          class="flex mb4 br3 pa3 ba tl w-100"
+          class="flex mb4 br3 pa3 ba tl w-100 bg-animate"
           :class="
             selected === '<?= $title ?>'
               ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
@@ -141,10 +141,10 @@ $features = [
         </button>
       <?php endforeach ?>
     </div>
-    <div class="w-100 w-50-l">
+    <div class="w-100 w-50-l relative" style="min-height: 480px">
       <?php foreach ($features as $title => $feature): ?>
-        <div x-show="selected === '<?= $title ?>'">
-          <img src="/static/<?= $feature["img"] ?>" alt="">
+        <div class="absolute absolute--fill" x-show="selected === '<?= $title ?>'" x-transition>
+          <img src="/static/<?= $feature["img"] ?>" alt="" class="mw6 center w-100 db">
         </div>
       <?php endforeach ?>
     </div>
