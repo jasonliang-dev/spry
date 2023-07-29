@@ -9,8 +9,8 @@ When you run the program, you'll see a window with the text: `No game!`.
 
 To make your first game:
 
-- Create a new folder
-- Create a new file called `main.lua` in the new folder
+- Create a new folder.
+- Create a new file called `main.lua` in the new folder.
 - Open `main.lua` in a text editor.
   [Sublime Text](https://www.sublimetext.com/),
   [Notepad++](https://notepad-plus-plus.org/),
@@ -32,13 +32,14 @@ To make your first game:
 ## Running Your Game
 
 The simplest way to load and run your project is to drag and drop the folder
-you created to `spry.exe`. You can also run the program from the console:
+you created onto `spry.exe`. You can also run the program from the console:
 
 ```plaintext
 C:\path\to\spry.exe my_folder
 ```
 
-You've successfully created your first game using Spry!
+A window should open with the text `Hello World!`. You've successfully created
+your first game using Spry!
 
 <?php });
 
@@ -86,7 +87,7 @@ $cards = [
       <div class="w-100 w-50-l pa2">
         <div class="bg-white dm-bg-white-10 br3 ba b--black-10 dm-b--white-20 pa3 shadow-sm">
           <h3><?= $title ?></h3>
-          <p class="mid-gray dm-silver lh-copy">
+          <p class="mid-gray dm-light-silver lh-copy">
             <?= $card["text"] ?>
           </p>
           <a href="<?= $card["link"] ?>" class="inline-flex items-center blue link underline-hover">

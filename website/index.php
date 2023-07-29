@@ -53,7 +53,7 @@ class Data {
         "width" => 500,
         "height" => 700,
         "text" => "
-          `A` and `S` to move left/right
+          `A` and `D` to move left/right
         ",
       ],
       "Physics" => [

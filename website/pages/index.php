@@ -82,7 +82,7 @@ $code_examples = [
     ",
   ],
   [
-    "text" => "Load an Aseprite file and display sprite animation.",
+    "text" => "Load an Aseprite file and display a sprite animation.",
     "image" => false,
     "video" => "static/code-ase.webm",
     "code" => "
@@ -114,10 +114,10 @@ $code_examples = [
     <a class="blue link underline-hover" href="https://love2d.org/">LÖVE</a>.
   </h1>
   <a
-    class="mb2 mr3 shadow bg-blue hover-bg-dark-blue white br-pill ph3 pv2 bg-animate no-underline inline-flex items-center"
+    class="mb2 mr3 shadow bg-blue hover-bg-dark-blue white br-pill ph4 pv2 bg-animate no-underline inline-flex items-center"
     href="quick-start.html"
   >
-    Get started
+    <span style="margin-top: 2px">Get started</span>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
       <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
     </svg>
@@ -126,7 +126,7 @@ $code_examples = [
     class="inline-flex items-center dark-gray dm-light-silver link underline-hover"
     href="https://github.com/jasonliang-dev/spry"
   >
-    View on GitHub
+    <span style="margin-top: 2px">View on GitHub</span>
     <svg class="ml2" width="20" height="20" viewBox="0 0 98 96" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>
   </a>
 </div>
@@ -179,9 +179,23 @@ $code_examples = [
 </div>
 
 <div class="mw8 center mt5">
-  <h2>Features</h2>
+  <div class="w-100 w-50-l ml-auto pl3">
+    <h2>Features</h2>
+    <p class="lh-copy mid-gray dm-silver mw6">
+      Spry&#39;s features exist to improve development speed, reducing the
+      time it takes to tweak, experiment, and iterate during the early stages
+      of your project.
+    </p>
+  </div>
 
   <div x-cloak x-data="{ selected: 0 }" class="flex flex-wrap mt4">
+    <div class="w-100 w-50-l" style="height: 490px">
+      <?php foreach ($features as $i => $feature): ?>
+        <div x-show="selected === <?= $i ?>" x-transition:enter>
+          <img src="<?= $feature["img"] ?>" alt="" class="mw6 w-100 db">
+        </div>
+      <?php endforeach ?>
+    </div>
     <div class="w-100 w-50-l">
       <?php foreach ($features as $i => $feature): ?>
         <button
@@ -189,27 +203,20 @@ $code_examples = [
           :class="
             selected === <?= $i ?>
               ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
-              : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-40'
+              : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-90'
           "
           @click="selected = <?= $i ?>"
         >
           <?= $feature["icon"] ?>
           <div class="pl3 mt1">
             <h4 class="black dm-light-gray"><?= $feature["text"] ?></h4>
-            <p class="lh-copy mv0 mw7">
-              <span class="mid-gray dm-silver db mt2">
+            <p class="lh-copy mv0" style="max-width: 65ch">
+              <span class="mid-gray dm-light-silver db mt2">
                 <?= $feature["desc"] ?>
               </span>
             </p>
           </div>
         </button>
-      <?php endforeach ?>
-    </div>
-    <div class="w-100 w-50-l">
-      <?php foreach ($features as $i => $feature): ?>
-        <div x-show="selected === <?= $i ?>" x-transition:enter>
-          <img src="<?= $feature["img"] ?>" alt="" class="mw6 center w-100 db">
-        </div>
       <?php endforeach ?>
     </div>
   </div>
@@ -220,9 +227,9 @@ $code_examples = [
 
   <?php foreach ($code_examples as $example): ?>
     <p><?= $example["text"] ?></p>
-    <div class="flex flex-wrap mb5">
-      <pre class="flex-auto mv0 mr3"><code class="language-lua br3 ba b--black-10 dm-b--white-10"><?= multiline_trim($example["code"]) ?></code></pre>
-        <div style="width: 300px" class="ml-auto">
+    <div class="flex flex-wrap flex-nowrap-l mb5">
+      <pre class="w-100 mt0 mb3 mb0-l mr3-l"><code class="language-lua br3 ba b--black-10 dm-b--white-10"><?= multiline_trim($example["code"]) ?></code></pre>
+      <div style="width: 300px" class="flex-none">
         <?php if ($example["image"]): ?>
           <img src="<?= $example["image"] ?>" alt="" class="mw6 center w-100 db br3">
         <?php elseif ($example["video"]): ?>
