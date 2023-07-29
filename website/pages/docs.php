@@ -33,10 +33,11 @@ $b2body_def = [
   "t" => ["table", "Body definition."],
   " .x" => ["number", "The x position of the physics body."],
   " .y" => ["number", "The y position of the physics body."],
-  " .vx" => ["number", "The x velocity of the physics body."],
-  " .vy" => ["number", "The y velocity of the physics body."],
+  " .vx" => ["number", "The x velocity of the physics body.", 0],
+  " .vy" => ["number", "The y velocity of the physics body.", 0],
   " .angle" => ["number", "The angle of the physics body in radians.", 0],
-  " .fixed_rotation" => ["boolean", "If true, prevent the physics body from rotating.", 0],
+  " .linear_damping" => ["number", "The linear damping of the physics body.", 0],
+  " .fixed_rotation" => ["boolean", "If true, prevent the physics body from rotating.", "false"],
   " .udata" => ["string", "Custom user data for this body.", "nil"],
 ];
 
@@ -649,104 +650,6 @@ $api_reference = [
       "args" => [],
       "return" => false,
     ],
-    "Tilemap:grid_begin" => [
-      "desc" => "Prepare a tilemap layer for collision checks.",
-      "example" => "
-        tilemap:grid_begin 'Collision'
-        if not tilemap:rect_every(0, x0, y0, x1, y1) then
-          collision = true
-        end
-        tilemap:grid_end()
-      ",
-      "args" => [
-        "layer" => ["string", "The name of the layer."],
-      ],
-      "return" => false,
-    ],
-    "Tilemap:grid_end" => [
-      "desc" => "
-        Stop tilemap layer collision check. You should have a matching
-        `grid_end` for every `grid_begin`.
-      ",
-      "example" => "
-        tilemap:grid_begin 'Collision'
-        if not tilemap:rect_every(0, x0, y0, x1, y1) then
-          collision = true
-        end
-        tilemap:grid_end()
-      ",
-      "args" => [],
-      "return" => false,
-    ],
-    "Tilemap:grid_value" => [
-      "desc" => "Get the IntGrid value at a point in the tilemap.",
-      "example" => "
-        local LAVA_TILE = 5
-        if tilemap:grid_value(x, y) == LAVA_TILE then
-          self.lava_damage = 1
-        end
-      ",
-      "args" => [
-        "x" => ["number", "The x position in the map."],
-        "y" => ["number", "The y position in the map."],
-      ],
-      "return" => "number",
-    ],
-    "Tilemap:grid_rect" => [
-      "desc" => "
-        Given a rectangle, return the IntGrid value at the four corners of the
-        rectangle.
-      ",
-      "example" => "
-        local x0, y0 = x, y
-        local x1, y1 = x + w, y + h
-        local top_left, top_right, bot_left, bot_right = tilemap:grid_rect(x0, y0, x1, y1)
-      ",
-      "args" => [
-        "x0" => ["number", "The left position of the rectangle."],
-        "y0" => ["number", "The top position of the rectangle."],
-        "x1" => ["number", "The right position of the rectangle."],
-        "y1" => ["number", "The bottom position of the rectangle."],
-      ],
-      "return" => "number, number, number, number",
-    ],
-    "Tilemap:rect_every" => [
-      "desc" => "
-        Returns true if every IntGrid value in a rectangle area is the same as
-        the given value.
-      ",
-      "example" => "
-        local WALKABLE = 0
-        if not tilemap:rect_every(WALKABLE, x0, y0, x1, y1) then
-          collision = true
-        end
-      ",
-      "args" => [
-        "needle" => ["number", "The value to check."],
-        "x0" => ["number", "The left position of the rectangle."],
-        "y0" => ["number", "The top position of the rectangle."],
-        "x1" => ["number", "The right position of the rectangle."],
-        "y1" => ["number", "The bottom position of the rectangle."],
-      ],
-      "return" => "boolean",
-    ],
-    "Tilemap:rect_has" => [
-      "desc" => "Returns true if a given IntGrid value exists in a rectangle area.",
-      "example" => "
-        local WALL = 1
-        if tilemap:rect_has(WALL, x0, y0, x1, y1) then
-          collision = true
-        end
-      ",
-      "args" => [
-        "needle" => ["number", "The value to check."],
-        "x0" => ["number", "The left position of the rectangle."],
-        "y0" => ["number", "The top position of the rectangle."],
-        "x1" => ["number", "The right position of the rectangle."],
-        "y1" => ["number", "The bottom position of the rectangle."],
-      ],
-      "return" => "boolean",
-    ],
     "Tilemap:entities" => [
       "desc" => "Returns a list of entities for a tilemap.",
       "example" => "
@@ -764,6 +667,36 @@ $api_reference = [
       ",
       "args" => [],
       "return" => "table",
+    ],
+    "Tilemap:make_collision" => [
+      "desc" => "
+        Create Box2D fixtures for a tilemap. Mark certain tiles for collision
+        by providing an array of IntGrid values.
+      ",
+      "example" => "
+        b2 = spry.b2_world { gx = 0, gy = 0, meter = 16 }
+        tilemap = spry.tilemap_load 'map.ldtk'
+        tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
+      ",
+      "args" => [
+        "world" => ["b2World", "The Box2D physics world."],
+        "layer" => ["string", "The name of the IntGrid collision layer."],
+        "walls" => ["table", "An array of numbers used for collision."],
+      ],
+      "return" => false,
+    ],
+    "Tilemap:draw_fixtures" => [
+      "desc" => "
+        Draw all box fixtures for a given tilemap layer.
+      ",
+      "example" => "
+        tilemap:draw_fixtures(b2, 'Collision')
+      ",
+      "args" => [
+        "world" => ["b2World", "The Box2D physics world."],
+        "layer" => ["string", "The name of the IntGrid collision layer."],
+      ],
+      "return" => false,
     ],
   ],
   "Box2D World" => [
@@ -874,8 +807,11 @@ $api_reference = [
       "example" => "ground.body:make_box_fixture { w = 100, h = 50, friction = 1 }",
       "args" => array_merge([
         "t" => ["table", "Fixture definition."],
+        " .x" => ["number", "The box fixture's x offset from the center of the body.", 0],
+        " .y" => ["number", "The box fixture's y offset from the center of the body.", 0],
         " .w" => ["number", "The box fixture's width."],
         " .h" => ["number", "The box fixture's height."],
+        " .angle" => ["number", "The box fixture's angle in radians."],
       ], $b2fixture_def),
       "return" => "b2Fixture",
     ],
@@ -884,6 +820,8 @@ $api_reference = [
       "example" => "body:make_circle_fixture { radius = 3, density = 1, friction = 0.3 }",
       "args" => array_merge([
         "t" => ["table", "Fixture definition."],
+        " .x" => ["number", "The box fixture's x offset from the center of the body.", 0],
+        " .y" => ["number", "The box fixture's y offset from the center of the body.", 0],
         " .radius" => ["number", "The circle fixture's radius."],
       ], $b2fixture_def),
       "return" => "b2Fixture",
@@ -903,6 +841,12 @@ $api_reference = [
     "b2Body:angle" => [
       "desc" => "Get the angle of a physics body in radians.",
       "example" => "local angle = body:angle()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "b2Body:linear_damping" => [
+      "desc" => "Get the linear damping of a physics body.",
+      "example" => "local damping = body:linear_damping()",
       "args" => [],
       "return" => "number",
     ],
@@ -953,6 +897,14 @@ $api_reference = [
       "example" => "body:set_angle(angle)",
       "args" => [
         "angle" => ["number", "The angle to set."],
+      ],
+      "return" => false,
+    ],
+    "b2Body:set_linear_damping" => [
+      "desc" => "Set the physics body's linear damping.",
+      "example" => "body:set_linear_damping(30)",
+      "args" => [
+        "damping" => ["number", "The linear damping to set."],
       ],
       "return" => false,
     ],
