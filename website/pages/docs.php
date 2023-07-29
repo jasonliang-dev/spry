@@ -475,6 +475,18 @@ $api_reference = [
     ],
   ],
   "Audio" => [
+    "spry.set_master_volume" => [
+      "desc" => "Set the master volume for the program.",
+      "example" => "
+        if muted then
+          spry.set_master_volume(0)
+        end
+      ",
+      "args" => [
+        "volume" => ["number", "The volume in the range [0, 1]."],
+      ],
+      "return" => false,
+    ],
     "spry.audio_load" => [
       "desc" => "Create an audio object from an `.ogg` file.",
       "example" => "local click_sound = spry.audio_load 'click.ogg'",
@@ -492,16 +504,10 @@ $api_reference = [
     "Audio:play" => [
       "desc" => "Play a sound.",
       "example" => "click_sound:play()",
-      "args" => [],
-      "return" => false,
-    ],
-    "Audio:play_loop" => [
-      "desc" => "
-        Play a sound that loops back to the start. Suitable for background
-        music.
-      ",
-      "example" => "music:play_loop()",
-      "args" => [],
+      "args" => [
+        "volume" => ["number", "The playback volume of the sound.", 1],
+        "loop" => ["boolean", "If true, loop the playback of the sound, usually for background music.", "false"],
+      ],
       "return" => false,
     ],
   ],
@@ -811,7 +817,7 @@ $api_reference = [
         " .y" => ["number", "The box fixture's y offset from the center of the body.", 0],
         " .w" => ["number", "The box fixture's width."],
         " .h" => ["number", "The box fixture's height."],
-        " .angle" => ["number", "The box fixture's angle in radians."],
+        " .angle" => ["number", "The box fixture's angle in radians.", 0],
       ], $b2fixture_def),
       "return" => "b2Fixture",
     ],
