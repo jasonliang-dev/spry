@@ -33,6 +33,7 @@ struct App {
   float scroll_x;
   float scroll_y;
 
+  float master_volume;
   Array<float> audio_buffer;
   AudioSources audio_sources;
 

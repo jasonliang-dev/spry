@@ -154,7 +154,7 @@ static void frame() {
 
   if (samples > 0) {
     audio_playback(&g_app->audio_sources, g_app->audio_buffer.data, frames,
-                   channels);
+                   channels, g_app->master_volume);
     saudio_push(g_app->audio_buffer.data, samples);
   }
 

@@ -13,6 +13,7 @@ struct AudioWave {
 struct AudioSource {
   i32 index; // index into waves
   i32 cursor;
+  float volume;
   bool looping;
 };
 
@@ -22,8 +23,8 @@ struct AudioSources {
 };
 
 i32 audio_load(AudioSources *srcs, Archive *ar, String filepath);
-void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels);
-void audio_play(AudioSources *srcs, i32 wave);
-void audio_play_loop(AudioSources *srcs, i32 wave);
+void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels,
+                    float master_volume);
+void audio_play(AudioSources *srcs, i32 wave, float vol, bool loop);
 void drop(AudioSources *srcs, i32 wave);
 void drop(AudioSources *srcs);

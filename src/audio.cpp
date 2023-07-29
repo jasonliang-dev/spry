@@ -46,7 +46,8 @@ i32 audio_load(AudioSources *srcs, Archive *ar, String filepath) {
   return srcs->waves.len - 1;
 }
 
-void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels) {
+void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels,
+                    float master_volume) {
   i32 samples = frames * channels;
   memset(buf, 0, samples * sizeof(float));
 
@@ -64,7 +65,7 @@ void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels) {
     while (remain > 0) {
       i32 write = min(remain, wave.len - src.cursor);
       for (i32 i = 0; i < write; i++) {
-        cursor[i] += wave.data[src.cursor + i];
+        cursor[i] += wave.data[src.cursor + i] * master_volume * src.volume;
       }
 
       src.cursor += write;
@@ -94,16 +95,17 @@ void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels) {
   }
 }
 
-void audio_play(AudioSources *srcs, i32 wave) {
-  AudioSource src = {};
-  src.index = wave;
-  push(&srcs->playing, src);
-}
+void audio_play(AudioSources *srcs, i32 wave, float vol, bool loop) {
+  if (vol > 1.0f) {
+    vol = 1.0f;
+  } else if (vol < 0.0f) {
+    vol = 0.0f;
+  }
 
-void audio_play_loop(AudioSources *srcs, i32 wave) {
   AudioSource src = {};
   src.index = wave;
-  src.looping = true;
+  src.volume = vol;
+  src.looping = loop;
   push(&srcs->playing, src);
 }
 

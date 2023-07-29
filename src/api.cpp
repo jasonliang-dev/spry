@@ -319,20 +319,18 @@ static int mt_audio_gc(lua_State *L) {
 
 static int mt_audio_play(lua_State *L) {
   i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
-  audio_play(&g_app->audio_sources, *udata);
-  return 0;
-}
+  float vol = (float)luaL_optnumber(L, 2, 1.0f);
+  bool loop = lua_toboolean(L, 3);
 
-static int mt_audio_play_loop(lua_State *L) {
-  i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
-  audio_play_loop(&g_app->audio_sources, *udata);
+  audio_play(&g_app->audio_sources, *udata, vol, loop);
   return 0;
 }
 
 static int open_mt_audio(lua_State *L) {
   luaL_Reg reg[] = {
-      {"__gc", mt_audio_gc},   {"destroy", mt_audio_gc},
-      {"play", mt_audio_play}, {"play_loop", mt_audio_play_loop},
+      {"__gc", mt_audio_gc},
+      {"destroy", mt_audio_gc},
+      {"play", mt_audio_play},
       {nullptr, nullptr},
   };
 
@@ -740,7 +738,7 @@ static int mt_b2_body_make_box_fixture(lua_State *L) {
   lua_Number y = luax_number_field(L, "y", 0);
   lua_Number w = luax_number_field(L, "w");
   lua_Number h = luax_number_field(L, "h");
-  lua_Number angle = luax_number_field(L, "angle");
+  lua_Number angle = luax_number_field(L, "angle", 0);
 
   b2Vec2 pos = {(float)x / physics->meter, (float)y / physics->meter};
 
@@ -1479,6 +1477,19 @@ static int audio_load(lua_State *L) {
   return 1;
 }
 
+static int set_master_volume(lua_State *L) {
+  float vol = (float)luaL_checknumber(L, 1);
+
+  if (vol > 1.0f) {
+    vol = 1.0f;
+  } else if (vol < 0.0f) {
+    vol = 0.0f;
+  }
+
+  g_app->master_volume = vol;
+  return 0;
+}
+
 static int sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
@@ -1577,6 +1588,7 @@ static int open_spry(lua_State *L) {
       {"image_load", image_load},
       {"font_load", font_load},
       {"audio_load", audio_load},
+      {"set_master_volume", set_master_volume},
       {"sprite_load", sprite_load},
       {"atlas_load", atlas_load},
       {"tilemap_load", tilemap_load},
