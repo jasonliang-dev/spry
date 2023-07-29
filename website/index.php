@@ -13,7 +13,7 @@ class Data {
 
     $this->guides = [
       "quick-start" => "Quick Start",
-      "ufo-guide" => "UFO Game",
+      "ufo-game" => "UFO Game",
       "distribution" => "Distribution",
     ];
 
@@ -136,7 +136,6 @@ function article(callable $fn) {
   ?>
   <div class="mw7 center prose pt3"><?= Parsedown::instance()->text($contents) ?></div>
   <?php
-  footer("mw7");
 }
 
 function spry_demo(string $name) {
@@ -192,12 +191,33 @@ function spry_demo(string $name) {
 }
 
 function render(string $page) {
+  $title = "";
+  if (isset(data()->pages[$page])) {
+    $title .= data()->pages[$page] . " | ";
+  }
+  $title .= "Spry";
+
+  $description = "Spry is a delightfully small 2D game framework made for rapid prototyping and game jams. Inspired by LÖVE.";
+
   ?>
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Spry">
+    <meta name="description" content="<?= $description ?>">
+    <meta name="keywords" content="game, development, love2d, lua">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="author" content="Jason Liang">
+    <meta name="og:title" content="<?= $title ?>">
+    <meta name="og:site_name" content="Spry">
+    <meta name="og:url" content="https://jasonliang.js.org/spry/">
+    <meta name="og:description" content="<?= $description ?>">
+    <meta name="og:type" content="website">
+    <title><?= $title ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -213,12 +233,6 @@ function render(string $page) {
     <link id="hljs-dark" rel="stylesheet" href="static/default-dark.min.css" disabled>
     <script src="static/highlight.min.js"></script>
     <script defer src="static/alpine.js"></script>
-    <title>
-      <?php if (isset(data()->pages[$page])): ?>
-        <?= data()->pages[$page] ?> |
-      <?php endif ?>
-      Spry
-    </title>
     <link rel="stylesheet" href="static/style.css">
     <script>
       const doc = document.documentElement

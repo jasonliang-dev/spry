@@ -169,3 +169,5 @@ Run the game again, and you'll see that the player moves at the same speed
 regardless of direction.
 
 <?php });
+
+footer("mw7");

@@ -133,3 +133,5 @@ caddy file-server
 ```
 
 <?php });
+
+footer("mw7");
