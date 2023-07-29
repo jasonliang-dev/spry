@@ -12,7 +12,7 @@ class Data {
     $this->nav_height = "3.5rem";
 
     $this->guides = [
-      "quick-start" => "Getting Started",
+      "quick-start" => "Quick Start",
       "ufo-guide" => "UFO Game",
       "distribution" => "Distribution",
     ];
@@ -113,6 +113,22 @@ function func_signature(string $name, array $args) {
   return $name . "(" . implode(", ", $args) . ")";
 }
 
+function footer(string $class) {
+  ?>
+  <footer class="flex flex-wrap center mv5 <?= $class ?>">
+    <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
+      &copy; 2023 Jason Liang
+    </div>
+    <a href="https://jasonliang.js.org/spry/docs.html" class="gray link underline-hover mr3 pv3 dib">
+      API Reference
+    </a>
+    <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover mr3 pv3 dib">
+      GitHub
+    </a>
+  </footer>
+  <?php
+}
+
 function article(callable $fn) {
   ob_start();
   $fn();
@@ -120,6 +136,7 @@ function article(callable $fn) {
   ?>
   <div class="mw7 center prose pt3"><?= Parsedown::instance()->text($contents) ?></div>
   <?php
+  footer("mw7");
 }
 
 function spry_demo(string $name) {
@@ -230,21 +247,22 @@ function render(string $page) {
     </script>
   </head>
   <body class="ph3 black bg-near-white dm-bg-near-black dm-light-gray">
-    <div class="fixed z-999 top-0 left-0 right-0 bb b--black-10 dm-b--white-10 bg-white-90 dm-bg-black-90 ph3" style="height: <?= data()->nav_height ?>">
+    <div
+      class="fixed top-0 left-0 right-0 bb b--black-10 dm-b--white-10 bg-white-90 dm-bg-black-90 ph3"
+      style="height: <?= data()->nav_height ?>; z-index: 100"
+    >
       <div class="mw8 center flex items-center justify-between h-100">
         <a class="link dim black dm-white f3 fw6" href="index.html">Spry</a>
         <div class="flex items-center">
-          <nav>
+          <nav class="dn db-ns">
             <div
               x-data="{ open: false }"
               class="mr3 dib relative"
+              @mouseover="open = true"
+              @mouseleave="open = false"
             >
-              <button
-                type="button"
-                @click="open = !open"
-                class="flex items-center underline-hover dark-gray dm-silver bg-transparent bn ph0 pointer"
-              >
-                <span class="mr1">Guides</span>
+              <button @click="open = !open" class="flex items-center dark-gray dm-silver pb2 nb2 link underline-hover bn bg-transparent pa0">
+                <span class="mr1" style="cursor: default">Guides</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px" class="gray">
                   <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                 </svg>
@@ -252,9 +270,9 @@ function render(string $page) {
               <ul
                 x-cloak
                 x-show="open"
-                @click.outside="open = false"
                 x-transition.opacity.scale.origin.top.right
                 class="absolute right-0 list shadow-sm ba pv1 b--black-10 dm-b--white-10 pl0 mv0 bg-white dm-bg-near-black nowrap br2"
+                style="top: 1.8rem"
               >
                 <?php foreach (data()->guides as $name => $title): ?>
                   <li>
@@ -265,20 +283,47 @@ function render(string $page) {
                 <?php endforeach ?>
               </ul>
             </div>
-            <a class="mr3 link dark-gray dm-silver underline-hover" href="docs.html">Reference</a>
+            <a class="mr3 dark-gray dm-silver link underline-hover" href="docs.html">Reference</a>
           </nav>
-          <button class="bg-transparent bn black dm-silver dim pointer" type="button" onclick="toggleTheme()">
-            <svg class="dib dm-dn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          <button class="bg-transparent bn gray dim pointer" type="button" onclick="toggleTheme()" style="padding-top: 1px">
+            <svg class="dib dm-dn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px">
+              <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 5.404a.75.75 0 10-1.06-1.06l-1.061 1.06a.75.75 0 001.06 1.06l1.06-1.06zM6.464 14.596a.75.75 0 10-1.06-1.06l-1.06 1.06a.75.75 0 001.06 1.06l1.06-1.06zM18 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0118 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10zM14.596 15.657a.75.75 0 001.06-1.06l-1.06-1.061a.75.75 0 10-1.06 1.06l1.06 1.06zM5.404 6.464a.75.75 0 001.06-1.06l-1.06-1.06a.75.75 0 10-1.061 1.06l1.06 1.06z" />
             </svg>
-            <svg class="dn dm-dib" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            <svg class="dn dm-dib" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px">
+              <path fill-rule="evenodd" d="M7.455 2.004a.75.75 0 01.26.77 7 7 0 009.958 7.967.75.75 0 011.067.853A8.5 8.5 0 116.647 1.921a.75.75 0 01.808.083z" clip-rule="evenodd" />
             </svg>
           </button>
+          <nav x-cloak x-data="{ open: false }" class="dn-ns pl3">
+            <button @click="open = !open" type="button" class="gray bn bg-transparent">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M2 6.75A.75.75 0 012.75 6h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 6.75zm0 6.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div x-show="open" @click="open = false" x-transition.opacity class="fixed absolute--fill bg-white-50 dm-bg-black-50">
+            </div>
+            <ul
+              class="fixed mv0 top-0 bottom-0 right-0 bg-white dm-bg-near-black list shadow-sm ba b--black-10 dm-b-white-10 pl3 pt3"
+              style="transition: transform 150ms; width: 70%; z-index: 1000"
+              :style="{ transform: open ? 'translateX(0)' : 'translateX(100%)' }"
+            >
+              <?php foreach (data()->guides as $name => $title): ?>
+                <li>
+                  <a href="<?= $name ?>.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                    <?= $title ?>
+                  </a>
+                </li>
+              <?php endforeach ?>
+              <li>
+                <a href="docs.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                  Reference
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
-    <div class="mb5" style="margin-top: <?= data()->nav_height ?>">
+    <div style="margin-top: <?= data()->nav_height ?>">
       <?php require "pages/$page.php" ?>
     </div>
     <script>hljs.highlightAll()</script>

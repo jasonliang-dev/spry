@@ -75,7 +75,7 @@ Update `spryFiles` and `spryMount` for your project. A more involved
 `spryFiles` structure might look like this:
 
 ```js
-var spryMountDir = 'projects/game';
+var spryMount = 'projects/game';
 var spryFiles = {
   'projects': {
     'game': {

@@ -120,14 +120,13 @@ $features = [
     <div class="w-100 w-50-l">
       <?php foreach ($features as $title => $feature): ?>
         <button
-          class="flex mb4 br3 pa3 ba tl w-100 bg-animate"
+          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
           :class="
             selected === '<?= $title ?>'
               ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
               : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-40'
           "
           @click="selected = '<?= $title ?>'"
-          style="cursor: pointer"
         >
           <?= $feature["icon"] ?>
           <div class="pl3 mt1">
@@ -141,9 +140,9 @@ $features = [
         </button>
       <?php endforeach ?>
     </div>
-    <div class="w-100 w-50-l relative" style="min-height: 480px">
+    <div class="w-100 w-50-l">
       <?php foreach ($features as $title => $feature): ?>
-        <div class="absolute absolute--fill" x-show="selected === '<?= $title ?>'" x-transition>
+        <div x-show="selected === '<?= $title ?>'" x-transition:enter>
           <img src="/static/<?= $feature["img"] ?>" alt="" class="mw6 center w-100 db">
         </div>
       <?php endforeach ?>
@@ -204,3 +203,6 @@ $features = [
     </svg>
   </a>
 </div>
+<?php
+
+footer("mw8");
