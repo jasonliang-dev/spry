@@ -19,7 +19,23 @@ bool image_load(Image *image, Archive *ar, String filepath) {
     return false;
   }
   defer(stbi_image_free(data));
-  assert(channels == 4);
+
+  u8 *img_data = data;
+  if (channels == 3) {
+    u8 *data4 = (u8 *)mem_alloc(width * height * 4);
+    for (i32 i = 0; i < width * height; i++) {
+      data4[i * 4 + 0] = data[i * 3 + 0];
+      data4[i * 4 + 1] = data[i * 3 + 1];
+      data4[i * 4 + 2] = data[i * 3 + 2];
+      data4[i * 4 + 3] = 255;
+    }
+    img_data = data4;
+  }
+  defer({
+    if (channels == 3) {
+      mem_free(img_data);
+    }
+  });
 
   sg_image_desc desc = {};
   desc.pixel_format = SG_PIXELFORMAT_RGBA8;

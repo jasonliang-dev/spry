@@ -22,7 +22,7 @@ union TilemapPoint {
   u64 value;
 };
 
-using TilemapInt = char;
+using TilemapInt = unsigned char;
 
 struct TilemapLayer {
   String identifier;
@@ -42,42 +42,24 @@ enum TilemapDir : i32 {
   TilemapDir_West,
 };
 
-struct TilemapLevel;
-struct TilemapNeighbor {
-  String iid;
-  TilemapDir dir;
-  TilemapLevel *level;
-};
-
 struct TilemapLevel {
-  bool visited;
   String identifier;
   String iid;
   float world_x, world_y;
   float px_width, px_height;
   Array<TilemapLayer> layers;
-  Array<TilemapNeighbor> neighbors;
 };
 
-struct TilemapGrid {
-  HashMap<TilemapInt> values;
-  float grid_size;
-  u64 count;
-};
-
+struct b2Body;
 struct Tilemap {
   Array<TilemapLevel> levels;
-  HashMap<Image> images;
-  HashMap<TilemapGrid> grids_by_layer;
-  TilemapGrid *current_grid;
+  HashMap<Image> images; // key: filepath
+  HashMap<b2Body *> bodies; // key: layer name
 };
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath);
 void drop(Tilemap *tm);
-void tilemap_grid_begin(Tilemap *tm, String layer);
-void tilemap_grid_end(Tilemap *tm);
-TilemapInt tilemap_grid_value(Tilemap *tm, float x, float y);
-bool tilemap_rect_every(Tilemap *tm, TilemapInt needle, float x0, float y0,
-                        float x1, float y1);
-bool tilemap_rect_has(Tilemap *tm, TilemapInt needle, float x0, float y0,
-                      float x1, float y1);
+
+struct b2World;
+void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
+                            String layer_name, Array<TilemapInt> *walls);

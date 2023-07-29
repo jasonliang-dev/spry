@@ -11,5 +11,5 @@ spry
 ignore
 *.data
 *.html
-*.wasm
-*.js
+/spry.wasm
+/spry.js

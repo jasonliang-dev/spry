@@ -101,11 +101,11 @@ void draw(FontFamily *font, float size, float x, float y, String text,
 void draw(Tilemap *tm, Color c) {
   sgl_enable_texture();
   sgl_c4b(c.r, c.g, c.b, c.a);
-  for (TilemapLevel level : tm->levels) {
+  for (TilemapLevel &level : tm->levels) {
     sgl_push_matrix();
     sgl_translate(level.world_x, level.world_y, 0);
-    for (u64 i = level.layers.len; i > 0; i--) {
-      TilemapLayer &layer = level.layers[i - 1];
+    for (i32 i = level.layers.len - 1; i >= 0; i--) {
+      TilemapLayer &layer = level.layers[i];
       sgl_texture({layer.image.id});
       sgl_begin_quads();
       for (TilemapTile tile : layer.tiles) {

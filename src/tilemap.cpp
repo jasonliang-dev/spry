@@ -1,11 +1,15 @@
 #include "tilemap.h"
+#include "box2d/b2_body.h"
+#include "box2d/b2_fixture.h"
+#include "box2d/b2_polygon_shape.h"
+#include "box2d/b2_world.h"
 #include "deps/json.h"
 #include "hash_map.h"
 #include "json.h"
 #include "prelude.h"
 #include "strings.h"
 
-static void float_pair(float *x, float *y, json_array_t *arr) {
+static void read_f32_pair(float *x, float *y, json_array_t *arr) {
   json_array_element_t *el = arr->start;
 
   *x = (float)as_int(el->value);
@@ -19,11 +23,11 @@ static bool tile_from_json(TilemapTile *tile, json_object_t *value) {
   for (ObjectEl *el : value) {
     switch (hash(el->name)) {
     case "px"_hash: {
-      float_pair(&tile->x, &tile->y, as_array(el->value));
+      read_f32_pair(&tile->x, &tile->y, as_array(el->value));
       break;
     }
     case "src"_hash: {
-      float_pair(&tile->u, &tile->v, as_array(el->value));
+      read_f32_pair(&tile->u, &tile->v, as_array(el->value));
       break;
     }
     case "f"_hash: {
@@ -45,7 +49,7 @@ static bool entity_from_json(TilemapEntity *entity, json_object_t *value) {
       break;
     }
     case "px"_hash: {
-      float_pair(&entity->x, &entity->y, as_array(el->value));
+      read_f32_pair(&entity->x, &entity->y, as_array(el->value));
       break;
     }
     default: break;
@@ -173,34 +177,6 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
   return true;
 }
 
-static bool neighbor_from_json(TilemapNeighbor *neighbor, json_object_t *value,
-                               Array<TilemapLayer> *layers) {
-  for (ObjectEl *el : value) {
-    switch (hash(el->name)) {
-    case "levelIid"_hash: {
-      neighbor->iid = to_cstr(as_string(el->value));
-      break;
-    }
-    case "dir"_hash: {
-      TilemapDir dir = {};
-      String str = as_string(el->value);
-      if (str.len == 1) {
-        switch (str.data[0]) {
-        case 'n': dir = TilemapDir_North; break;
-        case 'e': dir = TilemapDir_East; break;
-        case 's': dir = TilemapDir_South; break;
-        case 'w': dir = TilemapDir_West; break;
-        }
-      }
-      neighbor->dir = dir;
-      break;
-    }
-    default: break;
-    }
-  }
-  return true;
-}
-
 static bool level_from_json(TilemapLevel *level, json_object_t *value,
                             Archive *ar, String filepath,
                             HashMap<Image> *images) {
@@ -249,25 +225,6 @@ static bool level_from_json(TilemapLevel *level, json_object_t *value,
       level->layers = layers;
       break;
     }
-    case "__neighbours"_hash: {
-      json_array_t *arr = as_array(el->value);
-
-      Array<TilemapNeighbor> neighbors = {};
-      reserve(&neighbors, arr->length);
-
-      for (ArrayEl *el : arr) {
-        TilemapNeighbor neighbor;
-        bool ok =
-            neighbor_from_json(&neighbor, as_object(el->value), &level->layers);
-        if (!ok) {
-          return false;
-        }
-        push(&neighbors, neighbor);
-      }
-
-      level->neighbors = neighbors;
-      break;
-    }
     default: break;
     }
   }
@@ -312,16 +269,6 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
         push(&levels, level);
       }
 
-      for (TilemapLevel &level : levels) {
-        for (TilemapNeighbor &neighbour : level.neighbors) {
-          for (TilemapLevel &level : levels) {
-            if (neighbour.iid == level.iid) {
-              neighbour.level = &level;
-            }
-          }
-        }
-      }
-
       tilemap.levels = levels;
       break;
     }
@@ -329,45 +276,7 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
     }
   }
 
-  HashMap<TilemapGrid> grids = {};
-
-  for (TilemapLevel &level : tilemap.levels) {
-    for (TilemapLayer &layer : level.layers) {
-      if (layer.int_grid.len > 0) {
-        u64 key = fnv1a(layer.identifier);
-        TilemapGrid &grid = grids[key];
-        grid.count += layer.int_grid.len;
-        grid.grid_size = layer.grid_size;
-      }
-    }
-  }
-
-  for (TilemapLevel &level : tilemap.levels) {
-    for (TilemapLayer &layer : level.layers) {
-      if (layer.int_grid.len == 0) {
-        continue;
-      }
-
-      u64 key = fnv1a(layer.identifier);
-      TilemapGrid *grid = get(&grids, key);
-      assert(grid != nullptr);
-      reserve(&grid->values, hash_map_reserve_size(grid->count));
-
-      for (i32 y = 0; y < layer.c_height; y++) {
-        for (i32 x = 0; x < layer.c_width; x++) {
-          TilemapPoint point;
-          point.x = x + (i32)(level.world_x / layer.grid_size);
-          point.y = y + (i32)(level.world_y / layer.grid_size);
-
-          TilemapInt value = layer.int_grid[y * layer.c_width + x];
-          grid->values[point.value] = value;
-        }
-      }
-    }
-  }
-
   tilemap.images = images;
-  tilemap.grids_by_layer = grids;
 
   printf("loaded tilemap with %llu levels\n", tilemap.levels.len);
   *tm = tilemap;
@@ -387,134 +296,127 @@ void drop(Tilemap *tm) {
       drop(&layer.int_grid);
     }
 
-    for (TilemapNeighbor &neighbor : level.neighbors) {
-      mem_free(neighbor.iid.data);
-    }
-
     mem_free(level.identifier.data);
     mem_free(level.iid.data);
     drop(&level.layers);
-    drop(&level.neighbors);
   }
 
   for (auto [k, v] : tm->images) {
     drop(v);
   }
 
-  for (auto [k ,v] : tm->grids_by_layer) {
-    drop(&v->values);
-  }
-
   drop(&tm->levels);
   drop(&tm->images);
-  drop(&tm->grids_by_layer);
+  drop(&tm->bodies);
 }
 
-#if 0
-static TilemapLevel *find_neighbor(TilemapLevel *node, float x, float y) {
-  node->visited = true;
-
-  if (node->world_x <= x && x < node->world_x + node->px_width &&
-      node->world_y <= y && y < node->world_y + node->px_height) {
-    return node;
-  }
-
-  for (TilemapNeighbor &neighbor : node->neighbors) {
-    TilemapLevel *level = neighbor.level;
-    if (level->visited) {
-      continue;
+static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
+                                     float world_x, float world_y, float meter,
+                                     Array<TilemapInt> *walls) {
+  auto is_wall = [layer, walls](i32 y, i32 x) {
+    if (x >= layer->c_width || y >= layer->c_height) {
+      return false;
     }
 
-    TilemapLevel *find_result = find_neighbor(level, x, y);
-    if (find_result != nullptr) {
-      return find_result;
-    }
-  }
-
-  return nullptr;
-}
-#endif
-
-void tilemap_grid_begin(Tilemap *tm, String layer) {
-  u64 key = fnv1a(layer);
-  TilemapGrid *grid = get(&tm->grids_by_layer, key);
-  tm->current_grid = grid;
-}
-
-void tilemap_grid_end(Tilemap *tm) { tm->current_grid = nullptr; }
-
-TilemapInt tilemap_grid_value(Tilemap *tm, float x, float y) {
-  TilemapGrid *grid = tm->current_grid;
-  if (grid == nullptr) {
-    return -1;
-  }
-
-  TilemapPoint point = {};
-  point.x = (i32)(x / grid->grid_size);
-  point.y = (i32)(y / grid->grid_size);
-
-  TilemapInt *i = get(&grid->values, point.value);
-  if (i == nullptr) {
-    return -1;
-  }
-
-  return *i;
-}
-
-bool tilemap_rect_every(Tilemap *tm, TilemapInt needle, float x0, float y0,
-                        float x1, float y1) {
-  TilemapGrid *grid = tm->current_grid;
-  if (grid == nullptr) {
-    return false;
-  }
-
-  i32 left = (i32)(x0 / grid->grid_size);
-  i32 top = (i32)(y0 / grid->grid_size);
-
-  i32 right = (i32)(x1 / grid->grid_size);
-  i32 bot = (i32)(y1 / grid->grid_size);
-
-  for (i32 x = left; x <= right; x++) {
-    for (i32 y = top; y <= bot; y++) {
-      TilemapPoint point = {};
-      point.x = x;
-      point.y = y;
-      TilemapInt *i = get(&grid->values, point.value);
-      TilemapInt cmp = i == nullptr ? -1 : *i;
-      if (needle != cmp) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-bool tilemap_rect_has(Tilemap *tm, TilemapInt needle, float x0, float y0,
-                      float x1, float y1) {
-  TilemapGrid *grid = tm->current_grid;
-  if (grid == nullptr) {
-    return false;
-  }
-
-  i32 left = (i32)(x0 / grid->grid_size);
-  i32 top = (i32)(y0 / grid->grid_size);
-
-  i32 right = (i32)(x1 / grid->grid_size);
-  i32 bot = (i32)(y1 / grid->grid_size);
-
-  for (i32 x = left; x <= right; x++) {
-    for (i32 y = top; y <= bot; y++) {
-      TilemapPoint point = {};
-      point.x = x;
-      point.y = y;
-      TilemapInt *i = get(&grid->values, point.value);
-      TilemapInt cmp = i == nullptr ? -1 : *i;
-      if (needle == cmp) {
+    for (TilemapInt n : *walls) {
+      if (layer->int_grid[y * layer->c_width + x] == n) {
         return true;
       }
     }
+
+    return false;
+  };
+
+  Array<bool> filled = {};
+  defer(drop(&filled));
+  resize(&filled, layer->c_width * layer->c_height);
+  memset(filled.data, 0, layer->c_width * layer->c_height);
+  for (i32 y = 0; y < layer->c_height; y++) {
+    for (i32 x = 0; x < layer->c_width; x++) {
+      i32 x0 = x;
+      i32 y0 = y;
+      i32 x1 = x;
+      i32 y1 = y;
+
+      if (!is_wall(y1, x1)) {
+        continue;
+      }
+
+      if (filled[y1 * layer->c_width + x1]) {
+        continue;
+      }
+
+      while (is_wall(y1, x1 + 1)) {
+        x1++;
+      }
+
+      while (true) {
+        bool walkable = false;
+        for (i32 x = x0; x <= x1; x++) {
+          if (!is_wall(y1 + 1, x)) {
+            walkable = true;
+          }
+        }
+
+        if (walkable) {
+          break;
+        }
+
+        y1++;
+      }
+
+      for (i32 y = y0; y <= y1; y++) {
+        for (i32 x = x0; x <= x1; x++) {
+          filled[y * layer->c_width + x] = true;
+        }
+      }
+
+      printf("new rect: (%d, %d), (%d, %d)\n", x0, y0, x1, y1);
+
+      float dx = ((float)(x1 + 1 - x0) * layer->grid_size) / meter;
+      float dy = ((float)(y1 + 1 - y0) * layer->grid_size) / meter;
+
+      b2Vec2 pos = {
+          x0 * layer->grid_size / meter + dx / 2.0f + world_x / meter,
+          y0 * layer->grid_size / meter + dy / 2.0f + world_y / meter,
+      };
+
+      b2PolygonShape box = {};
+      box.SetAsBox(dx / 2.0f, dy / 2.0f, pos, 0.0f);
+
+      b2FixtureDef def = {};
+      def.friction = 0;
+      def.shape = &box;
+
+      body->CreateFixture(&def);
+    }
+  }
+}
+
+void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
+                            String layer_name, Array<TilemapInt> *walls) {
+  b2Body *body = nullptr;
+  {
+    b2BodyDef def = {};
+    def.position.x = 0;
+    def.position.y = 0;
+    def.fixedRotation = true;
+    def.allowSleep = true;
+    def.awake = false;
+    def.type = b2_staticBody;
+    def.gravityScale = 0;
+
+    body = world->CreateBody(&def);
   }
 
-  return false;
+  for (TilemapLevel &level : tm->levels) {
+    for (TilemapLayer &l : level.layers) {
+      if (l.identifier == layer_name) {
+        make_collision_for_layer(body, &l, level.world_x, level.world_y, meter,
+                                 walls);
+      }
+    }
+  }
+
+  tm->bodies[fnv1a(layer_name)] = body;
 }
