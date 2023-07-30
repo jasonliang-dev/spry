@@ -282,3 +282,36 @@ String program_path() {
 
   return {s_buf, (u64)len};
 }
+
+u64 file_modtime(String filename) {
+#ifdef _WIN32
+  String file = to_cstr(filename);
+  defer(mem_free(file.data));
+
+  HANDLE handle = CreateFile(file.data, GENERIC_READ, FILE_SHARE_READ, NULL,
+                             OPEN_EXISTING, 0, NULL);
+
+  if (handle == INVALID_HANDLE_VALUE) {
+    return 0;
+  }
+  defer(CloseHandle(handle));
+
+  FILETIME create = {};
+  FILETIME access = {};
+  FILETIME write = {};
+  bool ok = GetFileTime(handle, &create, &access, &write);
+  if (!ok) {
+    return 0;
+  }
+
+  ULARGE_INTEGER time = {};
+  time.LowPart = write.dwLowDateTime;
+  time.HighPart = write.dwHighDateTime;
+
+  return time.QuadPart;
+#endif
+
+#ifdef __EMSCRIPTEN__
+  return 0;
+#endif
+}

@@ -18,3 +18,4 @@ bool load_zip_archive(Archive *ar, String mount);
 void drop(Archive *ar);
 String program_dir();
 String program_path();
+u64 file_modtime(String filename);

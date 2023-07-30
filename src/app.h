@@ -15,7 +15,9 @@ struct App {
   double delta_time;
 
   bool mounted;
-  bool hot_swappable;
+  bool hot_reload_enabled;
+  float reload_time_elapsed;
+  float reload_interval;
   Archive archive;
   HashMap<Module> modules;
 

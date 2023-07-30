@@ -140,6 +140,7 @@ static void event(const sapp_event *e) {
   }
 }
 
+static i32 require_lua_script(Archive *ar, String filepath);
 static void frame() {
   u64 time_now = stm_now();
   g_app->delta_time = stm_sec(time_now - g_app->time_begin);
@@ -241,6 +242,16 @@ static void frame() {
   g_app->mouse_dy = 0;
   g_app->scroll_x = 0;
   g_app->scroll_y = 0;
+
+  g_app->reload_time_elapsed += g_app->delta_time;
+  if (g_app->hot_reload_enabled &&
+      g_app->reload_time_elapsed > g_app->reload_interval) {
+    g_app->reload_time_elapsed -= g_app->reload_interval;
+
+    for (auto [k, v] : g_app->modules) {
+      require_lua_script(&g_app->archive, v->name);
+    }
+  }
 }
 
 static void dump_allocs(Allocator *a) {
@@ -309,7 +320,12 @@ static i32 require_lua_script(Archive *ar, String filepath) {
 
   Module *module = get(&g_app->modules, fnv1a(path));
   if (module != nullptr) {
-    return module->ref;
+    if (g_app->hot_reload_enabled) {
+      u64 modtime = file_modtime(module->name);
+      if (modtime <= module->modtime) {
+        return module->ref;
+      }
+    }
   }
 
   String contents;
@@ -345,20 +361,34 @@ static i32 require_lua_script(Archive *ar, String filepath) {
     lua_seti(L, table_index, i);
   }
 
-  Module m = {};
-  m.name = to_cstr(filepath);
-  m.ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  g_app->modules[fnv1a(path)] = m;
+  if (module != nullptr) {
+    if (module->ref != LUA_REFNIL) {
+      luaL_unref(L, LUA_REGISTRYINDEX, module->ref);
+    }
 
-  return m.ref;
+    module->modtime = file_modtime(module->name);
+    module->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    return module->ref;
+  } else {
+    Module m = {};
+    m.name = to_cstr(filepath);
+    m.modtime = file_modtime(filepath);
+    m.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    g_app->modules[fnv1a(path)] = m;
+    return m.ref;
+  }
 }
 
 static int require_lua_script(lua_State *L) {
   String path = luax_check_string(L, 1);
   i32 ref = require_lua_script(&g_app->archive, path);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-  return 1;
+  if (ref != LUA_REFNIL) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 #ifdef __EMSCRIPTEN__
@@ -485,6 +515,7 @@ sapp_desc sokol_main(int argc, char **argv) {
       ok = load_zip_archive(&g_app->archive, mount_dir);
     } else {
       ok = load_filesystem_archive(&g_app->archive, mount_dir);
+      g_app->hot_reload_enabled = true;
     }
 
     g_app->mounted = true;
@@ -534,12 +565,17 @@ sapp_desc sokol_main(int argc, char **argv) {
   }
 
   bool console_attach = luax_boolean_field(L, "console_attach", false);
+  bool hot_reload = luax_boolean_field(L, "hot_reload", true);
+  lua_Number reload_interval = luax_number_field(L, "reload_interval", 0);
   lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
   lua_Number width = luax_number_field(L, "window_width", 800);
   lua_Number height = luax_number_field(L, "window_height", 600);
   String title = luax_string_field(L, "window_title", "Spry");
 
   lua_pop(L, 1);
+
+  g_app->hot_reload_enabled = g_app->hot_reload_enabled && hot_reload;
+  g_app->reload_interval = reload_interval;
 
   sapp_desc sapp = {};
   sapp.init_cb = init;
