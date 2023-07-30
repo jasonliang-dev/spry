@@ -38,7 +38,7 @@ $b2body_def = [
   " .angle" => ["number", "The angle of the physics body in radians.", 0],
   " .linear_damping" => ["number", "The linear damping of the physics body.", 0],
   " .fixed_rotation" => ["boolean", "If true, prevent the physics body from rotating.", "false"],
-  " .udata" => ["string", "Custom user data for this body.", "nil"],
+  " .udata" => ["string | number", "Custom user data for this body.", "nil"],
 ];
 
 $b2fixture_def = [
@@ -46,7 +46,7 @@ $b2fixture_def = [
   " .density" => ["number", "The fixture's density.", 1],
   " .friction" => ["number", "The fixture's friction.", 0.2],
   " .restitution" => ["number", "The fixture's restitution.", 0],
-  " .udata" => ["any", "Custom user data for this fixture.", "nil"],
+  " .udata" => ["string | number", "Custom user data for this fixture.", "nil"],
   " .begin_contact" => ["function", "Run a callback function when this fixture touches another.", "nil"],
   " .end_contact" => ["function", "Run a callback function when this fixture stops touching another.", "nil"],
 ];
@@ -947,7 +947,7 @@ $api_reference = [
       "desc" => "Get the attached user data for a physics body.",
       "example" => "print(body:udata())",
       "args" => [],
-      "return" => "string",
+      "return" => "string | number",
     ],
   ],
   "Box2D Fixture" => [
@@ -1027,7 +1027,7 @@ $api_reference = [
       "desc" => "Get the attached user data for a fixture.",
       "example" => "print(fixture:udata())",
       "args" => [],
-      "return" => "string",
+      "return" => "string | number",
     ],
   ],
   "2D Vector" => [

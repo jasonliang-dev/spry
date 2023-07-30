@@ -1,17 +1,22 @@
 function spry.conf(t)
-  t.swap_interval = 0
-  t.window_width = 1280
-  t.window_height = 720
+  t.swap_interval = 1
+  t.window_width = 800
+  t.window_height = 600
 end
 
 function spry.start()
   font = spry.default_font()
-  tilemap = spry.tilemap_load "world.ldtk"
-  sword_img = spry.image_load "sword.png"
+
+  cursor = Cursor(spry.image_load "cursor.png")
+  spry.show_mouse(false)
+
+  b2 = spry.b2_world { gx = 0, gy = 0, meter = 16 }
+  world = World()
+
   bow_img = spry.image_load "bow.png"
   arrow_img = spry.image_load "arrow.png"
-
-  world = World()
+  tilemap = spry.tilemap_load "map.ldtk"
+  tilemap:make_collision(b2, "Collision", { 1 })
 
   for k, v in ipairs(tilemap:entities()) do
     local mt = _G[v.id]
@@ -25,17 +30,14 @@ function spry.start()
     end
   end
 
-  cursor = Cursor(spry.image_load "cursor.png")
-
   camera = Camera {
     x = player.x,
     y = player.y,
     scale = 5,
   }
 
-  debug_rects = {}
-
-  spry.show_mouse(false)
+  draw_fixtures = false
+  spry.clear_color(48, 32, 32, 255)
 end
 
 function spry.frame(dt)
@@ -43,33 +45,28 @@ function spry.frame(dt)
     spry.quit()
   end
 
-  for k in ipairs(debug_rects) do
-    debug_rects[k] = nil
+  if spry.key_press "tab" then
+    draw_fixtures = not draw_fixtures
   end
 
+  b2:step(dt)
   world:update(dt)
   cursor:update(dt)
 
   local blend = 1 - 0.85 ^ (dt * 40)
   camera.x = lerp(camera.x, player.x, blend)
   camera.y = lerp(camera.y, player.y, blend)
-
   camera.scale = lerp(camera.scale, 2, dt ^ 0.8)
 
-  spry.clear_color(48, 32, 32, 255)
   camera:begin_draw()
     tilemap:draw()
     world:draw()
     cursor:draw()
 
-    for k, v in ipairs(debug_rects) do
-      spry.draw_line_rect(v[1], v[2], v[3], v[4])
+    if draw_fixtures then
+      tilemap:draw_fixtures(b2, "Collision")
     end
   camera:end_draw()
 
   -- font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
-
-  -- local mx, my = spry.mouse_pos()
-  -- local dx, dy = spry.mouse_delta()
-  -- font:draw(("(%.2f, %.2f) (%.2f, %.2f)"):format(mx, my, dx, dy), 0, 24)
 end

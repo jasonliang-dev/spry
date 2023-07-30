@@ -127,6 +127,8 @@ function spry.frame(dt)
     spry.pop_color()
   spry.pop_matrix()
 
-  -- font:draw("Left click: box, Right click: ball", 10, 10)
-  -- font:draw(("fps: %.2f"):format(1 / dt, dt * 1000), 10, 26)
+  if spry.platform() ~= "html5" then
+    font:draw("Left click: box, Right click: ball", 10, 10)
+    font:draw(("fps: %.2f"):format(1 / dt, dt * 1000), 10, 26)
+  end
 end

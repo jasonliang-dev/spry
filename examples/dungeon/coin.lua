@@ -35,7 +35,7 @@ function Coin:co_update(dt)
   repeat
     local dist = distance(self.x, self.y, player.x, player.y)
     dt = yield()
-  until dist < 64
+  until dist < 128
 
   repeat
     local blend = 1 - 0.5 ^ (dt * 40)

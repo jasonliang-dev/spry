@@ -53,7 +53,10 @@ class Data {
         "width" => 500,
         "height" => 700,
         "text" => "
-          `A` and `D` to move left/right
+          - `A` and `D` to move left/right
+          - `M` to unmute sound.
+
+          **Volume warning:** The music can be loud!
         ",
       ],
       "Physics" => [
@@ -122,7 +125,7 @@ function footer(string $class) {
     <a href="https://jasonliang.js.org/spry/docs.html" class="gray link underline-hover mr3 pv3 dib">
       API Reference
     </a>
-    <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover mr3 pv3 dib">
+    <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover pv3 dib">
       GitHub
     </a>
   </footer>
@@ -180,6 +183,7 @@ function spry_demo(string $name) {
         </span>
       </a>
     </div>
+    <?php footer("w-100") ?>
   </div>
   <script type="text/javascript">
     var canvas = document.getElementById('canvas');

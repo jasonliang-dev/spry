@@ -13,16 +13,29 @@ function spry.start()
   beep = spry.audio_load "beep.ogg"
   sparkle = spry.audio_load "sparkle.ogg"
 
-  spry.clear_color(252, 223, 205, 255)
   jump:reset()
 
-  music:play_loop()
+  spry.clear_color(252, 223, 205, 255)
+  music:play(1, true)
+
+  muted = spry.platform() == "html5"
 end
 
 function spry.frame(dt)
   if spry.platform() ~= "html5" and spry.key_down "esc" then
     spry.quit()
   end
+
+  if spry.key_press "m" then
+    muted = not muted
+  end
+
+  if muted then
+    spry.set_master_volume(0)
+  else
+    spry.set_master_volume(1)
+  end
+
 
   if game_over and spry.key_release "space" then
     jump:reset()
@@ -43,7 +56,9 @@ function spry.frame(dt)
   camera:end_draw()
 
   spry.push_color(0, 0, 0, 255)
-    -- font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+    if spry.platform() ~= "html5" then
+      font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+    end
 
     local text_size = 80
     local text = ("%.0f"):format(-max_height)
