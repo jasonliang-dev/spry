@@ -95,10 +95,9 @@ end
 
 `vx` and `vy` stands for velocity x, and velocity y. These variables represent
 the player's horizonal and vertical speed. When the user presses any of the
-WASD keys, the velocity changes appropriately. In the case of the S key, `vy`
-is set to itself, plus 1, representing movement towards the bottom of the
-screen. The positive y axis is pointing towards the bottom of the screen
-(unlike in math, where you'll often see positive y pointing up).
+WASD keys, the velocity changes appropriately. In the case of the D key, `vx`
+is set to itself, plus 1, representing movement towards the right side of the
+screen.
 
 Now we'll move the player by setting the x and y position. Put the following
 code inside `Player:update`, just before the function ends:

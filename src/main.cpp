@@ -320,11 +320,16 @@ static i32 require_lua_script(Archive *ar, String filepath) {
 
   Module *module = get(&g_app->modules, fnv1a(path));
   if (module != nullptr) {
+    bool needs_file_load = false;
     if (g_app->hot_reload_enabled) {
       u64 modtime = file_modtime(module->name);
-      if (modtime <= module->modtime) {
-        return module->ref;
+      if (modtime > module->modtime) {
+        needs_file_load = true;
       }
+    }
+
+    if (!needs_file_load) {
+      return module->ref;
     }
   }
 
@@ -566,7 +571,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   bool console_attach = luax_boolean_field(L, "console_attach", false);
   bool hot_reload = luax_boolean_field(L, "hot_reload", true);
-  lua_Number reload_interval = luax_number_field(L, "reload_interval", 0);
+  lua_Number reload_interval = luax_number_field(L, "reload_interval", 0.1);
   lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
   lua_Number width = luax_number_field(L, "window_width", 800);
   lua_Number height = luax_number_field(L, "window_height", 600);
