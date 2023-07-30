@@ -69,14 +69,13 @@ function spry.frame(dt)
 end
 ```
 
-Now run your game:
+You do not need to include the newly created file inside `main.lua`. All Lua
+scripts in your project folder are loaded on startup. Once you run your game,
+you should see a ufo on the screen:
 
 ```plaintext
 spry.exe my_folder
 ```
-
-All `.lua` files in the folder are loaded on startup. You should see a ufo on
-the screen.
 
 ## Keyboard Input
 
@@ -96,9 +95,9 @@ end
 
 `vx` and `vy` stands for velocity x, and velocity y. These variables represent
 the player's horizonal and vertical speed. When the user presses any of the
-WASD keys, the velocity changes appropriately. In the case of the W key, `vy`
-is set to itself, minus 1, representing movement towards the top of the
-screen. This is because the positive y axis is pointing down the screen
+WASD keys, the velocity changes appropriately. In the case of the S key, `vy`
+is set to itself, plus 1, representing movement towards the bottom of the
+screen. The positive y axis is pointing towards the bottom of the screen
 (unlike in math, where you'll often see positive y pointing up).
 
 Now we'll move the player by setting the x and y position. Put the following
@@ -156,8 +155,9 @@ first.
 You might notice that moving diagonally is a little faster compared to
 vertical or horizonal movement. This is because vertical and horizontal
 movement has a speed of 200, but using both vertical and horizontal speeds
-together results in a speed of around 282 (square root of 200<sup>2</sup> + 200<sup>2</sup>). We need to normalize `vx` and
-`vy` so that the combined speed of both `vx` and `vy` is always 1.
+together results in a speed of around 282 (square root of 200<sup>2</sup> +
+200<sup>2</sup>). We need to normalize `vx` and `vy` so that the combined
+speed of both `vx` and `vy` is always 1.
 
 After setting keyboard input, but before moving the player, add the following line:
 
@@ -167,6 +167,25 @@ vx, vy = normalize(vx, vy)
 
 Run the game again, and you'll see that the player moves at the same speed
 regardless of direction.
+
+## Hot Reloading
+
+Spry has the ablity to hot swap recently changed Lua scripts while the program
+is running. Run your program if it's not running already, then go to your
+text editor. Find the `Player:draw()` function and change the rotation
+variable:
+
+```lua
+function Player:draw()
+  local rotation = math.pi
+
+  -- rest of draw below...
+end
+```
+
+Go back to your Spry program and you'll find that the UFO is now being drawn
+upside down. Note that the rotation unit is in radians. This is true for all
+Spry functions that deal with angles.
 
 <?php });
 
