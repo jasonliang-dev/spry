@@ -189,6 +189,12 @@ bool load_zip_archive(Archive *ar, String mount) {
   if (!contents_ok) {
     return false;
   }
+  bool success = false;
+  defer({
+    if (!success) {
+      mem_free(contents.data);
+    }
+  });
 
   char *data = contents.data;
   char *end = &data[contents.len];
@@ -228,6 +234,7 @@ bool load_zip_archive(Archive *ar, String mount) {
   ar->list_all_files = zip_archive_list_all_files;
   ar->zip_contents = contents;
 
+  success = true;
   return true;
 }
 

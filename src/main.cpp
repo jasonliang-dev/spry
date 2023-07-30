@@ -473,8 +473,11 @@ sapp_desc sokol_main(int argc, char **argv) {
 #else
   if (argc == 1) {
     String path = program_path();
+#ifdef DEBUG
     printf("program path: %s\n", path.data);
+#endif
     ok = load_zip_archive(&g_app->archive, path);
+    g_app->mounted = ok;
   } else if (argc == 2) {
     String mount_dir = argv[1];
 
@@ -483,35 +486,39 @@ sapp_desc sokol_main(int argc, char **argv) {
     } else {
       ok = load_filesystem_archive(&g_app->archive, mount_dir);
     }
+
+    g_app->mounted = true;
   }
 #endif
 
-  if (!ok) {
-    StringBuilder sb = format("failed to mount: %s", argv[1]);
-    defer(drop(&sb));
-
-    fatal_error(as_string(&sb));
-  } else {
-    Array<String> files = {};
-    defer({
-      for (String str : files) {
-        mem_free(str.data);
-      }
-      drop(&files);
-    });
-
-    ok = g_app->archive.list_all_files(&g_app->archive, &files);
+  if (g_app->mounted) {
     if (!ok) {
-      panic("failed to list all files");
-    }
-    qsort(files.data, files.len, sizeof(String), string_cmp);
+      StringBuilder sb = format("failed to mount: %s", argv[1]);
+      defer(drop(&sb));
 
-    for (String file : files) {
-      if (file != "main.lua" && ends_with(file, ".lua")) {
-        require_lua_script(&g_app->archive, file);
+      fatal_error(as_string(&sb));
+    } else {
+      Array<String> files = {};
+      defer({
+        for (String str : files) {
+          mem_free(str.data);
+        }
+        drop(&files);
+      });
+
+      ok = g_app->archive.list_all_files(&g_app->archive, &files);
+      if (!ok) {
+        panic("failed to list all files");
       }
+      qsort(files.data, files.len, sizeof(String), string_cmp);
+
+      for (String file : files) {
+        if (file != "main.lua" && ends_with(file, ".lua")) {
+          require_lua_script(&g_app->archive, file);
+        }
+      }
+      require_lua_script(&g_app->archive, "main.lua");
     }
-    require_lua_script(&g_app->archive, "main.lua");
   }
 
   lua_newtable(L);

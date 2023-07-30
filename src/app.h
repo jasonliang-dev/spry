@@ -14,7 +14,8 @@ struct App {
   u64 time_begin;
   double delta_time;
 
-  bool fused;
+  bool mounted;
+  bool hot_swappable;
   Archive archive;
   HashMap<Module> modules;
 
