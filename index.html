@@ -332,7 +332,7 @@
 </div>
 
 <div class="mw8 center mt5">
-  <div class="w-100 w-50-l ml-auto pl3">
+  <div class="pl2 pl3-ns">
     <h2>Features</h2>
     <p class="lh-copy mid-gray dm-silver mw6">
       Spry&#39;s features exist to improve development speed, reducing the
@@ -342,20 +342,9 @@
   </div>
 
   <div x-cloak x-data="{ selected: 0 }" class="flex flex-wrap mt4">
-    <div class="w-100 w-50-l mb4">
-              <div x-show="selected === 0" x-transition:enter>
-          <img src="static/feat-lua.png" alt="" class="mw6 w-100 db">
-        </div>
-              <div x-show="selected === 1" x-transition:enter>
-          <img src="static/feat-ase.png" alt="" class="mw6 w-100 db">
-        </div>
-              <div x-show="selected === 2" x-transition:enter>
-          <img src="static/feat-web.png" alt="" class="mw6 w-100 db">
-        </div>
-          </div>
-    <div class="w-100 w-50-l">
+    <div class="w-100 w-50-l mb3">
               <button
-          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
+          class="flex mb2 mb4-ns br3 pa3 ba tl w-100 bg-animate pointer"
           :class="
             selected === 0              ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
               : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-90'
@@ -368,7 +357,7 @@
       </svg>
               <div class="pl3 mt1">
             <h4 class="black dm-light-gray">Code with Lua</h4>
-            <p class="lh-copy mv0" style="max-width: 65ch">
+            <p class="dn db-ns lh-copy mv0" style="max-width: 65ch">
               <span class="mid-gray dm-light-silver db mt2">
                 
       Spry is powered by Lua, a small, lightweight, and flexible scripting
@@ -379,7 +368,7 @@
           </div>
         </button>
               <button
-          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
+          class="flex mb2 mb4-ns br3 pa3 ba tl w-100 bg-animate pointer"
           :class="
             selected === 1              ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
               : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-90'
@@ -392,7 +381,7 @@
       </svg>
               <div class="pl3 mt1">
             <h4 class="black dm-light-gray">Aseprite, LDtk, and rTexPacker support</h4>
-            <p class="lh-copy mv0" style="max-width: 65ch">
+            <p class="dn db-ns lh-copy mv0" style="max-width: 65ch">
               <span class="mid-gray dm-light-silver db mt2">
                 
       Seamlessly integrate your pixel art animations and level designs without
@@ -403,7 +392,7 @@
           </div>
         </button>
               <button
-          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
+          class="flex mb2 mb4-ns br3 pa3 ba tl w-100 bg-animate pointer"
           :class="
             selected === 2              ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
               : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-90'
@@ -416,7 +405,7 @@
       </svg>
               <div class="pl3 mt1">
             <h4 class="black dm-light-gray">Create for desktop and web</h4>
-            <p class="lh-copy mv0" style="max-width: 65ch">
+            <p class="dn db-ns lh-copy mv0" style="max-width: 65ch">
               <span class="mid-gray dm-light-silver db mt2">
                 
       Easily distribute your project by sharing your game as a single
@@ -425,6 +414,17 @@
             </p>
           </div>
         </button>
+          </div>
+    <div class="w-100 w-50-l">
+              <div x-show="selected === 0" x-transition:enter>
+          <img src="static/feat-lua.png" alt="" class="mw6 w-100 db">
+        </div>
+              <div x-show="selected === 1" x-transition:enter>
+          <img src="static/feat-ase.png" alt="" class="mw6 w-100 db">
+        </div>
+              <div x-show="selected === 2" x-transition:enter>
+          <img src="static/feat-web.png" alt="" class="mw6 w-100 db">
+        </div>
           </div>
   </div>
 </div>
