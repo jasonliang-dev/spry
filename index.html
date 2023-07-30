@@ -1,11 +1,24 @@
   <!DOCTYPE html>
-  <html lang="en" style="scroll-behavior: smooth">
+  <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Spry">
+    <meta name="description" content="Spry is a delightfully small 2D game framework made for rapid prototyping and game jams. Inspired by LÖVE.">
+    <meta name="keywords" content="game, development, love2d, lua">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="author" content="Jason Liang">
+    <meta name="og:title" content="Spry">
+    <meta name="og:site_name" content="Spry">
+    <meta name="og:url" content="https://jasonliang.js.org/spry/">
+    <meta name="og:description" content="Spry is a delightfully small 2D game framework made for rapid prototyping and game jams. Inspired by LÖVE.">
+    <meta name="og:type" content="website">
+    <title>Spry</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1691VYRF8G"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -18,132 +31,7 @@
     <link id="hljs-dark" rel="stylesheet" href="static/default-dark.min.css" disabled>
     <script src="static/highlight.min.js"></script>
     <script defer src="static/alpine.js"></script>
-    <title>
-            Spry
-    </title>
-    <style>
-      body {
-        font-family: "Poppins", sans-serif;
-      }
-
-      code {
-        font-family: "Roboto Mono", monospace;
-        font-size: 0.95em;
-      }
-
-      pre > code {
-        line-height: 1.25;
-      }
-
-      .shadow {
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-      }
-
-      .shadow-sm {
-        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      }
-
-      h1, h2, h3, h4, h5, h6 {
-        margin: 0;
-      }
-
-      .break-words {
-        overflow-wrap: break-word;
-      }
-
-      .bg-off-white {
-        background-color: #fafafa;
-      }
-
-      .dark-mode .dm-dn {
-        display: none;
-      }
-
-      .dark-mode .dm-dib {
-        display: inline-block;
-      }
-
-      .prose h1,
-      .prose h2,
-      .prose h3,
-      .prose h4,
-      .prose h5,
-      .prose h6 {
-        margin-top: 2rem;
-        margin-bottom: 0.5rem;
-      }
-
-      @media screen and (min-width: 60em) {
-        .ml-300px-l {
-          margin-left: 300px;
-        }
-      }
-
-      .prose p {
-        line-height: 1.5;
-      }
-
-      .prose ul,
-      .prose ol {
-        padding-left: 1rem;
-      }
-
-      .prose li {
-        line-height: 1.5;
-      }
-
-      .prose li > p {
-        margin-top: 0;
-        margin-bottom: 0.5rem;
-      }
-
-      .prose a {
-        color: #357EDD;
-        text-decoration: none;
-      }
-
-      .prose a:hover, .prose a:focus {
-        text-decoration: underline;
-      }
-
-      .prose :not(pre) > code {
-        background-color: rgba(0, 0, 0, 0.05);
-        padding-left: 0.2rem;
-        padding-right: 0.2rem;
-        border-radius: 0.25rem;
-      }
-
-      .dark-mode .prose :not(pre) > code {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-
-      .prose pre > code {
-        border-radius: 0.5rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-      }
-
-      .dark-mode .prose pre > code {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .bg-fade-down {
-        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #f4f4f4 50%);
-      }
-
-      .dark-mode .bg-fade-down {
-        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #111111 50%);
-      }
-
-      .placeholder::placeholder {
-        color: #000000;
-        opacity: 0.5;
-      }
-
-      .dark-mode .placeholder::placeholder {
-        color: #ffffff;
-        opacity: 0.5;
-      }
-    </style>
+    <link rel="stylesheet" href="static/style.css">
     <script>
       const doc = document.documentElement
       const prefersDark = localStorage.theme === undefined && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -171,115 +59,382 @@
     </script>
   </head>
   <body class="ph3 black bg-near-white dm-bg-near-black dm-light-gray">
-        <div class="fixed z-999 top-0 left-0 right-0 bb b--black-10 dm-b--white-10 bg-white-90 dm-bg-black-90 ph3" style="height: 3.5rem">
+    <div
+      class="fixed top-0 left-0 right-0 bb b--black-10 dm-b--white-10 bg-white-90 dm-bg-black-90 ph3"
+      style="height: 3.5rem; z-index: 100"
+    >
       <div class="mw8 center flex items-center justify-between h-100">
-        <a class="link dim black dm-white f3 b" href="index.html">Spry</a>
+        <a class="link dim black dm-white f3 fw6" href="index.html">Spry</a>
         <div class="flex items-center">
-          <nav>
+          <nav class="dn db-ns">
             <div
               x-data="{ open: false }"
               class="mr3 dib relative"
+              @mouseover="open = true"
+              @mouseleave="open = false"
             >
-              <button
-                type="button"
-                @click="open = !open"
-                class="flex items-center underline-hover dark-gray dm-silver bg-transparent bn ph0 pointer"
-              >
-                <span class="mr1">Guides</span>
+              <button @click="open = !open" class="flex items-center dark-gray dm-silver pb2 nb2 link underline-hover bn bg-transparent pa0">
+                <span class="mr1" style="cursor: default">Guides</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px" class="gray">
                   <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                 </svg>
               </button>
               <ul
+                x-cloak
                 x-show="open"
-                @click.outside="open = false"
+                x-transition.opacity.scale.origin.top.right
                 class="absolute right-0 list shadow-sm ba pv1 b--black-10 dm-b--white-10 pl0 mv0 bg-white dm-bg-near-black nowrap br2"
+                style="top: 1.8rem"
               >
-                                                    <li>
+                                  <li>
                     <a href="quick-start.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
-                      Getting Started                    </a>
+                      Quick Start                    </a>
                   </li>
-                                                    <li>
-                    <a href="game-demo.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
-                      UFO Demo                    </a>
+                                  <li>
+                    <a href="ufo-game.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      UFO Game                    </a>
                   </li>
-                                                    <li>
+                                  <li>
                     <a href="distribution.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
                       Distribution                    </a>
                   </li>
-                                                </ul>
+                              </ul>
             </div>
-            <a class="mr3 link dark-gray dm-silver underline-hover" href="docs.html">Reference</a>
+            <a class="mr3 dark-gray dm-silver link underline-hover" href="docs.html">Reference</a>
           </nav>
-          <button class="bg-transparent bn black dm-silver dim pointer" type="button" onclick="toggleTheme()">
-            <svg class="dib dm-dn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          <button class="bg-transparent bn gray dim pointer" type="button" onclick="toggleTheme()" style="padding-top: 1px">
+            <svg class="dib dm-dn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px">
+              <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 5.404a.75.75 0 10-1.06-1.06l-1.061 1.06a.75.75 0 001.06 1.06l1.06-1.06zM6.464 14.596a.75.75 0 10-1.06-1.06l-1.06 1.06a.75.75 0 001.06 1.06l1.06-1.06zM18 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0118 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10zM14.596 15.657a.75.75 0 001.06-1.06l-1.06-1.061a.75.75 0 10-1.06 1.06l1.06 1.06zM5.404 6.464a.75.75 0 001.06-1.06l-1.06-1.06a.75.75 0 10-1.061 1.06l1.06 1.06z" />
             </svg>
-            <svg class="dn dm-dib" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-top: 2px">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            <svg class="dn dm-dib" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px">
+              <path fill-rule="evenodd" d="M7.455 2.004a.75.75 0 01.26.77 7 7 0 009.958 7.967.75.75 0 011.067.853A8.5 8.5 0 116.647 1.921a.75.75 0 01.808.083z" clip-rule="evenodd" />
             </svg>
           </button>
+          <nav x-cloak x-data="{ open: false }" class="dn-ns pl3">
+            <button @click="open = !open" type="button" class="gray bn bg-transparent">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M2 6.75A.75.75 0 012.75 6h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 6.75zm0 6.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div x-show="open" @click="open = false" x-transition.opacity class="fixed absolute--fill bg-white-50 dm-bg-black-50">
+            </div>
+            <ul
+              class="fixed mv0 top-0 bottom-0 right-0 bg-white dm-bg-near-black list shadow-sm ba b--black-10 dm-b-white-10 pl3 pt3"
+              style="transition: transform 150ms; width: 70%; z-index: 1000"
+              :style="{ transform: open ? 'translateX(0)' : 'translateX(100%)' }"
+            >
+                              <li>
+                  <a href="quick-start.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                    Quick Start                  </a>
+                </li>
+                              <li>
+                  <a href="ufo-game.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                    UFO Game                  </a>
+                </li>
+                              <li>
+                  <a href="distribution.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                    Distribution                  </a>
+                </li>
+                            <li>
+                <a href="docs.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                  Reference
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
-    <div class="mb5" style="margin-top: 3.5rem">
+    <div style="margin-top: 3.5rem">
       <div class="mw8 center pt3 mb5">
-  <p class="f2 f1-l mb3 mw7 lh-title">
+  <h1 class="f2 f1-l mv4 mw7 lh-title fw6">
     Spry is a delightfully small 2D game framework made for rapid prototyping
     and game jams. Inspired by
     <a class="blue link underline-hover" href="https://love2d.org/">LÖVE</a>.
-  </p>
-  <a class="bg-blue white ba b--black-10 b br2 ph3 pv2 link underline-hover inline-flex items-center" href="quick-start.html">
-    Get started with Spry
+  </h1>
+  <a
+    class="mb2 mr3 shadow bg-blue hover-bg-dark-blue white br-pill ph4 pv2 bg-animate no-underline inline-flex items-center"
+    href="quick-start.html"
+  >
+    <span style="margin-top: 2px">Get started</span>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
       <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
     </svg>
   </a>
-  <br>
-  <a class="mt2 bg-white dm-bg-black black dm-white ba b--black-20 dm-b--white-20 b br2 ph3 pv2 link underline-hover inline-flex items-center" href="https://github.com/jasonliang-dev/spry">
-    View on GitHub
+  <a
+    class="inline-flex items-center dark-gray dm-light-silver link underline-hover"
+    href="https://github.com/jasonliang-dev/spry"
+  >
+    <span style="margin-top: 2px">View on GitHub</span>
     <svg class="ml2" width="20" height="20" viewBox="0 0 98 96" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>
   </a>
 </div>
 
-<div class="mw9 center pv2">
+<div class="mw8 center pv2">
   <div class="flex flex-wrap na2">
-          <div class="pa2 w-100 w-50-m w-third-l">
-        <a href="https://github.com/jasonliang-dev/spry/tree/master/examples/planes" class="dib relative z-0 hide-child br3 ba b--black-10 db-b--white-10">
-          <div class="absolute absolute--fill child flex items-center justify-center br3 bg-black-40 white">
-            <h3>Planes</h3>
+          <div class="pa2 w-100 w-50-ns">
+        <div class="br3 shadow-sm ba b--black-10 dm-b--white-20">
+          <a href="plane-demo.html" class="video-overlay">
+            <div
+              class="absolute z-1 absolute--fill flex justify-start items-end white pa3 pa4-l f3 fw6"
+              style="background: linear-gradient(5deg, rgb(6.667% 6.667% 6.667% / 0.75) 0%, rgb(5.493% 5.493% 5.493% / 0.61798095703125) 6.25%, rgb(4.466% 4.466% 4.466% / 0.50244140625) 12.5%, rgb(3.576% 3.576% 3.576% / 0.40228271484375) 18.75%, rgb(2.812% 2.812% 2.812% / 0.31640625) 25%, rgb(2.166% 2.166% 2.166% / 0.24371337890625) 31.25%, rgb(1.628% 1.628% 1.628% / 0.18310546875) 37.5%, rgb(1.187% 1.187% 1.187% / 0.13348388671875) 43.75%, rgb(0.833% 0.833% 0.833% / 0.09375) 50%, rgb(0.558% 0.558% 0.558% / 0.06280517578125) 56.25%, rgb(0.352% 0.352% 0.352% / 0.03955078125) 62.5%, rgb(0.203% 0.203% 0.203% / 0.02288818359375) 68.75%, rgb(0.104% 0.104% 0.104% / 0.01171875) 75%, rgb(0.044% 0.044% 0.044% / 0.00494384765625) 81.25%, rgb(0.013% 0.013% 0.013% / 0.00146484375) 87.5%, rgb(0.002% 0.002% 0.002% / 0.00018310546875) 93.75%, rgb(0% 0% 0% / 0) 100% );"
+            >
+              Planes            </div>
+            <video autoplay muted loop class="w-100 z-0 db br3 br--top">
+              <source src="static/example-ships.webm" type="video/webm">
+            </video>
+          </a>
+          <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex">
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="plane-demo.html"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Play Demo
+              </span>
+            </a>
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="https://github.com/jasonliang-dev/spry/tree/master/examples/planes"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Read Code
+              </span>
+            </a>
           </div>
-          <video autoplay muted loop class="w-100 db br3">
-            <source src="static/example-ships.webm" type="video/webm">
-          </video>
-        </a>
+        </div>
       </div>
-          <div class="pa2 w-100 w-50-m w-third-l">
-        <a href="https://github.com/jasonliang-dev/spry/tree/master/examples/dungeon" class="dib relative z-0 hide-child br3 ba b--black-10 db-b--white-10">
-          <div class="absolute absolute--fill child flex items-center justify-center br3 bg-black-40 white">
-            <h3>Dungeon</h3>
+          <div class="pa2 w-100 w-50-ns">
+        <div class="br3 shadow-sm ba b--black-10 dm-b--white-20">
+          <a href="dungeon-demo.html" class="video-overlay">
+            <div
+              class="absolute z-1 absolute--fill flex justify-start items-end white pa3 pa4-l f3 fw6"
+              style="background: linear-gradient(5deg, rgb(6.667% 6.667% 6.667% / 0.75) 0%, rgb(5.493% 5.493% 5.493% / 0.61798095703125) 6.25%, rgb(4.466% 4.466% 4.466% / 0.50244140625) 12.5%, rgb(3.576% 3.576% 3.576% / 0.40228271484375) 18.75%, rgb(2.812% 2.812% 2.812% / 0.31640625) 25%, rgb(2.166% 2.166% 2.166% / 0.24371337890625) 31.25%, rgb(1.628% 1.628% 1.628% / 0.18310546875) 37.5%, rgb(1.187% 1.187% 1.187% / 0.13348388671875) 43.75%, rgb(0.833% 0.833% 0.833% / 0.09375) 50%, rgb(0.558% 0.558% 0.558% / 0.06280517578125) 56.25%, rgb(0.352% 0.352% 0.352% / 0.03955078125) 62.5%, rgb(0.203% 0.203% 0.203% / 0.02288818359375) 68.75%, rgb(0.104% 0.104% 0.104% / 0.01171875) 75%, rgb(0.044% 0.044% 0.044% / 0.00494384765625) 81.25%, rgb(0.013% 0.013% 0.013% / 0.00146484375) 87.5%, rgb(0.002% 0.002% 0.002% / 0.00018310546875) 93.75%, rgb(0% 0% 0% / 0) 100% );"
+            >
+              Dungeon            </div>
+            <video autoplay muted loop class="w-100 z-0 db br3 br--top">
+              <source src="static/example-dungeon.webm" type="video/webm">
+            </video>
+          </a>
+          <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex">
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="dungeon-demo.html"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Play Demo
+              </span>
+            </a>
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="https://github.com/jasonliang-dev/spry/tree/master/examples/dungeon"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Read Code
+              </span>
+            </a>
           </div>
-          <video autoplay muted loop class="w-100 db br3">
-            <source src="static/example-dungeon.webm" type="video/webm">
-          </video>
-        </a>
+        </div>
       </div>
-          <div class="pa2 w-100 w-50-m w-third-l">
-        <a href="https://github.com/jasonliang-dev/spry/tree/master/examples/boxes" class="dib relative z-0 hide-child br3 ba b--black-10 db-b--white-10">
-          <div class="absolute absolute--fill child flex items-center justify-center br3 bg-black-40 white">
-            <h3>Physics</h3>
+          <div class="pa2 w-100 w-50-ns">
+        <div class="br3 shadow-sm ba b--black-10 dm-b--white-20">
+          <a href="jump-demo.html" class="video-overlay">
+            <div
+              class="absolute z-1 absolute--fill flex justify-start items-end white pa3 pa4-l f3 fw6"
+              style="background: linear-gradient(5deg, rgb(6.667% 6.667% 6.667% / 0.75) 0%, rgb(5.493% 5.493% 5.493% / 0.61798095703125) 6.25%, rgb(4.466% 4.466% 4.466% / 0.50244140625) 12.5%, rgb(3.576% 3.576% 3.576% / 0.40228271484375) 18.75%, rgb(2.812% 2.812% 2.812% / 0.31640625) 25%, rgb(2.166% 2.166% 2.166% / 0.24371337890625) 31.25%, rgb(1.628% 1.628% 1.628% / 0.18310546875) 37.5%, rgb(1.187% 1.187% 1.187% / 0.13348388671875) 43.75%, rgb(0.833% 0.833% 0.833% / 0.09375) 50%, rgb(0.558% 0.558% 0.558% / 0.06280517578125) 56.25%, rgb(0.352% 0.352% 0.352% / 0.03955078125) 62.5%, rgb(0.203% 0.203% 0.203% / 0.02288818359375) 68.75%, rgb(0.104% 0.104% 0.104% / 0.01171875) 75%, rgb(0.044% 0.044% 0.044% / 0.00494384765625) 81.25%, rgb(0.013% 0.013% 0.013% / 0.00146484375) 87.5%, rgb(0.002% 0.002% 0.002% / 0.00018310546875) 93.75%, rgb(0% 0% 0% / 0) 100% );"
+            >
+              Jump            </div>
+            <video autoplay muted loop class="w-100 z-0 db br3 br--top">
+              <source src="static/example-jump.webm" type="video/webm">
+            </video>
+          </a>
+          <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex">
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="jump-demo.html"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Play Demo
+              </span>
+            </a>
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="https://github.com/jasonliang-dev/spry/tree/master/examples/jump"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Read Code
+              </span>
+            </a>
           </div>
-          <video autoplay muted loop class="w-100 db br3">
-            <source src="static/example-physics.webm" type="video/webm">
-          </video>
-        </a>
+        </div>
+      </div>
+          <div class="pa2 w-100 w-50-ns">
+        <div class="br3 shadow-sm ba b--black-10 dm-b--white-20">
+          <a href="physics-demo.html" class="video-overlay">
+            <div
+              class="absolute z-1 absolute--fill flex justify-start items-end white pa3 pa4-l f3 fw6"
+              style="background: linear-gradient(5deg, rgb(6.667% 6.667% 6.667% / 0.75) 0%, rgb(5.493% 5.493% 5.493% / 0.61798095703125) 6.25%, rgb(4.466% 4.466% 4.466% / 0.50244140625) 12.5%, rgb(3.576% 3.576% 3.576% / 0.40228271484375) 18.75%, rgb(2.812% 2.812% 2.812% / 0.31640625) 25%, rgb(2.166% 2.166% 2.166% / 0.24371337890625) 31.25%, rgb(1.628% 1.628% 1.628% / 0.18310546875) 37.5%, rgb(1.187% 1.187% 1.187% / 0.13348388671875) 43.75%, rgb(0.833% 0.833% 0.833% / 0.09375) 50%, rgb(0.558% 0.558% 0.558% / 0.06280517578125) 56.25%, rgb(0.352% 0.352% 0.352% / 0.03955078125) 62.5%, rgb(0.203% 0.203% 0.203% / 0.02288818359375) 68.75%, rgb(0.104% 0.104% 0.104% / 0.01171875) 75%, rgb(0.044% 0.044% 0.044% / 0.00494384765625) 81.25%, rgb(0.013% 0.013% 0.013% / 0.00146484375) 87.5%, rgb(0.002% 0.002% 0.002% / 0.00018310546875) 93.75%, rgb(0% 0% 0% / 0) 100% );"
+            >
+              Physics            </div>
+            <video autoplay muted loop class="w-100 z-0 db br3 br--top">
+              <source src="static/example-physics.webm" type="video/webm">
+            </video>
+          </a>
+          <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex">
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="physics-demo.html"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Play Demo
+              </span>
+            </a>
+            <a
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              href="https://github.com/jasonliang-dev/spry/tree/master/examples/boxes"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                <path fill-rule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml2" style="margin-top: 1px">
+                Read Code
+              </span>
+            </a>
+          </div>
+        </div>
       </div>
       </div>
 </div>
 
-<div class="mw8 center">
-  <h4 class="mt3">Hello, World!</h4>
-    <pre><code class="language-lua br3 ba b--black-10 dm-b--white-10">function spry.start()
+<div class="mw8 center mt5">
+  <div class="w-100 w-50-l ml-auto pl3">
+    <h2>Features</h2>
+    <p class="lh-copy mid-gray dm-silver mw6">
+      Spry&#39;s features exist to improve development speed, reducing the
+      time it takes to tweak, experiment, and iterate during the early stages
+      of your project.
+    </p>
+  </div>
+
+  <div x-cloak x-data="{ selected: 0 }" class="flex flex-wrap mt4">
+    <div class="w-100 w-50-l" style="height: 490px">
+              <div x-show="selected === 0" x-transition:enter>
+          <img src="static/feat-lua.png" alt="" class="mw6 w-100 db">
+        </div>
+              <div x-show="selected === 1" x-transition:enter>
+          <img src="static/feat-ase.png" alt="" class="mw6 w-100 db">
+        </div>
+              <div x-show="selected === 2" x-transition:enter>
+          <img src="static/feat-web.png" alt="" class="mw6 w-100 db">
+        </div>
+          </div>
+    <div class="w-100 w-50-l">
+              <button
+          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
+          :class="
+            selected === 0              ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
+              : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-90'
+          "
+          @click="selected = 0"
+        >
+          
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" class="flex-none gray">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+      </svg>
+              <div class="pl3 mt1">
+            <h4 class="black dm-light-gray">Code with Lua</h4>
+            <p class="lh-copy mv0" style="max-width: 65ch">
+              <span class="mid-gray dm-light-silver db mt2">
+                
+      Spry is powered by Lua, a small, lightweight, and flexible scripting
+      language. Spend resources developing your idea, instead of waiting for
+      a compiler to build your changes.
+                  </span>
+            </p>
+          </div>
+        </button>
+              <button
+          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
+          :class="
+            selected === 1              ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
+              : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-90'
+          "
+          @click="selected = 1"
+        >
+          
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" class="flex-none gray">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+      </svg>
+              <div class="pl3 mt1">
+            <h4 class="black dm-light-gray">Aseprite, LDtk, and rTexPacker support</h4>
+            <p class="lh-copy mv0" style="max-width: 65ch">
+              <span class="mid-gray dm-light-silver db mt2">
+                
+      Seamlessly integrate your pixel art animations and level designs without
+      dealing with file conversions. Save time by loading <code>.ase</code> and
+      <code>.ldtk</code> files directly.
+                  </span>
+            </p>
+          </div>
+        </button>
+              <button
+          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
+          :class="
+            selected === 2              ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
+              : 'b--transparent bg-transparent hover-bg-black-10 dm-hover-bg-black-90'
+          "
+          @click="selected = 2"
+        >
+          
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" class="flex-none gray">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525" />
+      </svg>
+              <div class="pl3 mt1">
+            <h4 class="black dm-light-gray">Create for desktop and web</h4>
+            <p class="lh-copy mv0" style="max-width: 65ch">
+              <span class="mid-gray dm-light-silver db mt2">
+                
+      Easily distribute your project by sharing your game as a single
+      executable, or by serving it on the web with the power of WebAssembly.
+                  </span>
+            </p>
+          </div>
+        </button>
+          </div>
+  </div>
+</div>
+
+<div class="mw8 center mt5">
+  <h2>Code Examples</h2>
+
+      <p>Hello, World!</p>
+    <div class="flex flex-wrap flex-nowrap-l mb5">
+      <pre class="w-100 mt0 mb3 mb0-l mr3-l"><code class="language-lua br3 ba b--black-10 dm-b--white-10">function spry.start()
   font = spry.font_load 'roboto.ttf'
 end
 
@@ -287,9 +442,13 @@ function spry.frame(dt)
   font:draw('Hello, World!', 100, 100)
 end
 </code></pre>
-  
-  <h4 class="mt3">Draw a moving image</h4>
-    <pre><code class="language-lua br3 ba b--black-10 dm-b--white-10">function spry.start()
+      <div style="width: 300px" class="flex-none">
+                  <img src="static/code-hello.png" alt="" class="mw6 center w-100 db br3">
+              </div>
+    </div>
+      <p>Load an image and move it to the left over time.</p>
+    <div class="flex flex-wrap flex-nowrap-l mb5">
+      <pre class="w-100 mt0 mb3 mb0-l mr3-l"><code class="language-lua br3 ba b--black-10 dm-b--white-10">function spry.start()
   img = spry.image_load 'tile.png'
   x = 0
 end
@@ -299,43 +458,60 @@ function spry.frame(dt)
   img:draw(x, 100)
 end
 </code></pre>
-  
-  <h4 class="mt3">Player movement with keyboard</h4>
-    <pre><code class="language-lua br3 ba b--black-10 dm-b--white-10">class 'Player'
+      <div style="width: 300px" class="flex-none">
+                  <video autoplay muted loop class="w-100 db br3">
+            <source src="static/code-tile.webm" type="video/webm">
+          </video>
+              </div>
+    </div>
+      <p>Load an Aseprite file and display a sprite animation.</p>
+    <div class="flex flex-wrap flex-nowrap-l mb5">
+      <pre class="w-100 mt0 mb3 mb0-l mr3-l"><code class="language-lua br3 ba b--black-10 dm-b--white-10">class 'Player'
 
-function Player:new(x, y, img)
-  self.x = x
-  self.y = y
-  self.img = img
+function Player:new(x, y)
+  self.x, self.y = x, y
+  self.sprite = spry.sprite_load 'player.ase'
 end
 
 function Player:update(dt)
-  local vx, vy = 0, 0
-
-  if spry.key_down 'w' then vy = vy - 1 end
-  if spry.key_down 's' then vy = vy + 1 end
-  if spry.key_down 'a' then vx = vx - 1 end
-  if spry.key_down 'd' then vx = vx + 1 end
-
-  local move_speed = 200
-  vx, vy = normalize(vx, vy)
-  self.x = self.x + vx * move_speed * dt
-  self.y = self.y + vy * move_speed * dt
+  self.sprite:update(dt)
 end
 
 function Player:draw()
-  self.img:draw(self.x, self.y)
+  local w = self.sprite:width() / 2
+  local h = self.sprite:height() / 2
+  self.sprite:draw(self.x, self.y, angle, 1, 1, w, h)
 end
 </code></pre>
+      <div style="width: 300px" class="flex-none">
+                  <video autoplay muted loop class="w-100 db br3">
+            <source src="static/code-ase.webm" type="video/webm">
+          </video>
+              </div>
+    </div>
   
-  <a class="blue link underline-hover inline-flex items-center" href="quick-start.html">
-    Create a game using Spry
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px">
+  <a
+    class="blue link underline-hover inline-flex items-center"
+    href="quick-start.html"
+  >
+    Make your first Spry project
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
       <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
     </svg>
   </a>
 </div>
+  <footer class="flex flex-wrap center mv5 mw8">
+    <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
+      &copy; 2023 Jason Liang
     </div>
+    <a href="https://jasonliang.js.org/spry/docs.html" class="gray link underline-hover mr3 pv3 dib">
+      API Reference
+    </a>
+    <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover pv3 dib">
+      GitHub
+    </a>
+  </footer>
+      </div>
     <script>hljs.highlightAll()</script>
   </body>
   </html>

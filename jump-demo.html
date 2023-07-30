@@ -10,12 +10,12 @@
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
     <meta name="author" content="Jason Liang">
-    <meta name="og:title" content="Quick Start | Spry">
+    <meta name="og:title" content="Jump | Spry">
     <meta name="og:site_name" content="Spry">
     <meta name="og:url" content="https://jasonliang.js.org/spry/">
     <meta name="og:description" content="Spry is a delightfully small 2D game framework made for rapid prototyping and game jams. Inspired by LÖVE.">
     <meta name="og:type" content="website">
-    <title>Quick Start | Spry</title>
+    <title>Jump | Spry</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -146,116 +146,40 @@
       </div>
     </div>
     <div style="margin-top: 3.5rem">
-        <div class="mw7 center prose pt3"><h1>Getting Started</h1>
-<p>Download Spry from <a href="https://github.com/jasonliang-dev/spry/releases">GitHub</a>.
-When you run the program, you'll see a window with the text: <code>No game!</code>.</p>
-<h2>Creating a Game</h2>
-<p>To make your first game:</p>
-<ul>
-<li>
-<p>Create a new folder.</p>
-</li>
-<li>
-<p>Create a new file called <code>main.lua</code> in the new folder.</p>
-</li>
-<li>
-<p>Open <code>main.lua</code> in a text editor.
-<a href="https://www.sublimetext.com/">Sublime Text</a>,
-<a href="https://notepad-plus-plus.org/">Notepad++</a>,
-<a href="https://code.visualstudio.com/">VS Code</a>, and
-<a href="https://github.com/rxi/lite">lite</a>
-are some examples of text editors that you can use.</p>
-</li>
-<li>
-<p>Add the following code in <code>main.lua</code>, and save the file:</p>
-<pre><code class="language-lua">function spry.start()
-  font = spry.default_font()
-end
-
-function spry.frame()
-  font:draw('Hello, World!', 400, 300)
-end</code></pre>
-</li>
+        <div class="flex flex-column items-center center" style="width: 500px">
+    <div class="prose w-100">
+      <h1>Jump</h1>
+      <ul>
+<li><code>A</code> and <code>D</code> to move left/right</li>
+<li><code>M</code> to unmute sound.</li>
 </ul>
-<h2>Running Your Game</h2>
-<p>The simplest way to load and run your project is to drag and drop the folder
-you created onto <code>spry.exe</code>. You can also run the program from the console:</p>
-<pre><code class="language-plaintext">C:\path\to\spry.exe my_folder</code></pre>
-<p>A window should open with the text <code>Hello World!</code>. You've successfully created
-your first game using Spry!</p></div>
-  <div class="mw7 center mt5">
-  <h2 class="mb3">What next?</h2>
-
-  <div class="flex flex-wrap na2">
-          <div class="w-100 w-50-l pa2">
-        <div class="bg-white dm-bg-white-10 br3 ba b--black-10 dm-b--white-20 pa3 shadow-sm">
-          <h3>UFO game</h3>
-          <p class="mid-gray dm-light-silver lh-copy">
-            
-      Explore Spry even more by building a game where you move a UFO around in
-      2D space using the keyboard.
-              </p>
-          <a href="ufo-game.html" class="inline-flex items-center blue link underline-hover">
-            Let&#39;s create            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
-              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-            </svg>
-          </a>
-        </div>
-      </div>
-          <div class="w-100 w-50-l pa2">
-        <div class="bg-white dm-bg-white-10 br3 ba b--black-10 dm-b--white-20 pa3 shadow-sm">
-          <h3>Distribution</h3>
-          <p class="mid-gray dm-light-silver lh-copy">
-            
-      Learn how to package up your project for others to play your game on the
-      desktop and on the web.
-              </p>
-          <a href="distribution.html" class="inline-flex items-center blue link underline-hover">
-            Share your project            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
-              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-            </svg>
-          </a>
-        </div>
-      </div>
-          <div class="w-100 w-50-l pa2">
-        <div class="bg-white dm-bg-white-10 br3 ba b--black-10 dm-b--white-20 pa3 shadow-sm">
-          <h3>API Reference</h3>
-          <p class="mid-gray dm-light-silver lh-copy">
-            
-      Spry has a diverse collection of functions and types to work with. The
-      API reference page puts them all in one place.
-              </p>
-          <a href="docs.html" class="inline-flex items-center blue link underline-hover">
-            Explore API            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
-              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-            </svg>
-          </a>
-        </div>
-      </div>
-          <div class="w-100 w-50-l pa2">
-        <div class="bg-white dm-bg-white-10 br3 ba b--black-10 dm-b--white-20 pa3 shadow-sm">
-          <h3>Example Projects</h3>
-          <p class="mid-gray dm-light-silver lh-copy">
-            
-      One of the best ways you can learn how to use Spry is to read the
-      various project examples on GitHub.
-              </p>
-          <a href="https://github.com/jasonliang-dev/spry/tree/master/examples" class="inline-flex items-center blue link underline-hover">
-            Read code            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
-              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-            </svg>
-          </a>
-        </div>
-      </div>
-      </div>
-
-  <p class="lh-copy">
-    Do you have prior programming experience but have never used Lua?
-    <a href="https://learnxinyminutes.com/docs/lua/" class="blue link underline-hover">Learn Lua in Y minutes</a>.
-  </p>
-</div>
-
-  <footer class="flex flex-wrap center mv5 mw7">
+<p><strong>Volume warning:</strong> The music can be loud!</p>    </div>
+    <canvas
+      oncontextmenu="event.preventDefault()"
+      id="canvas"
+      tabindex="-1"
+      class="shadow ba b--black-10 dm-b--white-10 br3"
+      style="width: 500px; height: 700px"
+    ></canvas>
+    <div class="mt3 flex justify-between w-100">
+      <a class="blue link underline-hover inline-flex items-center" href="index.html">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        <span class="ml2">
+          Back to home
+        </span>
+      </a>
+      <a class="blue link underline-hover inline-flex items-center" href="https://github.com/jasonliang-dev/spry/tree/master/examples/jump">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+        </svg>
+        <span class="ml2">
+          View source code
+        </span>
+      </a>
+    </div>
+      <footer class="flex flex-wrap center mv5 w-100">
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang
     </div>
@@ -266,6 +190,13 @@ your first game using Spry!</p></div>
       GitHub
     </a>
   </footer>
+    </div>
+  <script type="text/javascript">
+    var canvas = document.getElementById('canvas');
+    var Module = { canvas };
+    var spryMount = 'static/jump.zip';
+  </script>
+  <script src="static/spry.js" type="text/javascript"></script>
       </div>
     <script>hljs.highlightAll()</script>
   </body>
