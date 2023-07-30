@@ -44,8 +44,9 @@ chmod +x my_game
 
 ## Spry on the Web
 
-To run Spry in a web browser, you need to download the web version of Spry.
-The web build of Spry should contain the files: `index.html`, `spry.js`, and
+To run Spry in a web browser, you need to download the
+[html5 version](https://github.com/jasonliang-dev/spry/releases) of Spry. The
+web version of Spry should contain the files: `index.html`, `spry.js`, and
 `spry.wasm`.
 
 Inside `index.html`, you'll see the following JavaScript code:

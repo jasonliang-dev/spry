@@ -114,7 +114,7 @@ $code_examples = [
     <a class="blue link underline-hover" href="https://love2d.org/">LÖVE</a>.
   </h1>
   <a
-    class="mb2 mr3 shadow bg-blue hover-bg-dark-blue white br-pill ph4 pv2 bg-animate no-underline inline-flex items-center"
+    class="mb2 mb3 shadow bg-blue hover-bg-dark-blue white br-pill ph4 pv2 bg-animate no-underline inline-flex items-center"
     href="quick-start.html"
   >
     <span style="margin-top: 2px">Get started</span>
@@ -123,7 +123,7 @@ $code_examples = [
     </svg>
   </a>
   <a
-    class="inline-flex items-center dark-gray dm-light-silver link underline-hover"
+    class="ml3 mb3 inline-flex items-center dark-gray dm-light-silver link underline-hover"
     href="https://github.com/jasonliang-dev/spry"
   >
     <span style="margin-top: 2px">View on GitHub</span>
@@ -179,27 +179,20 @@ $code_examples = [
 </div>
 
 <div class="mw8 center mt5">
-  <div class="w-100 w-50-l ml-auto pl3">
+  <div class="pl2 pl3-ns">
     <h2>Features</h2>
     <p class="lh-copy mid-gray dm-silver mw6">
-      Spry&#39;s features exist to improve development speed, reducing the
-      time it takes to tweak, experiment, and iterate during the early stages
-      of your project.
+      Spry&#39;s features exist to improve the time it takes for you to to
+      tweak, experiment, and iterate during the early stages of your
+      project.
     </p>
   </div>
 
   <div x-cloak x-data="{ selected: 0 }" class="flex flex-wrap mt4">
-    <div class="w-100 w-50-l" style="height: 490px">
-      <?php foreach ($features as $i => $feature): ?>
-        <div x-show="selected === <?= $i ?>" x-transition:enter>
-          <img src="<?= $feature["img"] ?>" alt="" class="mw6 w-100 db">
-        </div>
-      <?php endforeach ?>
-    </div>
-    <div class="w-100 w-50-l">
+    <div class="w-100 w-50-l mb3">
       <?php foreach ($features as $i => $feature): ?>
         <button
-          class="flex mb4 br3 pa3 ba tl w-100 bg-animate pointer"
+          class="flex mb2 mb4-ns br3 pa3 ba tl w-100 bg-animate pointer"
           :class="
             selected === <?= $i ?>
               ? 'shadow-sm bg-white dm-bg-white-10 b--black-10 dm-b--white-20 br3'
@@ -209,14 +202,21 @@ $code_examples = [
         >
           <?= $feature["icon"] ?>
           <div class="pl3 mt1">
-            <h4 class="black dm-light-gray"><?= $feature["text"] ?></h4>
-            <p class="lh-copy mv0" style="max-width: 65ch">
+            <h4 class="black fw4 fw6-ns dm-light-gray"><?= $feature["text"] ?></h4>
+            <p class="dn db-ns lh-copy mv0" style="max-width: 65ch">
               <span class="mid-gray dm-light-silver db mt2">
                 <?= $feature["desc"] ?>
               </span>
             </p>
           </div>
         </button>
+      <?php endforeach ?>
+    </div>
+    <div class="w-100 w-50-l">
+      <?php foreach ($features as $i => $feature): ?>
+        <div x-show="selected === <?= $i ?>" x-transition:enter>
+          <img src="<?= $feature["img"] ?>" alt="" class="mw6 w-100 db">
+        </div>
       <?php endforeach ?>
     </div>
   </div>
@@ -229,7 +229,7 @@ $code_examples = [
     <p><?= $example["text"] ?></p>
     <div class="flex flex-wrap flex-nowrap-l mb5">
       <pre class="w-100 mt0 mb3 mb0-l mr3-l"><code class="language-lua br3 ba b--black-10 dm-b--white-10"><?= multiline_trim($example["code"]) ?></code></pre>
-      <div style="width: 300px" class="flex-none">
+      <div style="max-width: 300px" class="w-100 flex-none">
         <?php if ($example["image"]): ?>
           <img src="<?= $example["image"] ?>" alt="" class="mw6 center w-100 db br3">
         <?php elseif ($example["video"]): ?>

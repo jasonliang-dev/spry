@@ -41,8 +41,8 @@ class Data {
         "text" => "
           - `WASD` to move
           - Mouse to aim
-          - Left click to swing sword
           - Right click to shoot arrow
+          - Tab to view collision shapes
         ",
       ],
       "Jump" => [
