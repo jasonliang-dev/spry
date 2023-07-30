@@ -89,7 +89,11 @@ static PhysicsUserData *physics_userdata(lua_State *L) {
 
 static void physics_push_userdata(lua_State *L, u64 ptr) {
   PhysicsUserData *pud = (PhysicsUserData *)ptr;
-  assert(pud != nullptr);
+
+  if (pud == nullptr) {
+    lua_pushnil(L);
+    return;
+  }
 
   switch (pud->type) {
   case LUA_TNUMBER: lua_pushnumber(L, pud->num); break;
@@ -181,13 +185,15 @@ struct PhysicsContactListener : public b2ContactListener {
 };
 
 static void draw_fixtures_for_body(b2Body *body, float meter) {
+  Color color = top_color();
+
   for (b2Fixture *f = body->GetFixtureList(); f != nullptr; f = f->GetNext()) {
     switch (f->GetType()) {
     case b2Shape::e_circle: {
       b2CircleShape *circle = (b2CircleShape *)f->GetShape();
       b2Vec2 pos = body->GetWorldPoint(circle->m_p);
       draw_line_circle(pos.x * meter, pos.y * meter, circle->m_radius * meter,
-                       top_color());
+                       color);
       break;
     }
     case b2Shape::e_polygon: {
@@ -197,8 +203,7 @@ static void draw_fixtures_for_body(b2Body *body, float meter) {
         sgl_disable_texture();
         sgl_begin_line_strip();
 
-        Color c = top_color();
-        sgl_c4b(c.r, c.g, c.b, c.a);
+        sgl_c4b(color.r, color.g, color.b, color.a);
 
         for (i32 i = 0; i < poly->m_count; i++) {
           b2Vec2 pos = body->GetWorldPoint(poly->m_vertices[i]);

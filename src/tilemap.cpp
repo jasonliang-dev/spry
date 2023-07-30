@@ -371,18 +371,16 @@ static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
         }
       }
 
-      printf("new rect: (%d, %d), (%d, %d)\n", x0, y0, x1, y1);
-
-      float dx = ((float)(x1 + 1 - x0) * layer->grid_size) / meter;
-      float dy = ((float)(y1 + 1 - y0) * layer->grid_size) / meter;
+      float dx = (float)(x1 + 1 - x0) * layer->grid_size / 2.0f;
+      float dy = (float)(y1 + 1 - y0) * layer->grid_size / 2.0f;
 
       b2Vec2 pos = {
-          x0 * layer->grid_size / meter + dx / 2.0f + world_x / meter,
-          y0 * layer->grid_size / meter + dy / 2.0f + world_y / meter,
+          (x0 * layer->grid_size + dx + world_x) / meter,
+          (y0 * layer->grid_size + dy + world_y) / meter,
       };
 
       b2PolygonShape box = {};
-      box.SetAsBox(dx / 2.0f, dy / 2.0f, pos, 0.0f);
+      box.SetAsBox(dx / meter, dy / meter, pos, 0.0f);
 
       b2FixtureDef def = {};
       def.friction = 0;

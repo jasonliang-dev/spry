@@ -50,7 +50,7 @@ struct TilemapLevel {
   Array<TilemapLayer> layers;
 };
 
-struct b2Body;
+class b2Body;
 struct Tilemap {
   Array<TilemapLevel> levels;
   HashMap<Image> images; // key: filepath
@@ -60,6 +60,6 @@ struct Tilemap {
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath);
 void drop(Tilemap *tm);
 
-struct b2World;
+class b2World;
 void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
                             String layer_name, Array<TilemapInt> *walls);
