@@ -1,10 +1,5 @@
 R"lua"--(
 
--- on startup, all lua files in the mounted directory are loaded. lua files can
--- return values (usually libraries), so those values are stored here.
-
-spry.files = {}
-
 -- define these in case user doesn't define them
 
 function spry.conf() end
@@ -541,11 +536,8 @@ function require(name)
     path = path .. ".lua"
   end
 
-  if spry.files[path] == nil then
-    spry.require_lua_script(path)
-  end
-
-  return table.unpack(spry.files[path])
+  local ret = spry.require_lua_script(path)
+  return table.unpack(ret)
 end
 
 --)lua"--"

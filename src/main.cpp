@@ -256,6 +256,11 @@ static void dump_allocs(Allocator *a) {
 }
 
 static void cleanup() {
+  for (auto [k, v] : g_app->modules) {
+    mem_free(v->name.data);
+  }
+  drop(&g_app->modules);
+
   lua_close(L);
 
   saudio_shutdown();
@@ -279,6 +284,14 @@ static void cleanup() {
 
   drop(&g_app->archive);
 
+  if (g_app->fatal_error.data) {
+    mem_free(g_app->fatal_error.data);
+  }
+
+  if (g_app->traceback.data) {
+    mem_free(g_app->traceback.data);
+  }
+
   mem_free(g_app);
 
 #ifdef DEBUG
@@ -286,78 +299,66 @@ static void cleanup() {
 #endif
 }
 
-static void require_lua_script(Archive *ar, String filepath) {
+static i32 require_lua_script(Archive *ar, String filepath) {
   if (g_app->error_mode) {
-    return;
+    return LUA_REFNIL;
   }
 
   String path = to_cstr(filepath);
   defer(mem_free(path.data));
 
+  Module *module = get(&g_app->modules, fnv1a(path));
+  if (module != nullptr) {
+    return module->ref;
+  }
+
   String contents;
   bool ok = ar->read_entire_file(ar, &contents, filepath);
   if (!ok) {
-    StringBuilder sb = string_builder_make();
+    StringBuilder sb = format("failed to read file: %s", path.data);
     defer(drop(&sb));
-    format(&sb, "failed to read file: %s", path.data);
     fatal_error(as_string(&sb));
-    return;
+    return LUA_REFNIL;
   }
   defer(mem_free(contents.data));
 
-  // [1] spry.files
-  lua_getglobal(L, "spry");
-  lua_getfield(L, -1, "files");
-  lua_remove(L, -2);
-
-  // [1] spry.files
-  // [2] any
-  i32 type = lua_getfield(L, -1, path.data);
-
-  if (type != LUA_TNIL) {
-    lua_pop(L, 2); // restore stack
-    return;
-  } else {
-    lua_pop(L, 1);
-  }
-
-  // [1] spry.files
-  // [2] {}
+  // [1] {}
   lua_newtable(L);
   i32 table_index = lua_gettop(L);
 
   if (luaL_loadbuffer(L, contents.data, contents.len, path.data) != LUA_OK) {
     fatal_error(luax_check_string(L, -1));
-    return;
+    return LUA_REFNIL;
   }
 
-  // [1] spry.files
-  // [2] {}
+  // [1] {}
   // ...
   // [n] any
   if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {
-    lua_pop(L, 3); // restore stack
-    return;
+    lua_pop(L, 2);
+    return LUA_REFNIL;
   }
 
-  // [1] spry.files
-  // [2] {...}
+  // [1] {...}
   i32 top = lua_gettop(L);
   for (i32 i = 1; i <= top - table_index; i++) {
     lua_seti(L, table_index, i);
   }
 
-  // [1] spry.files
-  lua_setfield(L, -2, path.data);
+  Module m = {};
+  m.name = to_cstr(filepath);
+  m.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  g_app->modules[fnv1a(path)] = m;
 
-  lua_pop(L, 1); // restore stack
+  return m.ref;
 }
 
 static int require_lua_script(lua_State *L) {
   String path = luax_check_string(L, 1);
-  require_lua_script(&g_app->archive, path);
+  i32 ref = require_lua_script(&g_app->archive, path);
 
-  return 0;
+  lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+  return 1;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -486,10 +487,9 @@ sapp_desc sokol_main(int argc, char **argv) {
 #endif
 
   if (!ok) {
-    StringBuilder sb = string_builder_make();
+    StringBuilder sb = format("failed to mount: %s", argv[1]);
     defer(drop(&sb));
 
-    format(&sb, "failed to mount: %s", argv[1]);
     fatal_error(as_string(&sb));
   } else {
     Array<String> files = {};

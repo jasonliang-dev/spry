@@ -246,25 +246,25 @@ void relative_path(StringBuilder *sb, String filepath, String file) {
   concat(sb, file);
 }
 
-void format(StringBuilder *sb, const char *fmt, ...) {
-  clear(sb);
+StringBuilder format(const char *fmt, ...) {
+  StringBuilder sb = string_builder_make();
 
   va_list args;
   va_start(args, fmt);
   i32 len = vsnprintf(nullptr, 0, fmt, args);
   va_end(args);
 
-  if (len <= 0) {
-    return;
+  if (len > 0) {
+    if (len + 1 >= sb.capacity) {
+      reserve(&sb, len + 1);
+    }
+
+    va_start(args, fmt);
+    vsnprintf(sb.data, sb.capacity, fmt, args);
+    va_end(args);
+
+    sb.len = len;
   }
 
-  if (len + 1 >= sb->capacity) {
-    reserve(sb, len + 1);
-  }
-
-  va_start(args, fmt);
-  vsnprintf(sb->data, sb->capacity, fmt, args);
-  va_end(args);
-
-  sb->len = len;
+  return sb;
 }

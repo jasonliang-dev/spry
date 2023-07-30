@@ -4,11 +4,19 @@
 #include "font.h"
 #include "draw.h"
 
+struct Module {
+  String name;
+  u64 modtime;
+  i32 ref;
+};
+
 struct App {
   u64 time_begin;
   double delta_time;
 
+  bool fused;
   Archive archive;
+  HashMap<Module> modules;
 
   FontFamily *default_font;
   bool default_font_loaded;

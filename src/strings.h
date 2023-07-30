@@ -66,8 +66,8 @@ void concat(StringBuilder *sb, String str);
 void clear(StringBuilder *sb);
 void relative_path(StringBuilder *sb, String filepath, String file);
 
-FORMAT_ARGS(2)
-void format(StringBuilder *sb, const char *fmt, ...);
+FORMAT_ARGS(1)
+StringBuilder format(const char *fmt, ...);
 
 inline String as_string(StringBuilder *sb) { return {sb->data, sb->len}; }
 inline void concat(StringBuilder *sb, char *cstr) {

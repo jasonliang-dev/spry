@@ -54,15 +54,12 @@ static bool list_all_files(Array<String> *files, String path) {
 
     if (strcmp(file.name, ".") != 0 && strcmp(file.name, "..") != 0) {
       if (file.is_dir) {
-        StringBuilder sb = string_builder_make();
+        StringBuilder sb = format("%s%s/", path.data, file.name);
         defer(drop(&sb));
-        format(&sb, "%s%s/", path.data, file.name);
 
         list_all_files(files, as_string(&sb));
       } else {
-        StringBuilder sb = string_builder_make();
-        format(&sb, "%s%s", path.data, file.name);
-
+        StringBuilder sb = format("%s%s", path.data, file.name);
         push(files, as_string(&sb));
       }
     }
