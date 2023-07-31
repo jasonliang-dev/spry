@@ -505,6 +505,8 @@ sapp_desc sokol_main(int argc, char **argv) {
     web_load_files();
     ok = load_filesystem_archive(&g_app->archive, mount_dir);
   }
+
+  g_app->mounted = true;
 #else
   if (argc == 1) {
     String path = program_path();
