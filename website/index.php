@@ -278,8 +278,9 @@ function render(string $page) {
               class="mr3 dib relative"
               @mouseover="open = true"
               @mouseleave="open = false"
+              @click.outside="open = false"
             >
-              <button @click="open = !open" class="flex items-center dark-gray dm-silver pb2 nb2 link underline-hover bn bg-transparent pa0">
+              <button @click="open = true" class="flex items-center dark-gray dm-silver pb3 nb3 bn bg-transparent pa0">
                 <span class="mr1" style="cursor: default">Guides</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px" class="gray">
                   <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />

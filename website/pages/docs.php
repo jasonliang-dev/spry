@@ -1752,7 +1752,7 @@ $api_reference = [
             <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
