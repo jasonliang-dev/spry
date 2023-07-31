@@ -72,8 +72,9 @@
               class="mr3 dib relative"
               @mouseover="open = true"
               @mouseleave="open = false"
+              @click.outside="open = false"
             >
-              <button @click="open = !open" class="flex items-center dark-gray dm-silver pb2 nb2 link underline-hover bn bg-transparent pa0">
+              <button @click="open = true" class="flex items-center dark-gray dm-silver pb3 nb3 bn bg-transparent pa0">
                 <span class="mr1" style="cursor: default">Guides</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px" class="gray">
                   <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -190,10 +191,10 @@ player:</p>
 <pre><code class="language-lua">function spry.frame(dt)
   player:draw()
 end</code></pre>
-<p>Now run your game:</p>
+<p>You do not need to include the newly created file inside <code>main.lua</code>. All Lua
+scripts in your project folder are loaded on startup. Once you run your game,
+you should see a ufo on the screen:</p>
 <pre><code class="language-plaintext">spry.exe my_folder</code></pre>
-<p>All <code>.lua</code> files in the folder are loaded on startup. You should see a ufo on
-the screen.</p>
 <h2>Keyboard Input</h2>
 <p>We'll use keyboard input to move the player. Create a new <code>Player:update</code>
 method:</p>
@@ -207,10 +208,9 @@ method:</p>
 end</code></pre>
 <p><code>vx</code> and <code>vy</code> stands for velocity x, and velocity y. These variables represent
 the player's horizonal and vertical speed. When the user presses any of the
-WASD keys, the velocity changes appropriately. In the case of the W key, <code>vy</code>
-is set to itself, minus 1, representing movement towards the top of the
-screen. This is because the positive y axis is pointing down the screen
-(unlike in math, where you'll often see positive y pointing up).</p>
+WASD keys, the velocity changes appropriately. In the case of the D key, <code>vx</code>
+is set to itself, plus 1, representing movement towards the right side of the
+screen.</p>
 <p>Now we'll move the player by setting the x and y position. Put the following
 code inside <code>Player:update</code>, just before the function ends:</p>
 <pre><code class="language-lua">local move_speed = 200
@@ -250,12 +250,26 @@ first.</p>
 <p>You might notice that moving diagonally is a little faster compared to
 vertical or horizonal movement. This is because vertical and horizontal
 movement has a speed of 200, but using both vertical and horizontal speeds
-together results in a speed of around 282 (square root of 200<sup>2</sup> + 200<sup>2</sup>). We need to normalize <code>vx</code> and
-<code>vy</code> so that the combined speed of both <code>vx</code> and <code>vy</code> is always 1.</p>
+together results in a speed of around 282 (square root of 200<sup>2</sup> +
+200<sup>2</sup>). We need to normalize <code>vx</code> and <code>vy</code> so that the combined
+speed of both <code>vx</code> and <code>vy</code> is always 1.</p>
 <p>After setting keyboard input, but before moving the player, add the following line:</p>
 <pre><code class="language-lua">vx, vy = normalize(vx, vy)</code></pre>
 <p>Run the game again, and you'll see that the player moves at the same speed
-regardless of direction.</p></div>
+regardless of direction.</p>
+<h2>Hot Reloading</h2>
+<p>Spry has the ablity to hot swap recently changed Lua scripts while the program
+is running. Run your program if it's not running already, then go to your
+text editor. Find the <code>Player:draw()</code> function and change the rotation
+variable:</p>
+<pre><code class="language-lua">function Player:draw()
+  local rotation = math.pi
+
+  -- rest of draw below...
+end</code></pre>
+<p>Go back to your Spry program and you'll find that the UFO is now being drawn
+upside down. Note that the rotation unit is in radians. This is true for all
+Spry functions that deal with angles.</p></div>
     <footer class="flex flex-wrap center mv5 mw7">
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang

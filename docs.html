@@ -72,8 +72,9 @@
               class="mr3 dib relative"
               @mouseover="open = true"
               @mouseleave="open = false"
+              @click.outside="open = false"
             >
-              <button @click="open = !open" class="flex items-center dark-gray dm-silver pb2 nb2 link underline-hover bn bg-transparent pa0">
+              <button @click="open = true" class="flex items-center dark-gray dm-silver pb3 nb3 bn bg-transparent pa0">
                 <span class="mr1" style="cursor: default">Guides</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px" class="gray">
                   <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -240,7 +241,7 @@
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -263,6 +264,22 @@
                                                   </td>
                                                   <td class="pv2 ph3"><code>false</code></td>
                                                 <td class="pv2 ph3">Windows only. If true, attach a console to the program.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .hot_reload</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>boolean</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>true</code></td>
+                                                <td class="pv2 ph3">Enable/disable hot reloading of Lua scripts.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .reload_interval</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3"><code>0.1</code></td>
+                                                <td class="pv2 ph3">The time in seconds to update files for hot reloading.</td>
                       </tr>
                                                                 <tr>
                         <td class="pv2 ph3 pre overflow-hidden"><code> .swap_interval</code></td>
@@ -352,7 +369,7 @@ function typically gets called 60 times a second if VSync is on.</p>          </
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -518,7 +535,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -563,7 +580,7 @@ any of the strings used in <a href="#spry.key_down"><code>spry.key_down</code></
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -608,7 +625,7 @@ any of the strings used in <a href="#spry.key_down"><code>spry.key_down</code></
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -654,7 +671,7 @@ middle button.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -700,7 +717,7 @@ middle button.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -746,7 +763,7 @@ middle button.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -830,7 +847,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -937,7 +954,7 @@ spry.pop_matrix()
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -986,7 +1003,7 @@ spry.translate(camera.x, camera.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1028,7 +1045,7 @@ spry.rotate(camera.tilt)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1077,7 +1094,7 @@ spry.scale(camera.zoom, camera.zoom)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1138,7 +1155,7 @@ spry.scale(camera.zoom, camera.zoom)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1226,7 +1243,7 @@ spry.pop_color()
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1332,7 +1349,7 @@ spry.pop_color()
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1438,7 +1455,7 @@ spry.pop_color()
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1492,7 +1509,7 @@ spry.pop_color()
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1533,7 +1550,7 @@ spry.pop_color()
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1702,7 +1719,7 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1763,7 +1780,7 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1811,7 +1828,7 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1877,7 +1894,7 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1920,7 +1937,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -1980,7 +1997,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2032,7 +2049,7 @@ is cheap.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2076,7 +2093,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2119,7 +2136,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2159,7 +2176,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2289,7 +2306,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2354,7 +2371,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2396,7 +2413,7 @@ store texture coordinates to draw a sub-section of a texture atlas.</p>         
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2439,7 +2456,7 @@ ship:draw(...)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2572,7 +2589,7 @@ a 2D level editor.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2667,7 +2684,7 @@ by providing an array of IntGrid values.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2724,7 +2741,7 @@ tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2772,7 +2789,7 @@ tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2834,7 +2851,7 @@ tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -2899,7 +2916,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3006,7 +3023,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3113,7 +3130,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3220,7 +3237,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3274,7 +3291,7 @@ end)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3348,7 +3365,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3487,7 +3504,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3710,7 +3727,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3757,7 +3774,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3804,7 +3821,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3851,7 +3868,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3898,7 +3915,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3938,7 +3955,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -3978,7 +3995,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4018,7 +4035,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4188,7 +4205,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4231,7 +4248,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4274,7 +4291,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4354,7 +4371,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4426,7 +4443,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4467,7 +4484,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4508,7 +4525,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4556,7 +4573,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4617,7 +4634,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4665,7 +4682,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4713,7 +4730,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4761,7 +4778,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4829,7 +4846,7 @@ print(c.x, c.y)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4912,7 +4929,7 @@ adding an actor, they are assigned an unique id.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4955,7 +4972,7 @@ print(player.id)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -4999,7 +5016,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5040,7 +5057,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5085,7 +5102,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5148,7 +5165,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5207,7 +5224,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5258,7 +5275,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5298,7 +5315,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5341,7 +5358,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5392,7 +5409,7 @@ end)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5443,7 +5460,7 @@ end)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5485,7 +5502,7 @@ stop_interval(timer)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5530,7 +5547,7 @@ is excluded.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5574,7 +5591,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5628,7 +5645,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5669,7 +5686,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5724,7 +5741,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5765,7 +5782,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5820,7 +5837,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5882,7 +5899,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5930,7 +5947,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -5978,7 +5995,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6040,7 +6057,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6088,7 +6105,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6151,7 +6168,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6199,7 +6216,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6240,7 +6257,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6287,7 +6304,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6337,7 +6354,7 @@ local doubled = map(nums, function(n) return n * 2 end)
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6389,7 +6406,7 @@ used.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6439,7 +6456,7 @@ used.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6480,7 +6497,7 @@ used.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6534,7 +6551,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6575,7 +6592,7 @@ end
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6624,7 +6641,7 @@ the coroutine doesn't change (for example, when passing <code>self</code>).</p> 
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
@@ -6681,7 +6698,7 @@ is delta time.</p>          </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
               <div class="overflow-x-auto">
-                <table class="collapse nowrap ws-normal-l">
+                <table class="collapse nowrap">
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
