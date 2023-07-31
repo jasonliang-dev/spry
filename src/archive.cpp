@@ -8,7 +8,10 @@
 #if defined(_WIN32)
 #include <direct.h>
 #include <windows.h>
-#elif defined(__linux__) || defined(__EMSCRIPTEN__)
+#elif defined(__EMSCRIPTEN__)
+#include <unistd.h>
+#elif defined(__linux__) || defined(__unix__)
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -284,10 +287,10 @@ String program_path() {
 }
 
 u64 file_modtime(String filename) {
-#ifdef _WIN32
   String file = to_cstr(filename);
   defer(mem_free(file.data));
 
+#ifdef _WIN32
   HANDLE handle = CreateFile(file.data, GENERIC_READ, FILE_SHARE_READ, NULL,
                              OPEN_EXISTING, 0, NULL);
 
@@ -309,6 +312,16 @@ u64 file_modtime(String filename) {
   time.HighPart = write.dwHighDateTime;
 
   return time.QuadPart;
+#endif
+
+#if defined(__linux__) || defined(__unix__)
+  struct stat attrib = {};
+  i32 err = stat(file.data, &attrib);
+  if (err == 0) {
+    return (u64)attrib.st_mtime;
+  } else {
+    return 0;
+  }
 #endif
 
 #ifdef __EMSCRIPTEN__
