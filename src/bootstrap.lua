@@ -129,7 +129,7 @@ local function _cell_key(x, y)
 end
 
 function World:new()
-  self.next_id = 0
+  self.next_id = 1
   self.by_id = {}
   self.by_mt = {}
   self.by_cell = {}
@@ -152,8 +152,8 @@ function World:add(obj)
     obj.z_index = 0
   end
 
+  self.to_create[self.next_id] = obj
   self.next_id = self.next_id + 1
-  self.to_create[obj.id] = obj
   return obj
 end
 
@@ -273,6 +273,61 @@ function World:query_near(x, y, mt)
   end
 
   return nearby
+end
+
+-- ecs
+
+class "ECS"
+
+function ECS:new()
+  self.next_id = 1
+  self.entities = {}
+  self.to_create = {}
+  self.to_kill = {}
+end
+
+function ECS:update()
+  for id, entity in pairs(self.to_create) do
+    self.entities[id] = entity
+    self.to_create[id] = nil
+  end
+
+  for id, entity in pairs(self.to_kill) do
+    self.entities[id] = nil
+    self.to_kill[id] = nil
+  end
+end
+
+function ECS:add(entity)
+  self.to_create[self.next_id] = entity
+  self.next_id = self.next_id + 1
+  return entity
+end
+
+function ECS:query(keys)
+  local rows = {}
+
+  for id, entity in pairs(self.entities) do
+    if not self.to_kill[id] then
+      local missing = false
+      for i, key in pairs(keys) do
+        if entity[key] == nil then
+          missing = true
+          break
+        end
+      end
+
+      if not missing then
+        rows[id] = entity
+      end
+    end
+  end
+
+  return pairs(rows)
+end
+
+function ECS:kill(id)
+  self.to_kill[id] = true
 end
 
 -- bouncing spring
