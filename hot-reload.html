@@ -10,12 +10,12 @@
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
     <meta name="author" content="Jason Liang">
-    <meta name="og:title" content="Jump | Spry">
+    <meta name="og:title" content="Hot Reloading | Spry">
     <meta name="og:site_name" content="Spry">
     <meta name="og:url" content="https://jasonliang.js.org/spry/">
     <meta name="og:description" content="Spry is a delightfully small 2D game framework made for rapid prototyping and game jams. Inspired by LÖVE.">
     <meta name="og:type" content="website">
-    <title>Jump | Spry</title>
+    <title>Hot Reloading | Spry</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -155,40 +155,45 @@
       </div>
     </div>
     <div style="margin-top: 3.5rem">
-        <div class="flex flex-column items-center center" style="width: 500px">
-    <div class="prose w-100">
-      <h1>Jump</h1>
-      <ul>
-<li><code>A</code> and <code>D</code> to move left/right</li>
-<li><code>M</code> to unmute sound.</li>
-</ul>
-<p><strong>Volume warning:</strong> The music can be loud!</p>    </div>
-    <canvas
-      oncontextmenu="event.preventDefault()"
-      id="canvas"
-      tabindex="-1"
-      class="shadow ba b--black-10 dm-b--white-10 br3"
-      style="width: 500px; height: 700px"
-    ></canvas>
-    <div class="mt3 flex justify-between w-100">
-      <a class="blue link underline-hover inline-flex items-center" href="index.html">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-        </svg>
-        <span class="ml2">
-          Back to home
-        </span>
-      </a>
-      <a class="blue link underline-hover inline-flex items-center" href="https://github.com/jasonliang-dev/spry/tree/master/examples/jump">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-        </svg>
-        <span class="ml2">
-          View source code
-        </span>
-      </a>
-    </div>
-      <footer class="flex flex-wrap center mv5 w-100">
+        <div class="mw7 center prose pt3"><h2>Hot Reloading</h2>
+<p>Spry has the ablity to hot reload recently changed Lua scripts, Aseprite
+files, LDtk files, and images. While Spry is running, you can update a file
+and the changes will be reflected without having to restart your program.</p>
+<video autoplay muted loop class="w-100 mw7 center db mb2">
+  <source src="static/hot-lua.webm" type="video/webm">
+</video>
+<video autoplay muted loop class="w-100 mw7 center db mb2">
+  <source src="static/hot-png.webm" type="video/webm">
+</video>
+<video autoplay muted loop class="w-100 mw7 center db mb2">
+  <source src="static/hot-ldtk.webm" type="video/webm">
+</video>
+<p>Hot reloading Lua scripts will not update any references or callbacks. For
+example, if you modify a class that has a draw method, only newly created
+instances of the class will use the new version of the method.</p>
+<pre><code class="language-lua">class 'Enemy'
+
+function Enemy:draw()
+  -- if you update `rot` here, only new enemies will use the updated value.
+  -- existing enemies use the previous value.
+  local rot = math.pi
+
+  self.img:draw(self.x, self.y, rot)
+end</code></pre>
+<p>Hot reloads are done by checking the modified time of each loaded file. By
+default, this is done every 1/10th of a second. To change this, set
+<code>reload_interval</code> to a different value in <code>spry.conf</code>:</p>
+<pre><code class="language-lua">function spry.conf(t)
+  t.reload_interval = 0.5 -- reload every half second
+end</code></pre>
+<p>You can even set the reload interval to 0 if you want to poll for changes
+every frame.</p>
+<p>To disable hot reloading, set <code>hot_reload</code> to <code>false</code> in <code>spry.conf</code>.</p>
+<pre><code class="language-lua">function spry.conf(t)
+  t.hot_reload = false -- disable hot reloading
+end</code></pre>
+<p>Hot reloading is not supported for web builds.</p></div>
+    <footer class="flex flex-wrap center mv5 mw7">
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang
     </div>
@@ -199,13 +204,6 @@
       GitHub
     </a>
   </footer>
-    </div>
-  <script type="text/javascript">
-    var canvas = document.getElementById('canvas');
-    var Module = { canvas };
-    var spryMount = 'static/jump.zip';
-  </script>
-  <script src="static/spry.js" type="text/javascript"></script>
       </div>
     <script>hljs.highlightAll()</script>
   </body>

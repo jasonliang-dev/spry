@@ -96,6 +96,10 @@
                       UFO Game                    </a>
                   </li>
                                   <li>
+                    <a href="hot-reload.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      Hot Reloading                    </a>
+                  </li>
+                                  <li>
                     <a href="distribution.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
                       Distribution                    </a>
                   </li>
@@ -133,6 +137,10 @@
                     UFO Game                  </a>
                 </li>
                               <li>
+                  <a href="hot-reload.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                    Hot Reloading                  </a>
+                </li>
+                              <li>
                   <a href="distribution.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
                     Distribution                  </a>
                 </li>
@@ -153,7 +161,7 @@
     x-data="{
       search: '',
       sections:
-        [{&quot;header&quot;:&quot;Callback Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.conf&quot;,&quot;fn&quot;:&quot;spry.conf(t)&quot;},{&quot;name&quot;:&quot;spry.start&quot;,&quot;fn&quot;:&quot;spry.start()&quot;},{&quot;name&quot;:&quot;spry.frame&quot;,&quot;fn&quot;:&quot;spry.frame(dt)&quot;}]},{&quot;header&quot;:&quot;Core Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.quit&quot;,&quot;fn&quot;:&quot;spry.quit()&quot;},{&quot;name&quot;:&quot;spry.platform&quot;,&quot;fn&quot;:&quot;spry.platform()&quot;},{&quot;name&quot;:&quot;spry.dt&quot;,&quot;fn&quot;:&quot;spry.dt()&quot;},{&quot;name&quot;:&quot;spry.window_width&quot;,&quot;fn&quot;:&quot;spry.window_width()&quot;},{&quot;name&quot;:&quot;spry.window_height&quot;,&quot;fn&quot;:&quot;spry.window_height()&quot;},{&quot;name&quot;:&quot;spry.key_down&quot;,&quot;fn&quot;:&quot;spry.key_down(key)&quot;},{&quot;name&quot;:&quot;spry.key_press&quot;,&quot;fn&quot;:&quot;spry.key_press(key)&quot;},{&quot;name&quot;:&quot;spry.key_release&quot;,&quot;fn&quot;:&quot;spry.key_release(key)&quot;},{&quot;name&quot;:&quot;spry.mouse_down&quot;,&quot;fn&quot;:&quot;spry.mouse_down(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_click&quot;,&quot;fn&quot;:&quot;spry.mouse_click(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_release&quot;,&quot;fn&quot;:&quot;spry.mouse_release(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_pos&quot;,&quot;fn&quot;:&quot;spry.mouse_pos()&quot;},{&quot;name&quot;:&quot;spry.mouse_delta&quot;,&quot;fn&quot;:&quot;spry.mouse_delta()&quot;},{&quot;name&quot;:&quot;spry.show_mouse&quot;,&quot;fn&quot;:&quot;spry.show_mouse(show)&quot;},{&quot;name&quot;:&quot;spry.scroll_wheel&quot;,&quot;fn&quot;:&quot;spry.scroll_wheel()&quot;},{&quot;name&quot;:&quot;spry.push_matrix&quot;,&quot;fn&quot;:&quot;spry.push_matrix()&quot;},{&quot;name&quot;:&quot;spry.pop_matrix&quot;,&quot;fn&quot;:&quot;spry.pop_matrix()&quot;},{&quot;name&quot;:&quot;spry.translate&quot;,&quot;fn&quot;:&quot;spry.translate(x, y)&quot;},{&quot;name&quot;:&quot;spry.rotate&quot;,&quot;fn&quot;:&quot;spry.rotate(angle)&quot;},{&quot;name&quot;:&quot;spry.scale&quot;,&quot;fn&quot;:&quot;spry.scale(x, y)&quot;},{&quot;name&quot;:&quot;spry.clear_color&quot;,&quot;fn&quot;:&quot;spry.clear_color(r, g, b, a)&quot;},{&quot;name&quot;:&quot;spry.push_color&quot;,&quot;fn&quot;:&quot;spry.push_color(r, g, b, a)&quot;},{&quot;name&quot;:&quot;spry.pop_color&quot;,&quot;fn&quot;:&quot;spry.pop_color()&quot;},{&quot;name&quot;:&quot;spry.draw_filled_rect&quot;,&quot;fn&quot;:&quot;spry.draw_filled_rect(x, y, w, h, rotation, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;spry.draw_line_rect&quot;,&quot;fn&quot;:&quot;spry.draw_line_rect(x, y, w, h, rotation, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;spry.draw_line_circle&quot;,&quot;fn&quot;:&quot;spry.draw_line_circle(x, y, radius)&quot;}]},{&quot;header&quot;:&quot;Image&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.image_load&quot;,&quot;fn&quot;:&quot;spry.image_load(file)&quot;},{&quot;name&quot;:&quot;Image:draw&quot;,&quot;fn&quot;:&quot;Image:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)&quot;},{&quot;name&quot;:&quot;Image:width&quot;,&quot;fn&quot;:&quot;Image:width()&quot;},{&quot;name&quot;:&quot;Image:height&quot;,&quot;fn&quot;:&quot;Image:height()&quot;}]},{&quot;header&quot;:&quot;Font&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.font_load&quot;,&quot;fn&quot;:&quot;spry.font_load(file)&quot;},{&quot;name&quot;:&quot;spry.default_font&quot;,&quot;fn&quot;:&quot;spry.default_font()&quot;},{&quot;name&quot;:&quot;Font:width&quot;,&quot;fn&quot;:&quot;Font:width(text, size)&quot;},{&quot;name&quot;:&quot;Font:draw&quot;,&quot;fn&quot;:&quot;Font:draw(text, x, y, size)&quot;}]},{&quot;header&quot;:&quot;Audio&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.set_master_volume&quot;,&quot;fn&quot;:&quot;spry.set_master_volume(volume)&quot;},{&quot;name&quot;:&quot;spry.audio_load&quot;,&quot;fn&quot;:&quot;spry.audio_load(file)&quot;},{&quot;name&quot;:&quot;Audio:destroy&quot;,&quot;fn&quot;:&quot;Audio:destroy()&quot;},{&quot;name&quot;:&quot;Audio:play&quot;,&quot;fn&quot;:&quot;Audio:play(volume, loop)&quot;}]},{&quot;header&quot;:&quot;Sprite&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.sprite_load&quot;,&quot;fn&quot;:&quot;spry.sprite_load(file)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:play&quot;,&quot;fn&quot;:&quot;SpriteRenderer:play(tag)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:update&quot;,&quot;fn&quot;:&quot;SpriteRenderer:update(dt)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:draw&quot;,&quot;fn&quot;:&quot;SpriteRenderer:draw(x, y, r, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:width&quot;,&quot;fn&quot;:&quot;SpriteRenderer:width()&quot;},{&quot;name&quot;:&quot;SpriteRenderer:height&quot;,&quot;fn&quot;:&quot;SpriteRenderer:height()&quot;},{&quot;name&quot;:&quot;SpriteRenderer:set_frame&quot;,&quot;fn&quot;:&quot;SpriteRenderer:set_frame(frame)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:total_frames&quot;,&quot;fn&quot;:&quot;SpriteRenderer:total_frames()&quot;}]},{&quot;header&quot;:&quot;Texture Atlas&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.atlas_load&quot;,&quot;fn&quot;:&quot;spry.atlas_load(file)&quot;},{&quot;name&quot;:&quot;Atlas:get_image&quot;,&quot;fn&quot;:&quot;Atlas:get_image(name)&quot;},{&quot;name&quot;:&quot;AtlasImage:draw&quot;,&quot;fn&quot;:&quot;AtlasImage:draw(x, y, r, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;AtlasImage:width&quot;,&quot;fn&quot;:&quot;AtlasImage:width()&quot;},{&quot;name&quot;:&quot;AtlasImage:height&quot;,&quot;fn&quot;:&quot;AtlasImage:height()&quot;}]},{&quot;header&quot;:&quot;Tilemap&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.tilemap_load&quot;,&quot;fn&quot;:&quot;spry.tilemap_load(file)&quot;},{&quot;name&quot;:&quot;Tilemap:draw&quot;,&quot;fn&quot;:&quot;Tilemap:draw()&quot;},{&quot;name&quot;:&quot;Tilemap:entities&quot;,&quot;fn&quot;:&quot;Tilemap:entities()&quot;},{&quot;name&quot;:&quot;Tilemap:make_collision&quot;,&quot;fn&quot;:&quot;Tilemap:make_collision(world, layer, walls)&quot;},{&quot;name&quot;:&quot;Tilemap:draw_fixtures&quot;,&quot;fn&quot;:&quot;Tilemap:draw_fixtures(world, layer)&quot;}]},{&quot;header&quot;:&quot;Box2D World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.b2_world&quot;,&quot;fn&quot;:&quot;spry.b2_world(t)&quot;},{&quot;name&quot;:&quot;b2World:step&quot;,&quot;fn&quot;:&quot;b2World:step(dt, vel_iters, pos_iters)&quot;},{&quot;name&quot;:&quot;b2World:make_static_body&quot;,&quot;fn&quot;:&quot;b2World:make_static_body(t)&quot;},{&quot;name&quot;:&quot;b2World:make_kinematic_body&quot;,&quot;fn&quot;:&quot;b2World:make_kinematic_body(t)&quot;},{&quot;name&quot;:&quot;b2World:make_dynamic_body&quot;,&quot;fn&quot;:&quot;b2World:make_dynamic_body(t)&quot;},{&quot;name&quot;:&quot;b2World:begin_contact&quot;,&quot;fn&quot;:&quot;b2World:begin_contact(fn)&quot;},{&quot;name&quot;:&quot;b2World:end_contact&quot;,&quot;fn&quot;:&quot;b2World:end_contact(fn)&quot;}]},{&quot;header&quot;:&quot;Box2D Body&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Body:destroy&quot;,&quot;fn&quot;:&quot;b2Body:destroy()&quot;},{&quot;name&quot;:&quot;b2Body:make_box_fixture&quot;,&quot;fn&quot;:&quot;b2Body:make_box_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:make_circle_fixture&quot;,&quot;fn&quot;:&quot;b2Body:make_circle_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:position&quot;,&quot;fn&quot;:&quot;b2Body:position()&quot;},{&quot;name&quot;:&quot;b2Body:velocity&quot;,&quot;fn&quot;:&quot;b2Body:velocity()&quot;},{&quot;name&quot;:&quot;b2Body:angle&quot;,&quot;fn&quot;:&quot;b2Body:angle()&quot;},{&quot;name&quot;:&quot;b2Body:linear_damping&quot;,&quot;fn&quot;:&quot;b2Body:linear_damping()&quot;},{&quot;name&quot;:&quot;b2Body:fixed_rotation&quot;,&quot;fn&quot;:&quot;b2Body:fixed_rotation()&quot;},{&quot;name&quot;:&quot;b2Body:apply_force&quot;,&quot;fn&quot;:&quot;b2Body:apply_force(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:apply_impulse&quot;,&quot;fn&quot;:&quot;b2Body:apply_impulse(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_position&quot;,&quot;fn&quot;:&quot;b2Body:set_position(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_velocity&quot;,&quot;fn&quot;:&quot;b2Body:set_velocity(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_angle&quot;,&quot;fn&quot;:&quot;b2Body:set_angle(angle)&quot;},{&quot;name&quot;:&quot;b2Body:set_linear_damping&quot;,&quot;fn&quot;:&quot;b2Body:set_linear_damping(damping)&quot;},{&quot;name&quot;:&quot;b2Body:set_fixed_rotation&quot;,&quot;fn&quot;:&quot;b2Body:set_fixed_rotation(angle)&quot;},{&quot;name&quot;:&quot;b2Body:set_transform&quot;,&quot;fn&quot;:&quot;b2Body:set_transform(x, y, angle)&quot;},{&quot;name&quot;:&quot;b2Body:draw_fixtures&quot;,&quot;fn&quot;:&quot;b2Body:draw_fixtures()&quot;},{&quot;name&quot;:&quot;b2Body:udata&quot;,&quot;fn&quot;:&quot;b2Body:udata()&quot;}]},{&quot;header&quot;:&quot;Box2D Fixture&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Fixture:friction&quot;,&quot;fn&quot;:&quot;b2Fixture:friction()&quot;},{&quot;name&quot;:&quot;b2Fixture:restitution&quot;,&quot;fn&quot;:&quot;b2Fixture:restitution()&quot;},{&quot;name&quot;:&quot;b2Fixture:is_sensor&quot;,&quot;fn&quot;:&quot;b2Fixture:is_sensor()&quot;},{&quot;name&quot;:&quot;b2Fixture:set_friction&quot;,&quot;fn&quot;:&quot;b2Fixture:set_friction(friction)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_restitution&quot;,&quot;fn&quot;:&quot;b2Fixture:set_restitution(restitution)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_sensor&quot;,&quot;fn&quot;:&quot;b2Fixture:set_sensor(sensor)&quot;},{&quot;name&quot;:&quot;b2Fixture:body&quot;,&quot;fn&quot;:&quot;b2Fixture:body()&quot;},{&quot;name&quot;:&quot;b2Fixture:udata&quot;,&quot;fn&quot;:&quot;b2Fixture:udata()&quot;}]},{&quot;header&quot;:&quot;2D Vector&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;vec2&quot;,&quot;fn&quot;:&quot;vec2(x, y)&quot;},{&quot;name&quot;:&quot;vec2:normalize&quot;,&quot;fn&quot;:&quot;vec2:normalize()&quot;},{&quot;name&quot;:&quot;vec2:distance&quot;,&quot;fn&quot;:&quot;vec2:distance(rhs)&quot;},{&quot;name&quot;:&quot;vec2:direction&quot;,&quot;fn&quot;:&quot;vec2:direction(rhs)&quot;},{&quot;name&quot;:&quot;vec2:lerp&quot;,&quot;fn&quot;:&quot;vec2:lerp(rhs, dt)&quot;},{&quot;name&quot;:&quot;vec2:dot&quot;,&quot;fn&quot;:&quot;vec2:dot(rhs)&quot;},{&quot;name&quot;:&quot;vec2:unpack&quot;,&quot;fn&quot;:&quot;vec2:unpack()&quot;},{&quot;name&quot;:&quot;vec2.__add&quot;,&quot;fn&quot;:&quot;vec2.__add(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__sub&quot;,&quot;fn&quot;:&quot;vec2.__sub(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__mul&quot;,&quot;fn&quot;:&quot;vec2.__mul(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__div&quot;,&quot;fn&quot;:&quot;vec2.__div(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2:__len&quot;,&quot;fn&quot;:&quot;vec2:__len()&quot;},{&quot;name&quot;:&quot;vec2.__eq&quot;,&quot;fn&quot;:&quot;vec2.__eq(lhs, rhs)&quot;}]},{&quot;header&quot;:&quot;World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;World&quot;,&quot;fn&quot;:&quot;World()&quot;},{&quot;name&quot;:&quot;World:add&quot;,&quot;fn&quot;:&quot;World:add(obj)&quot;},{&quot;name&quot;:&quot;World:kill&quot;,&quot;fn&quot;:&quot;World:kill(obj)&quot;},{&quot;name&quot;:&quot;World:query_id&quot;,&quot;fn&quot;:&quot;World:query_id(obj)&quot;},{&quot;name&quot;:&quot;World:query_mt&quot;,&quot;fn&quot;:&quot;World:query_mt(mt)&quot;},{&quot;name&quot;:&quot;World:query_near&quot;,&quot;fn&quot;:&quot;World:query_near(x, y, mt)&quot;},{&quot;name&quot;:&quot;World:update&quot;,&quot;fn&quot;:&quot;World:update(dt)&quot;},{&quot;name&quot;:&quot;World:draw&quot;,&quot;fn&quot;:&quot;World:draw()&quot;}]},{&quot;header&quot;:&quot;Spring&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;Spring&quot;,&quot;fn&quot;:&quot;Spring(k, d)&quot;},{&quot;name&quot;:&quot;Spring:update&quot;,&quot;fn&quot;:&quot;Spring:update(dt)&quot;},{&quot;name&quot;:&quot;Spring:pull&quot;,&quot;fn&quot;:&quot;Spring:pull(f)&quot;}]},{&quot;header&quot;:&quot;Timer&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;interval&quot;,&quot;fn&quot;:&quot;interval(sec, action)&quot;},{&quot;name&quot;:&quot;timeout&quot;,&quot;fn&quot;:&quot;timeout(sec, action)&quot;},{&quot;name&quot;:&quot;stop_interval&quot;,&quot;fn&quot;:&quot;stop_interval(id)&quot;},{&quot;name&quot;:&quot;stop_timeout&quot;,&quot;fn&quot;:&quot;stop_timeout(id)&quot;}]},{&quot;header&quot;:&quot;Utility Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;require&quot;,&quot;fn&quot;:&quot;require(file)&quot;},{&quot;name&quot;:&quot;class&quot;,&quot;fn&quot;:&quot;class(name)&quot;},{&quot;name&quot;:&quot;stringify&quot;,&quot;fn&quot;:&quot;stringify(value)&quot;},{&quot;name&quot;:&quot;clamp&quot;,&quot;fn&quot;:&quot;clamp(n, min, max)&quot;},{&quot;name&quot;:&quot;sign&quot;,&quot;fn&quot;:&quot;sign(x)&quot;},{&quot;name&quot;:&quot;lerp&quot;,&quot;fn&quot;:&quot;lerp(src, dest, t)&quot;},{&quot;name&quot;:&quot;direction&quot;,&quot;fn&quot;:&quot;direction(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;heading&quot;,&quot;fn&quot;:&quot;heading(angle, mag)&quot;},{&quot;name&quot;:&quot;delta_angle&quot;,&quot;fn&quot;:&quot;delta_angle(src, dst)&quot;},{&quot;name&quot;:&quot;distance&quot;,&quot;fn&quot;:&quot;distance(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;normalize&quot;,&quot;fn&quot;:&quot;normalize(x, y)&quot;},{&quot;name&quot;:&quot;dot&quot;,&quot;fn&quot;:&quot;dot(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;random&quot;,&quot;fn&quot;:&quot;random(min, max)&quot;},{&quot;name&quot;:&quot;clone&quot;,&quot;fn&quot;:&quot;clone(t)&quot;},{&quot;name&quot;:&quot;push&quot;,&quot;fn&quot;:&quot;push(arr, x)&quot;},{&quot;name&quot;:&quot;map&quot;,&quot;fn&quot;:&quot;map(arr, fn)&quot;},{&quot;name&quot;:&quot;filter&quot;,&quot;fn&quot;:&quot;filter(arr, fn)&quot;},{&quot;name&quot;:&quot;zip&quot;,&quot;fn&quot;:&quot;zip(lhs, rhs)&quot;},{&quot;name&quot;:&quot;choose&quot;,&quot;fn&quot;:&quot;choose(arr)&quot;},{&quot;name&quot;:&quot;sortpairs&quot;,&quot;fn&quot;:&quot;sortpairs(t)&quot;},{&quot;name&quot;:&quot;create_thread&quot;,&quot;fn&quot;:&quot;create_thread(fn)&quot;},{&quot;name&quot;:&quot;resume&quot;,&quot;fn&quot;:&quot;resume(co, ...)&quot;},{&quot;name&quot;:&quot;yield&quot;,&quot;fn&quot;:&quot;yield(...)&quot;},{&quot;name&quot;:&quot;sleep_for&quot;,&quot;fn&quot;:&quot;sleep_for(secs, dt)&quot;}]}],
+        [{&quot;header&quot;:&quot;Callback Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.conf&quot;,&quot;fn&quot;:&quot;spry.conf(t)&quot;},{&quot;name&quot;:&quot;spry.start&quot;,&quot;fn&quot;:&quot;spry.start()&quot;},{&quot;name&quot;:&quot;spry.frame&quot;,&quot;fn&quot;:&quot;spry.frame(dt)&quot;}]},{&quot;header&quot;:&quot;Core Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.quit&quot;,&quot;fn&quot;:&quot;spry.quit()&quot;},{&quot;name&quot;:&quot;spry.platform&quot;,&quot;fn&quot;:&quot;spry.platform()&quot;},{&quot;name&quot;:&quot;spry.dt&quot;,&quot;fn&quot;:&quot;spry.dt()&quot;},{&quot;name&quot;:&quot;spry.window_width&quot;,&quot;fn&quot;:&quot;spry.window_width()&quot;},{&quot;name&quot;:&quot;spry.window_height&quot;,&quot;fn&quot;:&quot;spry.window_height()&quot;},{&quot;name&quot;:&quot;spry.key_down&quot;,&quot;fn&quot;:&quot;spry.key_down(key)&quot;},{&quot;name&quot;:&quot;spry.key_press&quot;,&quot;fn&quot;:&quot;spry.key_press(key)&quot;},{&quot;name&quot;:&quot;spry.key_release&quot;,&quot;fn&quot;:&quot;spry.key_release(key)&quot;},{&quot;name&quot;:&quot;spry.mouse_down&quot;,&quot;fn&quot;:&quot;spry.mouse_down(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_click&quot;,&quot;fn&quot;:&quot;spry.mouse_click(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_release&quot;,&quot;fn&quot;:&quot;spry.mouse_release(button)&quot;},{&quot;name&quot;:&quot;spry.mouse_pos&quot;,&quot;fn&quot;:&quot;spry.mouse_pos()&quot;},{&quot;name&quot;:&quot;spry.mouse_delta&quot;,&quot;fn&quot;:&quot;spry.mouse_delta()&quot;},{&quot;name&quot;:&quot;spry.show_mouse&quot;,&quot;fn&quot;:&quot;spry.show_mouse(show)&quot;},{&quot;name&quot;:&quot;spry.scroll_wheel&quot;,&quot;fn&quot;:&quot;spry.scroll_wheel()&quot;},{&quot;name&quot;:&quot;spry.push_matrix&quot;,&quot;fn&quot;:&quot;spry.push_matrix()&quot;},{&quot;name&quot;:&quot;spry.pop_matrix&quot;,&quot;fn&quot;:&quot;spry.pop_matrix()&quot;},{&quot;name&quot;:&quot;spry.translate&quot;,&quot;fn&quot;:&quot;spry.translate(x, y)&quot;},{&quot;name&quot;:&quot;spry.rotate&quot;,&quot;fn&quot;:&quot;spry.rotate(angle)&quot;},{&quot;name&quot;:&quot;spry.scale&quot;,&quot;fn&quot;:&quot;spry.scale(x, y)&quot;},{&quot;name&quot;:&quot;spry.clear_color&quot;,&quot;fn&quot;:&quot;spry.clear_color(r, g, b, a)&quot;},{&quot;name&quot;:&quot;spry.push_color&quot;,&quot;fn&quot;:&quot;spry.push_color(r, g, b, a)&quot;},{&quot;name&quot;:&quot;spry.pop_color&quot;,&quot;fn&quot;:&quot;spry.pop_color()&quot;},{&quot;name&quot;:&quot;spry.draw_filled_rect&quot;,&quot;fn&quot;:&quot;spry.draw_filled_rect(x, y, w, h, rotation, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;spry.draw_line_rect&quot;,&quot;fn&quot;:&quot;spry.draw_line_rect(x, y, w, h, rotation, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;spry.draw_line_circle&quot;,&quot;fn&quot;:&quot;spry.draw_line_circle(x, y, radius)&quot;}]},{&quot;header&quot;:&quot;Image&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.image_load&quot;,&quot;fn&quot;:&quot;spry.image_load(file)&quot;},{&quot;name&quot;:&quot;Image:draw&quot;,&quot;fn&quot;:&quot;Image:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)&quot;},{&quot;name&quot;:&quot;Image:width&quot;,&quot;fn&quot;:&quot;Image:width()&quot;},{&quot;name&quot;:&quot;Image:height&quot;,&quot;fn&quot;:&quot;Image:height()&quot;}]},{&quot;header&quot;:&quot;Font&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.font_load&quot;,&quot;fn&quot;:&quot;spry.font_load(file)&quot;},{&quot;name&quot;:&quot;spry.default_font&quot;,&quot;fn&quot;:&quot;spry.default_font()&quot;},{&quot;name&quot;:&quot;Font:width&quot;,&quot;fn&quot;:&quot;Font:width(text, size)&quot;},{&quot;name&quot;:&quot;Font:draw&quot;,&quot;fn&quot;:&quot;Font:draw(text, x, y, size)&quot;}]},{&quot;header&quot;:&quot;Audio&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.set_master_volume&quot;,&quot;fn&quot;:&quot;spry.set_master_volume(volume)&quot;},{&quot;name&quot;:&quot;spry.audio_load&quot;,&quot;fn&quot;:&quot;spry.audio_load(file)&quot;},{&quot;name&quot;:&quot;Audio:destroy&quot;,&quot;fn&quot;:&quot;Audio:destroy()&quot;},{&quot;name&quot;:&quot;Audio:play&quot;,&quot;fn&quot;:&quot;Audio:play(volume, loop)&quot;}]},{&quot;header&quot;:&quot;Sprite&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.sprite_load&quot;,&quot;fn&quot;:&quot;spry.sprite_load(file)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:play&quot;,&quot;fn&quot;:&quot;SpriteRenderer:play(tag)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:update&quot;,&quot;fn&quot;:&quot;SpriteRenderer:update(dt)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:draw&quot;,&quot;fn&quot;:&quot;SpriteRenderer:draw(x, y, r, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:width&quot;,&quot;fn&quot;:&quot;SpriteRenderer:width()&quot;},{&quot;name&quot;:&quot;SpriteRenderer:height&quot;,&quot;fn&quot;:&quot;SpriteRenderer:height()&quot;},{&quot;name&quot;:&quot;SpriteRenderer:set_frame&quot;,&quot;fn&quot;:&quot;SpriteRenderer:set_frame(frame)&quot;},{&quot;name&quot;:&quot;SpriteRenderer:total_frames&quot;,&quot;fn&quot;:&quot;SpriteRenderer:total_frames()&quot;}]},{&quot;header&quot;:&quot;Texture Atlas&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.atlas_load&quot;,&quot;fn&quot;:&quot;spry.atlas_load(file)&quot;},{&quot;name&quot;:&quot;Atlas:get_image&quot;,&quot;fn&quot;:&quot;Atlas:get_image(name)&quot;},{&quot;name&quot;:&quot;AtlasImage:draw&quot;,&quot;fn&quot;:&quot;AtlasImage:draw(x, y, r, sx, sy, ox, oy)&quot;},{&quot;name&quot;:&quot;AtlasImage:width&quot;,&quot;fn&quot;:&quot;AtlasImage:width()&quot;},{&quot;name&quot;:&quot;AtlasImage:height&quot;,&quot;fn&quot;:&quot;AtlasImage:height()&quot;}]},{&quot;header&quot;:&quot;Tilemap&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.tilemap_load&quot;,&quot;fn&quot;:&quot;spry.tilemap_load(file)&quot;},{&quot;name&quot;:&quot;Tilemap:draw&quot;,&quot;fn&quot;:&quot;Tilemap:draw()&quot;},{&quot;name&quot;:&quot;Tilemap:entities&quot;,&quot;fn&quot;:&quot;Tilemap:entities()&quot;},{&quot;name&quot;:&quot;Tilemap:make_collision&quot;,&quot;fn&quot;:&quot;Tilemap:make_collision(world, layer, walls)&quot;},{&quot;name&quot;:&quot;Tilemap:draw_fixtures&quot;,&quot;fn&quot;:&quot;Tilemap:draw_fixtures(world, layer)&quot;}]},{&quot;header&quot;:&quot;Box2D World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;spry.b2_world&quot;,&quot;fn&quot;:&quot;spry.b2_world(t)&quot;},{&quot;name&quot;:&quot;b2World:step&quot;,&quot;fn&quot;:&quot;b2World:step(dt, vel_iters, pos_iters)&quot;},{&quot;name&quot;:&quot;b2World:make_static_body&quot;,&quot;fn&quot;:&quot;b2World:make_static_body(t)&quot;},{&quot;name&quot;:&quot;b2World:make_kinematic_body&quot;,&quot;fn&quot;:&quot;b2World:make_kinematic_body(t)&quot;},{&quot;name&quot;:&quot;b2World:make_dynamic_body&quot;,&quot;fn&quot;:&quot;b2World:make_dynamic_body(t)&quot;},{&quot;name&quot;:&quot;b2World:begin_contact&quot;,&quot;fn&quot;:&quot;b2World:begin_contact(fn)&quot;},{&quot;name&quot;:&quot;b2World:end_contact&quot;,&quot;fn&quot;:&quot;b2World:end_contact(fn)&quot;}]},{&quot;header&quot;:&quot;Box2D Body&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Body:destroy&quot;,&quot;fn&quot;:&quot;b2Body:destroy()&quot;},{&quot;name&quot;:&quot;b2Body:make_box_fixture&quot;,&quot;fn&quot;:&quot;b2Body:make_box_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:make_circle_fixture&quot;,&quot;fn&quot;:&quot;b2Body:make_circle_fixture(t)&quot;},{&quot;name&quot;:&quot;b2Body:position&quot;,&quot;fn&quot;:&quot;b2Body:position()&quot;},{&quot;name&quot;:&quot;b2Body:velocity&quot;,&quot;fn&quot;:&quot;b2Body:velocity()&quot;},{&quot;name&quot;:&quot;b2Body:angle&quot;,&quot;fn&quot;:&quot;b2Body:angle()&quot;},{&quot;name&quot;:&quot;b2Body:linear_damping&quot;,&quot;fn&quot;:&quot;b2Body:linear_damping()&quot;},{&quot;name&quot;:&quot;b2Body:fixed_rotation&quot;,&quot;fn&quot;:&quot;b2Body:fixed_rotation()&quot;},{&quot;name&quot;:&quot;b2Body:apply_force&quot;,&quot;fn&quot;:&quot;b2Body:apply_force(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:apply_impulse&quot;,&quot;fn&quot;:&quot;b2Body:apply_impulse(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_position&quot;,&quot;fn&quot;:&quot;b2Body:set_position(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_velocity&quot;,&quot;fn&quot;:&quot;b2Body:set_velocity(x, y)&quot;},{&quot;name&quot;:&quot;b2Body:set_angle&quot;,&quot;fn&quot;:&quot;b2Body:set_angle(angle)&quot;},{&quot;name&quot;:&quot;b2Body:set_linear_damping&quot;,&quot;fn&quot;:&quot;b2Body:set_linear_damping(damping)&quot;},{&quot;name&quot;:&quot;b2Body:set_fixed_rotation&quot;,&quot;fn&quot;:&quot;b2Body:set_fixed_rotation(angle)&quot;},{&quot;name&quot;:&quot;b2Body:set_transform&quot;,&quot;fn&quot;:&quot;b2Body:set_transform(x, y, angle)&quot;},{&quot;name&quot;:&quot;b2Body:draw_fixtures&quot;,&quot;fn&quot;:&quot;b2Body:draw_fixtures()&quot;},{&quot;name&quot;:&quot;b2Body:udata&quot;,&quot;fn&quot;:&quot;b2Body:udata()&quot;}]},{&quot;header&quot;:&quot;Box2D Fixture&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;b2Fixture:friction&quot;,&quot;fn&quot;:&quot;b2Fixture:friction()&quot;},{&quot;name&quot;:&quot;b2Fixture:restitution&quot;,&quot;fn&quot;:&quot;b2Fixture:restitution()&quot;},{&quot;name&quot;:&quot;b2Fixture:is_sensor&quot;,&quot;fn&quot;:&quot;b2Fixture:is_sensor()&quot;},{&quot;name&quot;:&quot;b2Fixture:set_friction&quot;,&quot;fn&quot;:&quot;b2Fixture:set_friction(friction)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_restitution&quot;,&quot;fn&quot;:&quot;b2Fixture:set_restitution(restitution)&quot;},{&quot;name&quot;:&quot;b2Fixture:set_sensor&quot;,&quot;fn&quot;:&quot;b2Fixture:set_sensor(sensor)&quot;},{&quot;name&quot;:&quot;b2Fixture:body&quot;,&quot;fn&quot;:&quot;b2Fixture:body()&quot;},{&quot;name&quot;:&quot;b2Fixture:udata&quot;,&quot;fn&quot;:&quot;b2Fixture:udata()&quot;}]},{&quot;header&quot;:&quot;2D Vector&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;vec2&quot;,&quot;fn&quot;:&quot;vec2(x, y)&quot;},{&quot;name&quot;:&quot;vec2:normalize&quot;,&quot;fn&quot;:&quot;vec2:normalize()&quot;},{&quot;name&quot;:&quot;vec2:distance&quot;,&quot;fn&quot;:&quot;vec2:distance(rhs)&quot;},{&quot;name&quot;:&quot;vec2:direction&quot;,&quot;fn&quot;:&quot;vec2:direction(rhs)&quot;},{&quot;name&quot;:&quot;vec2:lerp&quot;,&quot;fn&quot;:&quot;vec2:lerp(rhs, dt)&quot;},{&quot;name&quot;:&quot;vec2:dot&quot;,&quot;fn&quot;:&quot;vec2:dot(rhs)&quot;},{&quot;name&quot;:&quot;vec2:unpack&quot;,&quot;fn&quot;:&quot;vec2:unpack()&quot;},{&quot;name&quot;:&quot;vec2.__add&quot;,&quot;fn&quot;:&quot;vec2.__add(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__sub&quot;,&quot;fn&quot;:&quot;vec2.__sub(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__mul&quot;,&quot;fn&quot;:&quot;vec2.__mul(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2.__div&quot;,&quot;fn&quot;:&quot;vec2.__div(lhs, rhs)&quot;},{&quot;name&quot;:&quot;vec2:__len&quot;,&quot;fn&quot;:&quot;vec2:__len()&quot;},{&quot;name&quot;:&quot;vec2.__eq&quot;,&quot;fn&quot;:&quot;vec2.__eq(lhs, rhs)&quot;}]},{&quot;header&quot;:&quot;World&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;World&quot;,&quot;fn&quot;:&quot;World()&quot;},{&quot;name&quot;:&quot;World:add&quot;,&quot;fn&quot;:&quot;World:add(obj)&quot;},{&quot;name&quot;:&quot;World:kill&quot;,&quot;fn&quot;:&quot;World:kill(obj)&quot;},{&quot;name&quot;:&quot;World:query_id&quot;,&quot;fn&quot;:&quot;World:query_id(obj)&quot;},{&quot;name&quot;:&quot;World:query_mt&quot;,&quot;fn&quot;:&quot;World:query_mt(mt)&quot;},{&quot;name&quot;:&quot;World:query_near&quot;,&quot;fn&quot;:&quot;World:query_near(x, y, mt)&quot;},{&quot;name&quot;:&quot;World:update&quot;,&quot;fn&quot;:&quot;World:update(dt)&quot;},{&quot;name&quot;:&quot;World:draw&quot;,&quot;fn&quot;:&quot;World:draw()&quot;}]},{&quot;header&quot;:&quot;Entity Component System&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;ECS&quot;,&quot;fn&quot;:&quot;ECS()&quot;},{&quot;name&quot;:&quot;ECS:update&quot;,&quot;fn&quot;:&quot;ECS:update()&quot;},{&quot;name&quot;:&quot;ECS:add&quot;,&quot;fn&quot;:&quot;ECS:add(entity)&quot;},{&quot;name&quot;:&quot;ECS:kill&quot;,&quot;fn&quot;:&quot;ECS:kill(id)&quot;},{&quot;name&quot;:&quot;ECS:query&quot;,&quot;fn&quot;:&quot;ECS:query(keys)&quot;}]},{&quot;header&quot;:&quot;Spring&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;Spring&quot;,&quot;fn&quot;:&quot;Spring(k, d)&quot;},{&quot;name&quot;:&quot;Spring:update&quot;,&quot;fn&quot;:&quot;Spring:update(dt)&quot;},{&quot;name&quot;:&quot;Spring:pull&quot;,&quot;fn&quot;:&quot;Spring:pull(f)&quot;}]},{&quot;header&quot;:&quot;Timer&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;interval&quot;,&quot;fn&quot;:&quot;interval(sec, action)&quot;},{&quot;name&quot;:&quot;timeout&quot;,&quot;fn&quot;:&quot;timeout(sec, action)&quot;},{&quot;name&quot;:&quot;stop_interval&quot;,&quot;fn&quot;:&quot;stop_interval(id)&quot;},{&quot;name&quot;:&quot;stop_timeout&quot;,&quot;fn&quot;:&quot;stop_timeout(id)&quot;}]},{&quot;header&quot;:&quot;Utility Functions&quot;,&quot;list&quot;:[{&quot;name&quot;:&quot;require&quot;,&quot;fn&quot;:&quot;require(file)&quot;},{&quot;name&quot;:&quot;class&quot;,&quot;fn&quot;:&quot;class(name)&quot;},{&quot;name&quot;:&quot;stringify&quot;,&quot;fn&quot;:&quot;stringify(value)&quot;},{&quot;name&quot;:&quot;clamp&quot;,&quot;fn&quot;:&quot;clamp(n, min, max)&quot;},{&quot;name&quot;:&quot;sign&quot;,&quot;fn&quot;:&quot;sign(x)&quot;},{&quot;name&quot;:&quot;lerp&quot;,&quot;fn&quot;:&quot;lerp(src, dest, t)&quot;},{&quot;name&quot;:&quot;direction&quot;,&quot;fn&quot;:&quot;direction(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;heading&quot;,&quot;fn&quot;:&quot;heading(angle, mag)&quot;},{&quot;name&quot;:&quot;delta_angle&quot;,&quot;fn&quot;:&quot;delta_angle(src, dst)&quot;},{&quot;name&quot;:&quot;distance&quot;,&quot;fn&quot;:&quot;distance(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;normalize&quot;,&quot;fn&quot;:&quot;normalize(x, y)&quot;},{&quot;name&quot;:&quot;dot&quot;,&quot;fn&quot;:&quot;dot(x0, y0, x1, y1)&quot;},{&quot;name&quot;:&quot;random&quot;,&quot;fn&quot;:&quot;random(min, max)&quot;},{&quot;name&quot;:&quot;clone&quot;,&quot;fn&quot;:&quot;clone(t)&quot;},{&quot;name&quot;:&quot;push&quot;,&quot;fn&quot;:&quot;push(arr, x)&quot;},{&quot;name&quot;:&quot;map&quot;,&quot;fn&quot;:&quot;map(arr, fn)&quot;},{&quot;name&quot;:&quot;filter&quot;,&quot;fn&quot;:&quot;filter(arr, fn)&quot;},{&quot;name&quot;:&quot;zip&quot;,&quot;fn&quot;:&quot;zip(lhs, rhs)&quot;},{&quot;name&quot;:&quot;choose&quot;,&quot;fn&quot;:&quot;choose(arr)&quot;},{&quot;name&quot;:&quot;sortpairs&quot;,&quot;fn&quot;:&quot;sortpairs(t)&quot;},{&quot;name&quot;:&quot;create_thread&quot;,&quot;fn&quot;:&quot;create_thread(fn)&quot;},{&quot;name&quot;:&quot;resume&quot;,&quot;fn&quot;:&quot;resume(co, ...)&quot;},{&quot;name&quot;:&quot;yield&quot;,&quot;fn&quot;:&quot;yield(...)&quot;},{&quot;name&quot;:&quot;sleep_for&quot;,&quot;fn&quot;:&quot;sleep_for(secs, dt)&quot;}]}],
       init() {
         const search = document.getElementById('search')
         document.addEventListener('keydown', e => {
@@ -254,7 +262,9 @@
                         <td class="pv2 ph3">
                                                       <code>table</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The table to edit options with.</td>
                       </tr>
                                                                 <tr>
@@ -262,7 +272,9 @@
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>false</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Windows only. If true, attach a console to the program.</td>
                       </tr>
                                                                 <tr>
@@ -270,15 +282,19 @@
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>true</code></td>
-                                                <td class="pv2 ph3">Enable/disable hot reloading of Lua scripts.</td>
+                                                  <td class="pv2 ph3">
+                                                          <code>true</code>
+                                                      </td>
+                                                <td class="pv2 ph3">Enable/disable hot reloading of scripts and assets.</td>
                       </tr>
                                                                 <tr>
                         <td class="pv2 ph3 pre overflow-hidden"><code> .reload_interval</code></td>
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0.1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0.1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The time in seconds to update files for hot reloading.</td>
                       </tr>
                                                                 <tr>
@@ -286,7 +302,9 @@
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Set the swap interval. Typically 1 for VSync, or 0 for no VSync.</td>
                       </tr>
                                                                 <tr>
@@ -294,7 +312,9 @@
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>800</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>800</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The window width.</td>
                       </tr>
                                                                 <tr>
@@ -302,7 +322,9 @@
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>600</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>600</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The window height.</td>
                       </tr>
                                                                 <tr>
@@ -310,7 +332,9 @@
                         <td class="pv2 ph3">
                                                       <code>string</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>'Spry'</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>'Spry'</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The window title.</td>
                       </tr>
                                       </tbody>
@@ -1256,7 +1280,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1264,7 +1290,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1272,7 +1300,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The width of the rectangle.</td>
                       </tr>
                                                                 <tr>
@@ -1280,7 +1310,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The height of the rectangle.</td>
                       </tr>
                                                                 <tr>
@@ -1288,7 +1320,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The rotation angle in radians.</td>
                       </tr>
                                                                 <tr>
@@ -1296,7 +1330,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -1304,7 +1340,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -1312,7 +1350,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x origin offset.</td>
                       </tr>
                                                                 <tr>
@@ -1320,7 +1360,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y origin offset.</td>
                       </tr>
                                       </tbody>
@@ -1362,7 +1404,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1370,7 +1414,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1378,7 +1424,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The width of the rectangle.</td>
                       </tr>
                                                                 <tr>
@@ -1386,7 +1434,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The height of the rectangle.</td>
                       </tr>
                                                                 <tr>
@@ -1394,7 +1444,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The rotation angle in radians.</td>
                       </tr>
                                                                 <tr>
@@ -1402,7 +1454,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -1410,7 +1464,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -1418,7 +1474,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x origin offset.</td>
                       </tr>
                                                                 <tr>
@@ -1426,7 +1484,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y origin offset.</td>
                       </tr>
                                       </tbody>
@@ -1563,7 +1623,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1571,7 +1633,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1579,7 +1643,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The rotation angle in radians.</td>
                       </tr>
                                                                 <tr>
@@ -1587,7 +1653,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -1595,7 +1663,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -1603,7 +1673,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x origin offset.</td>
                       </tr>
                                                                 <tr>
@@ -1611,7 +1683,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y origin offset.</td>
                       </tr>
                                                                 <tr>
@@ -1619,23 +1693,29 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
-                                                <td class="pv2 ph3">The top-left x texture coordinate.</td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
+                                                <td class="pv2 ph3">The top-left x texture coordinate in the range [0, 1].</td>
                       </tr>
                                                                 <tr>
                         <td class="pv2 ph3 pre overflow-hidden"><code>v0</code></td>
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
-                                                <td class="pv2 ph3">The top-left y texture coordinate.</td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
+                                                <td class="pv2 ph3">The top-left y texture coordinate in the range [0, 1].</td>
                       </tr>
                                                                 <tr>
                         <td class="pv2 ph3 pre overflow-hidden"><code>u1</code></td>
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The bottom-right x texture coordinate.</td>
                       </tr>
                                                                 <tr>
@@ -1643,7 +1723,9 @@ spry.pop_color()
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The bottom-right y texture coordinate.</td>
                       </tr>
                                       </tbody>
@@ -1841,7 +1923,9 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                         <td class="pv2 ph3">
                                                       <code>string</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The text to draw.</td>
                       </tr>
                                                                 <tr>
@@ -1849,7 +1933,9 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1857,7 +1943,9 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -1865,7 +1953,9 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>12</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>12</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The size of the text.</td>
                       </tr>
                                       </tbody>
@@ -2010,7 +2100,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The playback volume of the sound.</td>
                       </tr>
                                                                 <tr>
@@ -2018,7 +2110,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>false</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
                                                 <td class="pv2 ph3">If true, loop the playback of the sound, usually for background music.</td>
                       </tr>
                                       </tbody>
@@ -2189,7 +2283,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -2197,7 +2293,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -2205,7 +2303,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The rotation angle in radians.</td>
                       </tr>
                                                                 <tr>
@@ -2213,7 +2313,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -2221,7 +2323,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -2229,7 +2333,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x origin offset.</td>
                       </tr>
                                                                 <tr>
@@ -2237,7 +2343,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y origin offset.</td>
                       </tr>
                                       </tbody>
@@ -2469,7 +2577,9 @@ ship:draw(...)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -2477,7 +2587,9 @@ ship:draw(...)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position to draw at.</td>
                       </tr>
                                                                 <tr>
@@ -2485,7 +2597,9 @@ ship:draw(...)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The rotation angle in radians.</td>
                       </tr>
                                                                 <tr>
@@ -2493,7 +2607,9 @@ ship:draw(...)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -2501,7 +2617,9 @@ ship:draw(...)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y scale factor.</td>
                       </tr>
                                                                 <tr>
@@ -2509,7 +2627,9 @@ ship:draw(...)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x origin offset.</td>
                       </tr>
                                                                 <tr>
@@ -2517,7 +2637,9 @@ ship:draw(...)
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y origin offset.</td>
                       </tr>
                                       </tbody>
@@ -2864,7 +2986,9 @@ tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">Delta time.</td>
                       </tr>
                                                                 <tr>
@@ -2872,7 +2996,9 @@ tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>6</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>6</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Number of iterations in the constraint solver's velocity phase.</td>
                       </tr>
                                                                 <tr>
@@ -2880,7 +3006,9 @@ tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>2</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>2</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Number of iterations in the constraint solver's position phase.</td>
                       </tr>
                                       </tbody>
@@ -2929,7 +3057,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>table</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">Body definition.</td>
                       </tr>
                                                                 <tr>
@@ -2937,7 +3067,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -2945,7 +3077,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -2953,7 +3087,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x velocity of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -2961,7 +3097,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y velocity of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -2969,7 +3107,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The angle of the physics body in radians.</td>
                       </tr>
                                                                 <tr>
@@ -2977,7 +3117,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The linear damping of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -2985,7 +3127,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>false</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
                                                 <td class="pv2 ph3">If true, prevent the physics body from rotating.</td>
                       </tr>
                                                                 <tr>
@@ -2993,7 +3137,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>string | number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Custom user data for this body.</td>
                       </tr>
                                       </tbody>
@@ -3036,7 +3182,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>table</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">Body definition.</td>
                       </tr>
                                                                 <tr>
@@ -3044,7 +3192,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3052,7 +3202,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3060,7 +3212,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x velocity of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3068,7 +3222,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y velocity of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3076,7 +3232,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The angle of the physics body in radians.</td>
                       </tr>
                                                                 <tr>
@@ -3084,7 +3242,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The linear damping of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3092,7 +3252,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>false</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
                                                 <td class="pv2 ph3">If true, prevent the physics body from rotating.</td>
                       </tr>
                                                                 <tr>
@@ -3100,7 +3262,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>string | number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Custom user data for this body.</td>
                       </tr>
                                       </tbody>
@@ -3143,7 +3307,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>table</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">Body definition.</td>
                       </tr>
                                                                 <tr>
@@ -3151,7 +3317,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3159,7 +3327,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3167,7 +3337,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The x velocity of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3175,7 +3347,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The y velocity of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3183,7 +3357,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The angle of the physics body in radians.</td>
                       </tr>
                                                                 <tr>
@@ -3191,7 +3367,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The linear damping of the physics body.</td>
                       </tr>
                                                                 <tr>
@@ -3199,7 +3377,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>false</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
                                                 <td class="pv2 ph3">If true, prevent the physics body from rotating.</td>
                       </tr>
                                                                 <tr>
@@ -3207,7 +3387,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>string | number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Custom user data for this body.</td>
                       </tr>
                                       </tbody>
@@ -3378,7 +3560,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>table</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">Fixture definition.</td>
                       </tr>
                                                                 <tr>
@@ -3386,7 +3570,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The box fixture's x offset from the center of the body.</td>
                       </tr>
                                                                 <tr>
@@ -3394,7 +3580,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The box fixture's y offset from the center of the body.</td>
                       </tr>
                                                                 <tr>
@@ -3402,7 +3590,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The box fixture's width.</td>
                       </tr>
                                                                 <tr>
@@ -3410,7 +3600,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The box fixture's height.</td>
                       </tr>
                                                                 <tr>
@@ -3418,7 +3610,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The box fixture's angle in radians.</td>
                       </tr>
                                                                 <tr>
@@ -3426,7 +3620,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>false</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
                                                 <td class="pv2 ph3">True if the fixture should be a sensor.</td>
                       </tr>
                                                                 <tr>
@@ -3434,7 +3630,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The fixture's density.</td>
                       </tr>
                                                                 <tr>
@@ -3442,7 +3640,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0.2</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0.2</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The fixture's friction.</td>
                       </tr>
                                                                 <tr>
@@ -3450,7 +3650,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The fixture's restitution.</td>
                       </tr>
                                                                 <tr>
@@ -3458,7 +3660,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>string | number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Custom user data for this fixture.</td>
                       </tr>
                                                                 <tr>
@@ -3466,7 +3670,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>function</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Run a callback function when this fixture touches another.</td>
                       </tr>
                                                                 <tr>
@@ -3474,7 +3680,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>function</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Run a callback function when this fixture stops touching another.</td>
                       </tr>
                                       </tbody>
@@ -3517,7 +3725,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>table</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">Fixture definition.</td>
                       </tr>
                                                                 <tr>
@@ -3525,7 +3735,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The box fixture's x offset from the center of the body.</td>
                       </tr>
                                                                 <tr>
@@ -3533,7 +3745,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The box fixture's y offset from the center of the body.</td>
                       </tr>
                                                                 <tr>
@@ -3541,7 +3755,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The circle fixture's radius.</td>
                       </tr>
                                                                 <tr>
@@ -3549,7 +3765,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>false</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
                                                 <td class="pv2 ph3">True if the fixture should be a sensor.</td>
                       </tr>
                                                                 <tr>
@@ -3557,7 +3775,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>1</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The fixture's density.</td>
                       </tr>
                                                                 <tr>
@@ -3565,7 +3785,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0.2</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0.2</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The fixture's friction.</td>
                       </tr>
                                                                 <tr>
@@ -3573,7 +3795,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>0</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>0</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The fixture's restitution.</td>
                       </tr>
                                                                 <tr>
@@ -3581,7 +3805,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>string | number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Custom user data for this fixture.</td>
                       </tr>
                                                                 <tr>
@@ -3589,7 +3815,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>function</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Run a callback function when this fixture touches another.</td>
                       </tr>
                                                                 <tr>
@@ -3597,7 +3825,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>function</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">Run a callback function when this fixture stops touching another.</td>
                       </tr>
                                       </tbody>
@@ -4890,7 +5120,9 @@ print(c.x, c.y)
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Create a new world object, which manages object/actor creation, updates, and destruction.</p>          </div>
+            <p>Create a new world object, which manages object/actor creation,
+updates, and destruction. An actor is a class with a constructor, an
+<code>update</code> method and a <code>draw</code> method.</p>          </div>
           
                       <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
             <code>World</code>
@@ -5115,7 +5347,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The x position.</td>
                       </tr>
                                                                 <tr>
@@ -5123,7 +5357,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code></code></td>
+                                                  <td class="pv2 ph3">
+                                                          <span class="i gray">N/A</span>
+                                                      </td>
                                                 <td class="pv2 ph3">The y position.</td>
                       </tr>
                                                                 <tr>
@@ -5131,7 +5367,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>table</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>nil</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>nil</code>
+                                                      </td>
                                                 <td class="pv2 ph3">A metatable to filter search results with.</td>
                       </tr>
                                       </tbody>
@@ -5211,6 +5449,210 @@ end
           </div>
         </div>
                         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="ECS" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Entity Component System          </p>
+          <h2 class="mb2">
+            <a href="#ECS" class="black dm-white link underline-hover break-words">
+              <code>ECS()</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Create a new ECS object. Entities are created and removed after <a href="#ECS:update"><code>ECS:update()</code></a>.</p>          </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>ECS</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">function spry.start()
+  ecs = ECS()
+
+  for i = 1, 100 do
+    ecs:add {
+      pos = { x = 200, y = 200 },
+      vel = { x = random(-100, 100), y = random(-100, 100) },
+    }
+  end
+end
+
+function spry.frame(dt)
+  ecs:update()
+
+  for id, e in ecs:query { 'pos', 'vel' } do
+    e.pos.x = e.pos.x + e.vel.x * dt
+    e.pos.y = e.pos.y + e.vel.y * dt
+
+    -- adding a component
+    if add_accel then
+      e.accel = { x = ax, y = ay }
+    end
+
+    -- removing a component
+    if remove_vel then
+      e.vel = nil
+    end
+  end
+end
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="ECS:update" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Entity Component System          </p>
+          <h2 class="mb2">
+            <a href="#ECS:update" class="black dm-white link underline-hover break-words">
+              <code>ECS:update()</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Call this method every frame so that entities are created and removed properly.</p>          </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">function spry.frame(dt)
+  ecs:update()
+  -- the rest of the frame
+end
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="ECS:add" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Entity Component System          </p>
+          <h2 class="mb2">
+            <a href="#ECS:add" class="black dm-white link underline-hover break-words">
+              <code>ECS:add(entity)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Create a new entity. Returns the entity id.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>entity</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>table</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The entity to add, where each table entry is a component.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>number</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">ecs:add {
+  pos = { x = spry.window_width() / 2, y = spry.window_height() / 2 },
+  vel = { x = random(-100, 100), y = random(-100, 100) },
+}
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="ECS:kill" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Entity Component System          </p>
+          <h2 class="mb2">
+            <a href="#ECS:kill" class="black dm-white link underline-hover break-words">
+              <code>ECS:kill(id)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Given an entity id, remove an entity.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>id</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The entity id.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray">Returns nothing.</p>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">if e.stats.hp == 0 then
+  ecs:kill(id)
+end
+</code></pre>
+          </div>
+        </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="ECS:query" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Entity Component System          </p>
+          <h2 class="mb2">
+            <a href="#ECS:query" class="black dm-white link underline-hover break-words">
+              <code>ECS:query(keys)</code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Returns an iterator over entities with the given components.</p>          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>keys</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>table</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The names of each component.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
+            <code>table</code>
+          
+          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
+          <div class="prose">
+            <pre class="mb0"><code class="language-lua">for id, e in ecs:query { 'pos', 'img' } do
+  e.img:draw(e.pos.x, e.pos.y)
+end
+</code></pre>
+          </div>
+        </div>
+                        <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="Spring" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Spring          </p>
@@ -5237,7 +5679,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>400</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>400</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The spring's stiffness.</td>
                       </tr>
                                                                 <tr>
@@ -5245,7 +5689,9 @@ end
                         <td class="pv2 ph3">
                                                       <code>number</code>
                                                   </td>
-                                                  <td class="pv2 ph3"><code>28</code></td>
+                                                  <td class="pv2 ph3">
+                                                          <code>28</code>
+                                                      </td>
                                                 <td class="pv2 ph3">The spring's damping.</td>
                       </tr>
                                       </tbody>

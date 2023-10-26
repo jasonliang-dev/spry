@@ -96,6 +96,10 @@
                       UFO Game                    </a>
                   </li>
                                   <li>
+                    <a href="hot-reload.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      Hot Reloading                    </a>
+                  </li>
+                                  <li>
                     <a href="distribution.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
                       Distribution                    </a>
                   </li>
@@ -131,6 +135,10 @@
                               <li>
                   <a href="ufo-game.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
                     UFO Game                  </a>
+                </li>
+                              <li>
+                  <a href="hot-reload.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                    Hot Reloading                  </a>
                 </li>
                               <li>
                   <a href="distribution.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
@@ -256,20 +264,7 @@ speed of both <code>vx</code> and <code>vy</code> is always 1.</p>
 <p>After setting keyboard input, but before moving the player, add the following line:</p>
 <pre><code class="language-lua">vx, vy = normalize(vx, vy)</code></pre>
 <p>Run the game again, and you'll see that the player moves at the same speed
-regardless of direction.</p>
-<h2>Hot Reloading</h2>
-<p>Spry has the ablity to hot swap recently changed Lua scripts while the program
-is running. Run your program if it's not running already, then go to your
-text editor. Find the <code>Player:draw()</code> function and change the rotation
-variable:</p>
-<pre><code class="language-lua">function Player:draw()
-  local rotation = math.pi
-
-  -- rest of draw below...
-end</code></pre>
-<p>Go back to your Spry program and you'll find that the UFO is now being drawn
-upside down. Note that the rotation unit is in radians. This is true for all
-Spry functions that deal with angles.</p></div>
+regardless of direction.</p></div>
     <footer class="flex flex-wrap center mv5 mw7">
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang
