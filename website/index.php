@@ -14,6 +14,7 @@ class Data {
     $this->guides = [
       "quick-start" => "Quick Start",
       "ufo-game" => "UFO Game",
+      "hot-reload" => "Hot Reloading",
       "distribution" => "Distribution",
     ];
 
@@ -142,20 +143,12 @@ function article(callable $fn) {
 }
 
 function spry_demo(string $name) {
-  $demo = false;
-  $demo_title = false;
-  foreach (data()->demos as $title => $desc) {
-    if ($title === $name) {
-      $demo = $desc;
-      $demo_title = $title;
-      break;
-    }
-  }
-  assert($demo !== false);
+  assert(isset(data()->demos[$name]));
+  $demo = data()->demos[$name];
   ?>
   <div class="flex flex-column items-center center" style="width: <?= $demo["width"] ?>px">
     <div class="prose w-100">
-      <h1><?= $demo_title ?></h1>
+      <h1><?= $name ?></h1>
       <?= Parsedown::instance()->text(multiline_trim($demo["text"])) ?>
     </div>
     <canvas
@@ -188,7 +181,7 @@ function spry_demo(string $name) {
   <script type="text/javascript">
     var canvas = document.getElementById('canvas');
     var Module = { canvas };
-    var spryMount = '<?= $desc["mount"] ?>';
+    var spryMount = '<?= $demo["mount"] ?>';
   </script>
   <script src="static/spry.js" type="text/javascript"></script>
   <?php

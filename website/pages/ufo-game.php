@@ -167,25 +167,6 @@ vx, vy = normalize(vx, vy)
 Run the game again, and you'll see that the player moves at the same speed
 regardless of direction.
 
-## Hot Reloading
-
-Spry has the ablity to hot swap recently changed Lua scripts while the program
-is running. Run your program if it's not running already, then go to your
-text editor. Find the `Player:draw()` function and change the rotation
-variable:
-
-```lua
-function Player:draw()
-  local rotation = math.pi
-
-  -- rest of draw below...
-end
-```
-
-Go back to your Spry program and you'll find that the UFO is now being drawn
-upside down. Note that the rotation unit is in radians. This is true for all
-Spry functions that deal with angles.
-
 <?php });
 
 footer("mw7");

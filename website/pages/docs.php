@@ -22,13 +22,6 @@ $rect_description = [
   "oy" => ["number", "The y origin offset.", 0],
 ];
 
-$uv_coords = [
-  "u0" => ["number", "The top-left x texture coordinate.", 0],
-  "v0" => ["number", "The top-left y texture coordinate.", 0],
-  "u1" => ["number", "The bottom-right x texture coordinate.", 1],
-  "v1" => ["number", "The bottom-right y texture coordinate.", 1],
-];
-
 $b2body_def = [
   "t" => ["table", "Body definition."],
   " .x" => ["number", "The x position of the physics body."],
@@ -64,7 +57,7 @@ $api_reference = [
       "args" => [
         "t" => ["table", "The table to edit options with."],
         " .console_attach" => ["boolean", "Windows only. If true, attach a console to the program.", "false"],
-        " .hot_reload" => ["boolean", "Enable/disable hot reloading of Lua scripts.", "true"],
+        " .hot_reload" => ["boolean", "Enable/disable hot reloading of scripts and assets.", "true"],
         " .reload_interval" => ["number", "The time in seconds to update files for hot reloading.", 0.1],
         " .swap_interval" => ["number", "Set the swap interval. Typically 1 for VSync, or 0 for no VSync.", 1],
         " .window_width" => ["number", "The window width.", 800],
@@ -424,7 +417,12 @@ $api_reference = [
         local oy = img:height() / 2
         img:draw(x, y, angle, 1, -1, ox, oy)
       ",
-      "args" => array_merge($draw_description, $uv_coords),
+      "args" => array_merge($draw_description, [
+        "u0" => ["number", "The top-left x texture coordinate in the range [0, 1].", 0],
+        "v0" => ["number", "The top-left y texture coordinate in the range [0, 1].", 0],
+        "u1" => ["number", "The bottom-right x texture coordinate.", 1],
+        "v1" => ["number", "The bottom-right y texture coordinate.", 1],
+      ]),
       "return" => false,
     ],
     "Image:width" => [
@@ -1248,9 +1246,9 @@ $api_reference = [
       "return" => false,
     ],
   ],
-  "ECS" => [
+  "Entity Component System" => [
     "ECS" => [
-      "desc" => "Create a new ECS object, which stores entities in one big table. Entities are created and removed after [`ECS:update()`](#ECS:update).",
+      "desc" => "Create a new ECS object. Entities are created and removed after [`ECS:update()`](#ECS:update).",
       "example" => "
         function spry.start()
           ecs = ECS()
@@ -1322,7 +1320,7 @@ $api_reference = [
       "return" => false,
     ],
     "ECS:query" => [
-      "desc" => "Returns all entities with the given components.",
+      "desc" => "Returns an iterator over entities with the given components.",
       "example" => "
         for id, e in ecs:query { 'pos', 'img' } do
           e.img:draw(e.pos.x, e.pos.y)
@@ -1868,7 +1866,13 @@ $api_reference = [
                           <?php endif ?>
                         </td>
                         <?php if ($has_default): ?>
-                          <td class="pv2 ph3"><code><?= $default ?></code></td>
+                          <td class="pv2 ph3">
+                            <?php if ($default !== false): ?>
+                              <code><?= $default ?></code>
+                            <?php else: ?>
+                              <span class="i gray">N/A</span>
+                            <?php endif ?>
+                          </td>
                         <?php endif ?>
                         <td class="pv2 ph3"><?= $desc ?></td>
                       </tr>
