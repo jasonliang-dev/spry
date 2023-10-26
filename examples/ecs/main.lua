@@ -8,11 +8,19 @@ function spry.start()
 
   ecs = ECS()
 
-  for i = 1, 100 do
+  for i = 1, 50 do
     ecs:add {
-      pos = { x = 200, y = 200 },
+      pos = { x = spry.window_width() / 2, y = spry.window_height() / 2 },
       vel = { x = random(-100, 100), y = random(-100, 100) },
-      img = player
+      img = player,
+    }
+  end
+
+  for i = 1, 10 do
+    ecs:add {
+      pos = { x = random(0, spry.window_width()), y = random(0, spry.window_height()) },
+      rot = { angle = random(0, math.pi), delta = random(-1, 1) },
+      img = player,
     }
   end
 end
@@ -24,7 +32,7 @@ function spry.frame(dt)
     e.pos.x = e.pos.x + e.vel.x * dt
     e.pos.y = e.pos.y + e.vel.y * dt
 
-    if spry.key_down "space" then
+    if spry.key_down "p" then
       e.vel = nil
     end
 
@@ -33,12 +41,18 @@ function spry.frame(dt)
     end
   end
 
+  for id, e in ecs:query { "pos", "rot" } do
+    e.rot.angle = e.rot.angle + e.rot.delta * dt
+  end
+
   for id, e in ecs:query { "pos", "img" } do
     local ox = e.img:width() * 0.5
     local oy = e.img:height() * 0.5
-    e.img:draw(e.pos.x, e.pos.y, 0, 3, 3, ox, oy)
+    local angle = e.rot and e.rot.angle or 0
 
-    if e.vel == nil and spry.key_down "j" then
+    e.img:draw(e.pos.x, e.pos.y, angle, 3, 3, ox, oy)
+
+    if e.vel == nil and spry.key_down "v" then
       e.vel = { x = 4, y = 1 }
     end
   end
