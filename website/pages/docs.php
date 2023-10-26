@@ -1146,7 +1146,11 @@ $api_reference = [
   ],
   "World" => [
     "World" => [
-      "desc" => "Create a new world object, which manages object/actor creation, updates, and destruction.",
+      "desc" => "
+        Create a new world object, which manages object/actor creation,
+        updates, and destruction. An actor is a class with a constructor, an
+        `update` method and a `draw` method.
+      ",
       "example" => "
         function spry.start()
           world = World()
@@ -1242,6 +1246,92 @@ $api_reference = [
       "example" => "world:draw()",
       "args" => [],
       "return" => false,
+    ],
+  ],
+  "ECS" => [
+    "ECS" => [
+      "desc" => "Create a new ECS object, which stores entities in one big table. Entities are created and removed after [`ECS:update()`](#ECS:update).",
+      "example" => "
+        function spry.start()
+          ecs = ECS()
+
+          for i = 1, 100 do
+            ecs:add {
+              pos = { x = 200, y = 200 },
+              vel = { x = random(-100, 100), y = random(-100, 100) },
+            }
+          end
+        end
+
+        function spry.frame(dt)
+          ecs:update()
+
+          for id, e in ecs:query { 'pos', 'vel' } do
+            e.pos.x = e.pos.x + e.vel.x * dt
+            e.pos.y = e.pos.y + e.vel.y * dt
+
+            -- adding a component
+            if add_accel then
+              e.accel = { x = ax, y = ay }
+            end
+
+            -- removing a component
+            if remove_vel then
+              e.vel = nil
+            end
+          end
+        end
+      ",
+      "args" => [],
+      "return" => "ECS",
+    ],
+    "ECS:update" => [
+      "desc" => "Call this method every frame so that entities are created and removed properly.",
+      "example" => "
+        function spry.frame(dt)
+          ecs:update()
+          -- the rest of the frame
+        end
+      ",
+      "args" => [],
+      "return" => false,
+    ],
+    "ECS:add" => [
+      "desc" => "Create a new entity. Returns the entity id.",
+      "example" => "
+        ecs:add {
+          pos = { x = spry.window_width() / 2, y = spry.window_height() / 2 },
+          vel = { x = random(-100, 100), y = random(-100, 100) },
+        }
+      ",
+      "args" => [
+        "entity" => ["table", "The entity to add, where each table entry is a component."]
+      ],
+      "return" => "number",
+    ],
+    "ECS:kill" => [
+      "desc" => "Given an entity id, remove an entity.",
+      "example" => "
+        if e.stats.hp == 0 then
+          ecs:kill(id)
+        end
+      ",
+      "args" => [
+        "id" => ["number", "The entity id."]
+      ],
+      "return" => false,
+    ],
+    "ECS:query" => [
+      "desc" => "Returns all entities with the given components.",
+      "example" => "
+        for id, e in ecs:query { 'pos', 'img' } do
+          e.img:draw(e.pos.x, e.pos.y)
+        end
+      ",
+      "args" => [
+        "keys" => ["table", "The names of each component."]
+      ],
+      "return" => "table",
     ],
   ],
   "Spring" => [
