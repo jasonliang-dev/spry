@@ -16,8 +16,8 @@ struct SpriteLoop {
 struct Sprite;
 
 struct SpriteRenderer {
-  Sprite *sprite;
-  SpriteLoop *loop;
+  u64 sprite;
+  u64 loop;
   float elapsed;
   i32 current_frame;
 };

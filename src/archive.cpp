@@ -286,12 +286,9 @@ String program_path() {
   return {s_buf, (u64)len};
 }
 
-u64 file_modtime(String filename) {
-  String file = to_cstr(filename);
-  defer(mem_free(file.data));
-
+u64 file_modtime(const char *filename) {
 #ifdef _WIN32
-  HANDLE handle = CreateFile(file.data, GENERIC_READ, FILE_SHARE_READ, NULL,
+  HANDLE handle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
                              OPEN_EXISTING, 0, NULL);
 
   if (handle == INVALID_HANDLE_VALUE) {
@@ -316,7 +313,7 @@ u64 file_modtime(String filename) {
 
 #if defined(__linux__) || defined(__unix__)
   struct stat attrib = {};
-  i32 err = stat(file.data, &attrib);
+  i32 err = stat(filename, &attrib);
   if (err == 0) {
     return (u64)attrib.st_mtime;
   } else {

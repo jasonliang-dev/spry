@@ -3,16 +3,13 @@ function spry.conf(t)
 end
 
 function spry.start()
-  font = spry.default_font()
-  player = spry.image_load "player.png"
-
   ecs = ECS()
 
   for i = 1, 50 do
     ecs:add {
       pos = { x = spry.window_width() / 2, y = spry.window_height() / 2 },
       vel = { x = random(-100, 100), y = random(-100, 100) },
-      img = player,
+      img = spry.image_load "player.png",
     }
   end
 
@@ -20,7 +17,7 @@ function spry.start()
     ecs:add {
       pos = { x = random(0, spry.window_width()), y = random(0, spry.window_height()) },
       rot = { angle = random(0, math.pi), delta = random(-1, 1) },
-      img = player,
+      img = spry.image_load "player.png",
     }
   end
 end
@@ -57,5 +54,5 @@ function spry.frame(dt)
     end
   end
 
-  font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+  spry.default_font():draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
 end

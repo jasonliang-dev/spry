@@ -299,9 +299,10 @@ function ECS:update()
 end
 
 function ECS:add(entity)
-  self.to_create[self.next_id] = entity
-  self.next_id = self.next_id + 1
-  return entity
+  local id = self.next_id
+  self.to_create[id] = entity
+  self.next_id = id + 1
+  return id
 end
 
 function ECS:query(keys)

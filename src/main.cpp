@@ -251,24 +251,42 @@ static void frame() {
     for (auto [k, v] : g_app->modules) {
       require_lua_script(&g_app->archive, v->name);
     }
-  }
-}
 
-static void dump_allocs(Allocator *a) {
-  i32 allocs = 0;
-  for (DebugAllocInfo *info = a->head; info != nullptr; info = info->next) {
-    allocs++;
-  }
+    for (auto [k, v] : g_app->assets) {
+      u64 modtime = file_modtime(v->name);
+      if (modtime <= v->modtime) {
+        continue;
+      }
+      v->modtime = modtime;
 
-  printf("  --- allocations (%d) ---\n", allocs);
-  for (DebugAllocInfo *info = a->head; info != nullptr; info = info->next) {
-    printf("  %10llu bytes: %s:%d\n", info->size, info->file, info->line);
+      bool ok = false;
+      switch (v->kind) {
+      case AssetKind_Image:
+        drop(&v->image);
+        ok = image_load(&v->image, &g_app->archive, v->name);
+        break;
+      case AssetKind_Sprite:
+        drop(&v->sprite);
+        ok = sprite_load(&v->sprite, &g_app->archive, v->name);
+        break;
+      case AssetKind_None:
+      default: ok = true; break;
+      }
+
+      if (!ok) {
+        StringBuilder sb = format("failed to hot reload: %s", v->name);
+        defer(drop(&sb));
+        fatal_error(as_string(&sb));
+      } else {
+        printf("reloaded: %s\n", v->name);
+      }
+    }
   }
 }
 
 static void cleanup() {
   for (auto [k, v] : g_app->modules) {
-    mem_free(v->name.data);
+    mem_free(v->name);
   }
   drop(&g_app->modules);
 
@@ -284,10 +302,17 @@ static void cleanup() {
     mem_free(g_app->default_font);
   }
 
-  for (auto [k, v] : g_app->sprites) {
-    drop(v);
+  for (auto [k, v] : g_app->assets) {
+    mem_free(v->name);
+
+    switch (v->kind) {
+    case AssetKind_Image: drop(&v->image); break;
+    case AssetKind_Sprite: drop(&v->sprite); break;
+    case AssetKind_None:
+    default: break;
+    }
   }
-  drop(&g_app->sprites);
+  drop(&g_app->assets);
 
   sgl_destroy_pipeline(g_pipeline);
   sgl_shutdown();
@@ -295,18 +320,28 @@ static void cleanup() {
 
   drop(&g_app->archive);
 
-  if (g_app->fatal_error.data) {
+  if (g_app->fatal_error.data != nullptr) {
     mem_free(g_app->fatal_error.data);
   }
 
-  if (g_app->traceback.data) {
+  if (g_app->traceback.data != nullptr) {
     mem_free(g_app->traceback.data);
   }
 
   mem_free(g_app);
 
 #ifdef DEBUG
-  dump_allocs(&g_allocator);
+  i32 allocs = 0;
+  for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
+       info = info->next) {
+    allocs++;
+  }
+
+  printf("  --- allocations (%d) ---\n", allocs);
+  for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
+       info = info->next) {
+    printf("  %10llu bytes: %s:%d\n", info->size, info->file, info->line);
+  }
 #endif
 }
 
@@ -315,10 +350,7 @@ static i32 require_lua_script(Archive *ar, String filepath) {
     return LUA_REFNIL;
   }
 
-  String path = to_cstr(filepath);
-  defer(mem_free(path.data));
-
-  Module *module = get(&g_app->modules, fnv1a(path));
+  Module *module = get(&g_app->modules, fnv1a(filepath));
   if (module != nullptr) {
     bool needs_file_load = false;
     if (g_app->hot_reload_enabled) {
@@ -333,11 +365,16 @@ static i32 require_lua_script(Archive *ar, String filepath) {
     }
   }
 
+  String path = to_cstr(filepath);
+  defer(mem_free(path.data));
+
   String contents;
   bool ok = ar->read_entire_file(ar, &contents, filepath);
   if (!ok) {
-    StringBuilder sb = format("failed to read file: %s", path.data);
+    StringBuilder sb = string_builder_make();
     defer(drop(&sb));
+    concat(&sb, "failed to read file: ");
+    concat(&sb, filepath);
     fatal_error(as_string(&sb));
     return LUA_REFNIL;
   }
@@ -376,10 +413,10 @@ static i32 require_lua_script(Archive *ar, String filepath) {
     return module->ref;
   } else {
     Module m = {};
-    m.name = to_cstr(filepath);
-    m.modtime = file_modtime(filepath);
+    m.name = to_cstr(filepath).data;
+    m.modtime = file_modtime(m.name);
     m.ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    g_app->modules[fnv1a(path)] = m;
+    g_app->modules[fnv1a(filepath)] = m;
     return m.ref;
   }
 }

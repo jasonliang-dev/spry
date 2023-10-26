@@ -5,9 +5,26 @@
 #include "draw.h"
 
 struct Module {
-  String name;
+  char *name;
   u64 modtime;
   i32 ref;
+};
+
+enum AssetKind : u64 {
+  AssetKind_None,
+  AssetKind_Image,
+  AssetKind_Sprite,
+};
+
+struct Asset {
+  char *name;
+  u64 hash;
+  u64 modtime;
+  AssetKind kind;
+  union {
+    Image image;
+    Sprite sprite;
+  };
 };
 
 struct App {
@@ -48,7 +65,7 @@ struct App {
   Array<float> audio_buffer;
   AudioSources audio_sources;
 
-  HashMap<Sprite> sprites;
+  HashMap<Asset> assets;
 };
 
 extern App *g_app;

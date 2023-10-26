@@ -1,5 +1,6 @@
 #include "api.h"
 #include "app.h"
+#include "archive.h"
 #include "atlas.h"
 #include "audio.h"
 #include "box2d/b2_body.h"
@@ -24,6 +25,21 @@
 
 static Color top_color() {
   return g_app->draw_colors[g_app->draw_colors_len - 1];
+}
+
+static bool get_asset(String filepath, Asset **out) {
+  Asset *asset = nullptr;
+  u64 key = fnv1a(filepath);
+
+  bool ok = get(&g_app->assets, key, &asset);
+  if (!ok) {
+    asset->name = to_cstr(filepath).data;
+    asset->hash = key;
+    asset->modtime = file_modtime(asset->name);
+  }
+
+  *out = asset;
+  return ok;
 }
 
 struct PhysicsContactListener;
@@ -224,35 +240,33 @@ static void draw_fixtures_for_body(b2Body *body, float meter) {
 
 // mt_image
 
-static int mt_image_gc(lua_State *L) {
-  Image *img = (Image *)luaL_checkudata(L, 1, "mt_image");
-  drop(img);
-  return 0;
-}
-
 static int mt_image_draw(lua_State *L) {
-  Image *img = (Image *)luaL_checkudata(L, 1, "mt_image");
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
+  Image img = g_app->assets[*udata].image;
   DrawDescription dd = luax_draw_description(L, 2);
-  draw(img, &dd, top_color());
+  draw(&img, &dd, top_color());
   return 0;
 }
 
 static int mt_image_width(lua_State *L) {
-  Image *img = (Image *)luaL_checkudata(L, 1, "mt_image");
-  lua_pushnumber(L, img->width);
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
+  Image img = g_app->assets[*udata].image;
+  lua_pushnumber(L, img.width);
   return 1;
 }
 
 static int mt_image_height(lua_State *L) {
-  Image *img = (Image *)luaL_checkudata(L, 1, "mt_image");
-  lua_pushnumber(L, img->height);
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
+  Image img = g_app->assets[*udata].image;
+  lua_pushnumber(L, img.height);
   return 1;
 }
 
 static int open_mt_image(lua_State *L) {
   luaL_Reg reg[] = {
-      {"__gc", mt_image_gc},     {"draw", mt_image_draw},
-      {"width", mt_image_width}, {"height", mt_image_height},
+      {"draw", mt_image_draw},
+      {"width", mt_image_width},
+      {"height", mt_image_height},
       {nullptr, nullptr},
   };
 
@@ -375,14 +389,16 @@ static int mt_sprite_renderer_draw(lua_State *L) {
 static int mt_sprite_renderer_width(lua_State *L) {
   SpriteRenderer *sr =
       (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
-  lua_pushnumber(L, (lua_Number)sr->sprite->width);
+  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
+  lua_pushnumber(L, (lua_Number)sprite->width);
   return 1;
 }
 
 static int mt_sprite_renderer_height(lua_State *L) {
   SpriteRenderer *sr =
       (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
-  lua_pushnumber(L, (lua_Number)sr->sprite->height);
+  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
+  lua_pushnumber(L, (lua_Number)sprite->height);
   return 1;
 }
 
@@ -398,8 +414,8 @@ static int mt_sprite_renderer_set_frame(lua_State *L) {
 static int mt_sprite_renderer_total_frames(lua_State *L) {
   SpriteRenderer *sr =
       (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
-  i32 frames = sr->sprite->frames.len;
-  lua_pushinteger(L, frames);
+  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
+  lua_pushinteger(L, sprite->frames.len);
   return 1;
 }
 
@@ -1446,13 +1462,17 @@ static int draw_line_circle(lua_State *L) {
 static int image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Image img;
-  bool ok = image_load(&img, &g_app->archive, str);
-  if (!ok) {
-    return 0;
+  Asset *asset = nullptr;
+  bool loaded = get_asset(str, &asset);
+  if (!loaded) {
+    asset->kind = AssetKind_Image;
+    bool ok = image_load(&asset->image, &g_app->archive, str);
+    if (!ok) {
+      return 0;
+    }
   }
 
-  luax_newuserdata(L, img, "mt_image");
+  luax_newuserdata(L, asset->hash, "mt_image");
   return 1;
 }
 
@@ -1498,18 +1518,18 @@ static int set_master_volume(lua_State *L) {
 static int sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  u64 key = fnv1a(str);
-  Sprite *spr = nullptr;
-  bool ok = get(&g_app->sprites, key, &spr);
-  if (!ok) {
-    bool ok = sprite_load(spr, &g_app->archive, str);
+  Asset *asset = nullptr;
+  bool loaded = get_asset(str, &asset);
+  if (!loaded) {
+    asset->kind = AssetKind_Sprite;
+    bool ok = sprite_load(&asset->sprite, &g_app->archive, str);
     if (!ok) {
       return 0;
     }
   }
 
   SpriteRenderer sr = {};
-  sr.sprite = spr;
+  sr.sprite = asset->hash;
 
   luax_newuserdata(L, sr, "mt_sprite_renderer");
   return 1;
@@ -1518,7 +1538,7 @@ static int sprite_load(lua_State *L) {
 static int atlas_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Atlas atlas;
+  Atlas atlas = {};
   bool ok = atlas_load(&atlas, &g_app->archive, str);
   if (!ok) {
     return 0;
@@ -1531,7 +1551,7 @@ static int atlas_load(lua_State *L) {
 static int tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Tilemap tm;
+  Tilemap tm = {};
   bool ok = tilemap_load(&tm, &g_app->archive, str);
   if (!ok) {
     return 0;

@@ -1,4 +1,5 @@
 #include "draw.h"
+#include "app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "prelude.h"
@@ -31,7 +32,8 @@ void draw(Image *img, DrawDescription *desc, Color c) {
 }
 
 void draw(SpriteRenderer *sr, DrawDescription *desc, Color c) {
-  Sprite *spr = sr->sprite;
+  Sprite *spr = &g_app->assets[sr->sprite].sprite;
+  SpriteLoop *loop = get(&spr->by_tag, sr->loop);
 
   sgl_push_matrix();
   sgl_translate(desc->x, desc->y, 0);
@@ -48,8 +50,8 @@ void draw(SpriteRenderer *sr, DrawDescription *desc, Color c) {
   float y1 = (float)spr->height - desc->oy;
 
   i32 index;
-  if (sr->loop) {
-    index = sr->loop->indices[sr->current_frame];
+  if (loop != nullptr) {
+    index = loop->indices[sr->current_frame];
   } else {
     index = sr->current_frame;
   }

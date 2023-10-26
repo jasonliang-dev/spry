@@ -1,4 +1,5 @@
 #include "sprite.h"
+#include "app.h"
 #include "deps/cute_aseprite.h"
 #include "deps/sokol_gfx.h"
 
@@ -92,24 +93,27 @@ void drop(Sprite *spr) {
 }
 
 void sprite_renderer_play(SpriteRenderer *sr, String tag) {
-  SpriteLoop *loop = get(&sr->sprite->by_tag, fnv1a(tag));
-  sr->loop = loop;
+  sr->loop = fnv1a(tag);
   sr->current_frame = 0;
   sr->elapsed = 0;
 }
 
 void sprite_renderer_update(SpriteRenderer *sr, float dt) {
-  i32 index;
-  u64 len;
-  if (sr->loop) {
-    index = sr->loop->indices[sr->current_frame];
-    len = sr->loop->indices.len;
+  i32 index = 0;
+  u64 len = 0;
+
+  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
+  SpriteLoop *loop = get(&sprite->by_tag, sr->loop);
+
+  if (loop != nullptr) {
+    index = loop->indices[sr->current_frame];
+    len = loop->indices.len;
   } else {
     index = sr->current_frame;
-    len = sr->sprite->frames.len;
+    len = sprite->frames.len;
   }
 
-  SpriteFrame frame = sr->sprite->frames[index];
+  SpriteFrame frame = sprite->frames[index];
 
   sr->elapsed += dt * 1000;
   if (sr->elapsed > frame.duration) {
@@ -125,10 +129,14 @@ void sprite_renderer_update(SpriteRenderer *sr, float dt) {
 
 void sprite_renderer_set_frame(SpriteRenderer *sr, i32 frame) {
   i32 len;
-  if (sr->loop) {
-    len = sr->loop->indices.len;
+
+  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
+  SpriteLoop *loop = get(&sprite->by_tag, sr->loop);
+
+  if (loop != nullptr) {
+    len = loop->indices.len;
   } else {
-    len = sr->sprite->frames.len;
+    len = sprite->frames.len;
   }
 
   if (0 <= frame && frame < len) {
