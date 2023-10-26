@@ -269,6 +269,10 @@ static void frame() {
         drop(&v->sprite);
         ok = sprite_load(&v->sprite, &g_app->archive, v->name);
         break;
+      case AssetKind_Tilemap:
+        drop(&v->tilemap);
+        ok = tilemap_load(&v->tilemap, &g_app->archive, v->name);
+        break;
       case AssetKind_None:
       default: ok = true; break;
       }
@@ -308,6 +312,7 @@ static void cleanup() {
     switch (v->kind) {
     case AssetKind_Image: drop(&v->image); break;
     case AssetKind_Sprite: drop(&v->sprite); break;
+    case AssetKind_Tilemap: drop(&v->tilemap); break;
     case AssetKind_None:
     default: break;
     }

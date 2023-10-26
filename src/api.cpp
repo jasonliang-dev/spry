@@ -508,20 +508,16 @@ static int open_mt_atlas(lua_State *L) {
 
 // mt_tilemap
 
-static int mt_tilemap_gc(lua_State *L) {
-  Tilemap *tm = (Tilemap *)luaL_checkudata(L, 1, "mt_tilemap");
-  drop(tm);
-  return 0;
-}
-
 static int mt_tilemap_draw(lua_State *L) {
-  Tilemap *tm = (Tilemap *)luaL_checkudata(L, 1, "mt_tilemap");
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
   draw(tm, top_color());
   return 0;
 }
 
 static int mt_tilemap_entities(lua_State *L) {
-  Tilemap *tm = (Tilemap *)luaL_checkudata(L, 1, "mt_tilemap");
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
 
   u64 entities = 0;
   for (TilemapLevel &level : tm->levels) {
@@ -552,9 +548,11 @@ static int mt_tilemap_entities(lua_State *L) {
 }
 
 static int mt_tilemap_make_collision(lua_State *L) {
-  Tilemap *tm = (Tilemap *)luaL_checkudata(L, 1, "mt_tilemap");
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
+
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
 
   Array<TilemapInt> walls = {};
   defer(drop(&walls));
@@ -572,9 +570,11 @@ static int mt_tilemap_make_collision(lua_State *L) {
 }
 
 static int mt_tilemap_draw_fixtures(lua_State *L) {
-  Tilemap *tm = (Tilemap *)luaL_checkudata(L, 1, "mt_tilemap");
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
+
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
 
   b2Body **body = get(&tm->bodies, fnv1a(name));
   if (body != nullptr) {
@@ -586,7 +586,6 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
 
 static int open_mt_tilemap(lua_State *L) {
   luaL_Reg reg[] = {
-      {"__gc", mt_tilemap_gc},
       {"draw", mt_tilemap_draw},
       {"entities", mt_tilemap_entities},
       {"make_collision", mt_tilemap_make_collision},
@@ -1551,13 +1550,17 @@ static int atlas_load(lua_State *L) {
 static int tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Tilemap tm = {};
-  bool ok = tilemap_load(&tm, &g_app->archive, str);
-  if (!ok) {
-    return 0;
+  Asset *asset = nullptr;
+  bool loaded = get_asset(str, &asset);
+  if (!loaded) {
+    asset->kind = AssetKind_Tilemap;
+    bool ok = tilemap_load(&asset->tilemap, &g_app->archive, str);
+    if (!ok) {
+      return 0;
+    }
   }
 
-  luax_newuserdata(L, tm, "mt_tilemap");
+  luax_newuserdata(L, asset->hash, "mt_tilemap");
   return 1;
 }
 

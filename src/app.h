@@ -14,6 +14,7 @@ enum AssetKind : u64 {
   AssetKind_None,
   AssetKind_Image,
   AssetKind_Sprite,
+  AssetKind_Tilemap,
 };
 
 struct Asset {
@@ -24,6 +25,7 @@ struct Asset {
   union {
     Image image;
     Sprite sprite;
+    Tilemap tilemap;
   };
 };
 
