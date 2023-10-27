@@ -125,7 +125,7 @@ $api_reference = [
       "return" => "string",
     ],
     "spry.dt" => [
-      "desc" => "Returns delta time. The time (in seconds) between this frame and last frame.",
+      "desc" => "Returns delta time. The time in seconds between this frame and last frame.",
       "example" => "self.x = self.x + vel_x * spry.dt()",
       "args" => [],
       "return" => "number",
@@ -1295,7 +1295,7 @@ $api_reference = [
       "return" => false,
     ],
     "ECS:add" => [
-      "desc" => "Create a new entity. Returns the entity id.",
+      "desc" => "Create a new entity. Returns the entity id and the given entity itself.",
       "example" => "
         ecs:add {
           pos = { x = spry.window_width() / 2, y = spry.window_height() / 2 },
@@ -1303,9 +1303,9 @@ $api_reference = [
         }
       ",
       "args" => [
-        "entity" => ["table", "The entity to add, where each table entry is a component."]
+        "entity" => ["table", "The entity to add, where each table entry is a component."],
       ],
-      "return" => "number",
+      "return" => "number, table",
     ],
     "ECS:kill" => [
       "desc" => "Given an entity id, remove an entity.",
@@ -1315,22 +1315,62 @@ $api_reference = [
         end
       ",
       "args" => [
-        "id" => ["number", "The entity id."]
+        "id" => ["number", "The entity id."],
       ],
       "return" => false,
     ],
-    "ECS:query" => [
-      "desc" => "Returns an iterator over entities with the given components.",
+    "ECS:get" => [
+      "desc" => "Returns the entity with the given id, or `nil` if it doesn't exist.",
       "example" => "
-        for id, e in ecs:query { 'pos', 'img' } do
+        local other = ECS:get(e.owner.id)
+        if other ~= nil then
+          other.ammo.amount = other.ammo.amount - 1
+        end
+      ",
+      "args" => [
+        "id" => ["number", "The entity id."],
+      ],
+      "return" => "table",
+    ],
+    "ECS:query" => [
+      "desc" => "
+        Returns an iterator over entities that match the given query. The
+        iterator returns the id and entity of each element.
+      ",
+      "example" => "
+        for id, e in ecs:query {
+          select = { 'pos', 'img', 'z_index' },
+          where = function(e)
+            return e.pos.x < spry.window_width() / 2
+          end,
+          order_by = function(lhs, rhs)
+            return lhs.entity.z_index < rhs.entity.z_index
+          end,
+        } do
+          e.pos = e.pos + e.vel * vec2(dt, dt)
           e.img:draw(e.pos.x, e.pos.y)
         end
       ",
       "args" => [
-        "keys" => ["table", "The names of each component."]
+        "t" => ["table", "Query definition."],
+        " .select" => ["table", "The names of each component."],
+        " .where" => ["function", "A function used to filter out entities.", "nil"],
+        " .order_by" => ["function", "A function used to sort entities.", "nil"],
       ],
-      "return" => "table",
+      "return" => "iterator",
     ],
+    "ECS:select" => [
+      "desc" => "Returns an iterator over entities with the given components.",
+      "example" => "
+        for id, e in ecs:query { 'pos', 'vel' } do
+          e.pos = e.pos + e.vel * vec2(dt, dt)
+        end
+      ",
+      "args" => [
+        "columns" => ["table", "The names of each component."],
+      ],
+      "return" => "iterator",
+    ]
   ],
   "Spring" => [
     "Spring" => [
@@ -1647,7 +1687,7 @@ $api_reference = [
       "args" => [
         "t" => ["table", "The table to iterate."],
       ],
-      "return" => "function",
+      "return" => "iterator",
     ],
     "create_thread" => [
       "desc" => "Creates a coroutine.",
@@ -1724,60 +1764,11 @@ $api_reference = [
 ?>
 <div class="mw8 center">
   <div
-    x-cloak
-    x-data="{
-      search: '',
-      sections:
-        <?php
-        $sections = [];
-        foreach ($api_reference as $header => $section) {
-          $list = [];
-          foreach ($section as $name => $func) {
-            $list[] = ["name" => $name, "fn" => func_signature($name, $func["args"])];
-          }
-          $sections[] = ["header" => $header, "list" => $list];
-        }
-        echo htmlspecialchars(json_encode($sections));
-        ?>,
-      init() {
-        const search = document.getElementById('search')
-        document.addEventListener('keydown', e => {
-          if (e.code === 'Slash' && document.activeElement !== search) {
-            e.preventDefault()
-            search.focus()
-            search.select()
-          } else if (e.code === 'Escape') {
-            if (this.search.length > 0) {
-              this.search = ''
-            } else {
-              search.blur()
-            }
-          }
-        })
-      },
-      filtered() {
-        const search = this.search.toLowerCase()
-
-        const filtered = []
-        for (const sec of this.sections) {
-          const list = sec.list.filter(f => f.name.toLowerCase().includes(search))
-          if (list.length > 0) {
-            filtered.push({ header: sec.header, list })
-          }
-        }
-        return filtered
-      },
-    }"
     class="dn db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden"
     style="width: 300px; top: <?= data()->nav_height ?>"
   >
     <form
-      @submit.prevent="e => {
-        const section = filtered()[0]
-        if (section) {
-          location.hash = section.list[0].name
-        }
-      }"
+      onsubmit="event.preventDefault()"
       class="top-0 pt3 pb4 flex items-center bg-fade-down"
       style="position: sticky"
     >
@@ -1786,7 +1777,6 @@ $api_reference = [
       </svg>
       <input
         id="search"
-        x-model="search"
         autocomplete="off"
         class="input-reset shadow-sm ba b--black-20 dm-b--white-20 placeholder black dm-white br2 pv2 pl4 pr2 w-100 bg-white dm-bg-black"
         type="text"
@@ -1795,20 +1785,24 @@ $api_reference = [
       />
     </form>
     <ul class="list pl1 mt0" style="margin-top: -1rem">
-      <template x-for="{header, list} in filtered" :key="header">
+      <?php foreach ($api_reference as $header => $section): ?>
         <li>
-          <span class="dib fw6 mt3 mb2" x-text="header"></span>
+          <span class="dib fw6 mt3 mb2"><?= $header ?></span>
           <ul class="list pl0 mt0">
-            <template x-for="{name, fn} in list" :key="name">
+            <?php foreach ($section as $name => $func): ?>
               <li class="pv1">
-                <a :href="'#' + name" class="dark-gray dm-silver link underline-hover lh-solid dib">
-                  <code x-text="fn"></code>
+                <a
+                  href="#<?= $name ?>"
+                  class="dark-gray dm-silver link underline-hover lh-solid dib"
+                  data-key="<?= $name ?>"
+                >
+                  <code><?= $name ?></code>
                 </a>
               </li>
-            </template>
+            <?php endforeach ?>
           </ul>
         </li>
-      </template>
+      <?php endforeach ?>
     </ul>
   </div>
   <div class="pl3-l pt3 ml-300px-l">
@@ -1820,8 +1814,14 @@ $api_reference = [
             <?= $header ?>
           </p>
           <h2 class="mb2 f4">
-            <a href="#<?= $name ?>" class="black dm-white link underline-hover break-words">
-              <code><?= func_signature($name, $func["args"]) ?></code>
+            <a href="#<?= $name ?>" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                <?php
+                $args = array_keys($func["args"]);
+                $args = array_filter($args, fn($a) => !str_starts_with($a, " "));
+                echo $name . "(" . implode(", ", $args) . ")";
+                ?>
+              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
@@ -1869,8 +1869,6 @@ $api_reference = [
                           <td class="pv2 ph3">
                             <?php if ($default !== false): ?>
                               <code><?= $default ?></code>
-                            <?php elseif (str_starts_with($arg_name, " ")): ?>
-                              <span class="i gray">None</span>
                             <?php endif ?>
                           </td>
                         <?php endif ?>
@@ -1899,3 +1897,7 @@ $api_reference = [
     <?php endforeach ?>
   </div>
 </div>
+
+<script>
+
+</script>

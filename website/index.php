@@ -111,12 +111,6 @@ function multiline_trim(string $str) {
   return $joined;
 }
 
-function func_signature(string $name, array $args) {
-  $args = array_keys($args);
-  $args = array_filter($args, fn($a) => !str_starts_with($a, " "));
-  return $name . "(" . implode(", ", $args) . ")";
-}
-
 function footer(string $class) {
   ?>
   <footer class="flex flex-wrap center mv5 <?= $class ?>">

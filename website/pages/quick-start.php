@@ -32,7 +32,8 @@ To make your first game:
 ## Running Your Game
 
 The simplest way to load and run your project is to drag and drop the folder
-you created onto `spry.exe`. You can also run the program from the console:
+you created onto the Spry executable. You can also run the program from the
+console:
 
 ```plaintext
 C:\path\to\spry.exe my_folder
@@ -48,8 +49,8 @@ $cards = [
     "link" => "ufo-game.html",
     "link_text" => "Let&#39;s create",
     "text" => "
-      Explore Spry even more by building a game where you move a UFO around in
-      2D space using the keyboard.
+      Explore Spry by building a small game where you move a UFO around in 2D
+      space using the keyboard.
     ",
   ],
   "Distribution" => [
