@@ -1264,7 +1264,7 @@ $api_reference = [
         function spry.frame(dt)
           ecs:update()
 
-          for id, e in ecs:query { 'pos', 'vel' } do
+          for id, e in ecs:select { 'pos', 'vel' } do
             e.pos.x = e.pos.x + e.vel.x * dt
             e.pos.y = e.pos.y + e.vel.y * dt
 
