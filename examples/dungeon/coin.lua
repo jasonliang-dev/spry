@@ -30,7 +30,7 @@ function Coin:co_update(dt)
 
   self.z = 0
   self.spring:pull(0.6)
-  dt = sleep_for(0.5, dt)
+  dt = sleep(0.5)
 
   repeat
     local dist = distance(self.x, self.y, player.x, player.y)

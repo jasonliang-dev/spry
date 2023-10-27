@@ -1744,28 +1744,23 @@ $api_reference = [
       ],
       "return" => "any",
     ],
-    "sleep_for" => [
-      "desc" => "
-        Pause a coroutine for given number of seconds. Returns second argument
-        from `resume`. It's expected that the second argument from `resume`
-        is delta time.
-      ",
+    "sleep" => [
+      "desc" => "Pause a coroutine for given number of seconds. Returns the next delta time.",
       "example" => "
-        function Camera:begin_cutscene(dt)
-          -- call cutscene_thread with self, dt as arguments
-          resume(self.thread, self, dt)
+        function Camera:begin_cutscene()
+          -- call cutscene_thread
+          resume(self.thread, self)
         end
 
-        function Camera:cutscene_thread(dt)
-          self:move_to(door.x, door.y, dt)
+        function Camera:cutscene_thread()
+          self:move_to(door.x, door.y)
           door:open()
-          dt = sleep_for(3, dt)
-          self:move_to(player.x, player.y, dt)
+          sleep(3)
+          self:move_to(player.x, player.y)
         end
       ",
       "args" => [
         "secs" => ["number", "The number of seconds to sleep for."],
-        "dt" => ["number", "Delta time."],
       ],
       "return" => "number",
     ],

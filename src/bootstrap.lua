@@ -559,13 +559,13 @@ function yield(...)
   return select(2, coroutine.yield(...))
 end
 
-function sleep_for(secs, dt)
+function sleep(secs)
   while secs > 0 do
-    secs = secs - dt
-    dt = yield()
+    secs = secs - spry.dt()
+    yield()
   end
 
-  return dt
+  return spry.dt()
 end
 
 unsafe_require = require
