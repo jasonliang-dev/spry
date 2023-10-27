@@ -221,15 +221,17 @@ function World:update(dt)
   end
 end
 
+local function _sort_z_index(lhs, rhs)
+  return lhs.z_index < rhs.z_index
+end
+
 function World:draw()
   local sorted = {}
   for id, obj in pairs(self.by_id) do
     sorted[#sorted + 1] = obj
   end
 
-  table.sort(sorted, function (lhs, rhs)
-    return lhs.z_index < rhs.z_index
-  end)
+  table.sort(sorted, _sort_z_index)
 
   for k, obj in ipairs(sorted) do
     obj:draw()
@@ -275,7 +277,7 @@ function World:query_near(x, y, mt)
   return nearby
 end
 
--- ecs
+-- entity component system
 
 class "ECS"
 
@@ -302,33 +304,70 @@ function ECS:add(entity)
   local id = self.next_id
   self.to_create[id] = entity
   self.next_id = id + 1
-  return id
-end
-
-function ECS:query(keys)
-  local rows = {}
-
-  for id, entity in pairs(self.entities) do
-    if not self.to_kill[id] then
-      local missing = false
-      for i, key in pairs(keys) do
-        if entity[key] == nil then
-          missing = true
-          break
-        end
-      end
-
-      if not missing then
-        rows[id] = entity
-      end
-    end
-  end
-
-  return pairs(rows)
+  return id, entity
 end
 
 function ECS:kill(id)
   self.to_kill[id] = true
+end
+
+function ECS:get(id)
+  return self.entities[id]
+end
+
+function ECS:query(t)
+  local rows = {}
+
+  for id, entity in pairs(self.entities) do
+    if self.to_kill[id] ~= nil then
+      goto continue
+    end
+
+    local missing = false
+    for i, key in pairs(t.select) do
+      if entity[key] == nil then
+        missing = true
+        break
+      end
+    end
+
+    if missing then
+      goto continue
+    end
+
+    if t.where ~= nil then
+      if not t.where(entity) then
+        goto continue
+      end
+    end
+
+    rows[id] = entity
+
+    ::continue::
+  end
+
+  if t.order_by == nil then
+    return pairs(rows)
+  end
+
+  local tied = {}
+  for id, entity in pairs(rows) do
+    tied[#tied + 1] = { id = id, entity = entity }
+  end
+  table.sort(tied, t.order_by)
+
+  local i = 0
+  return function()
+    i = i + 1
+    local el = tied[i]
+    if el ~= nil then
+      return el.id, el.entity
+    end
+  end
+end
+
+function ECS:select(columns)
+  return self:query { select = columns }
 end
 
 -- bouncing spring
