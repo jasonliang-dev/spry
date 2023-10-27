@@ -80,7 +80,7 @@ class Data {
       $demo_pages[$desc["page"]] = $title;
     }
 
-    $this->pages = array_merge($this->guides, $demo_pages, [ "docs" => "Reference" ]);
+    $this->pages = array_merge($this->guides, $demo_pages, [ "docs" => "API Reference" ]);
   }
 };
 
@@ -179,9 +179,9 @@ function spry_demo(string $name) {
     <?php footer("w-100") ?>
   </div>
   <script type="text/javascript">
-    var canvas = document.getElementById('canvas');
-    var Module = { canvas };
-    var spryMount = '<?= $demo["mount"] ?>';
+    var canvas = document.getElementById('canvas')
+    var Module = { canvas }
+    var spryMount = '<?= $demo["mount"] ?>'
   </script>
   <script src="static/spry.js" type="text/javascript"></script>
   <?php
@@ -205,7 +205,7 @@ function render(string $page) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="title" content="Spry">
     <meta name="description" content="<?= $description ?>">
-    <meta name="keywords" content="game, development, love2d, lua">
+    <meta name="keywords" content="game, development, love2d, lua, framework">
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
     <meta name="author" content="Jason Liang">
@@ -295,7 +295,7 @@ function render(string $page) {
                 <?php endforeach ?>
               </ul>
             </div>
-            <a class="mr3 dark-gray dm-silver link underline-hover" href="docs.html">Reference</a>
+            <a class="mr3 dark-gray dm-silver link underline-hover" href="docs.html">API Reference</a>
           </nav>
           <button class="bg-transparent bn gray dim pointer" type="button" onclick="toggleTheme()" style="padding-top: 1px">
             <svg class="dib dm-dn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px">
@@ -390,8 +390,17 @@ if (php_sapi_name() === "cli") {
     }
   }
 
-  http_response_code(404);
-  header("Content-Type: text/plain");
-  echo "'$uri' Not Found";
-  die();
+  if (file_exists(__DIR__ . $uri)) {
+    $data = file_get_contents(__DIR__ . $uri);
+    if (str_ends_with($uri, ".css")) {
+      header("Content-Type: text/css");
+    } else if (str_ends_with($uri, ".js")) {
+      header("Content-Type: text/javascript");
+    }
+    echo $data;
+  } else {
+    http_response_code(404);
+    header("Content-Type: text/plain");
+    echo "'$uri' Not Found";
+  }
 }

@@ -275,7 +275,7 @@ $api_reference = [
       "return" => "number, number",
     ],
     "spry.push_matrix" => [
-      "desc" => "Push an identity matrix onto the matrix transform stack.",
+      "desc" => "Push a matrix onto the matrix transform stack.",
       "example" => "
         spry.push_matrix()
         spry.translate(spry.window_width() / 2, spry.window_height() / 2)
@@ -1800,8 +1800,8 @@ $api_reference = [
           <span class="dib fw6 mt3 mb2" x-text="header"></span>
           <ul class="list pl0 mt0">
             <template x-for="{name, fn} in list" :key="name">
-              <li class="pv2">
-                <a :href="'#' + name" class="dark-gray dm-silver link underline-hover">
+              <li class="pv1">
+                <a :href="'#' + name" class="dark-gray dm-silver link underline-hover lh-solid dib">
                   <code x-text="fn"></code>
                 </a>
               </li>
@@ -1819,7 +1819,7 @@ $api_reference = [
           <p class="mv0 f6 fw6 gray">
             <?= $header ?>
           </p>
-          <h2 class="mb2">
+          <h2 class="mb2 f4">
             <a href="#<?= $name ?>" class="black dm-white link underline-hover break-words">
               <code><?= func_signature($name, $func["args"]) ?></code>
             </a>
@@ -1869,8 +1869,8 @@ $api_reference = [
                           <td class="pv2 ph3">
                             <?php if ($default !== false): ?>
                               <code><?= $default ?></code>
-                            <?php else: ?>
-                              <span class="i gray">N/A</span>
+                            <?php elseif (str_starts_with($arg_name, " ")): ?>
+                              <span class="i gray">None</span>
                             <?php endif ?>
                           </td>
                         <?php endif ?>
