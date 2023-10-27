@@ -4,7 +4,7 @@
 prototyping.
 
 - [Download Spry](https://github.com/jasonliang-dev/spry/releases)
-- [Documentation](https://jasonliang.js.org/spry/)
+- [Quick Start](https://jasonliang.js.org/spry/quick-start.html)
 - [API reference](https://jasonliang.js.org/spry/docs.html)
 
 ## Basic example
@@ -36,7 +36,7 @@ spry examples/boxes
 
 ## Building from source
 
-Build `src/spry.cpp` through a C++17 compiler. `src/deps/box2d` needs to be in
+Build `src/spry.cpp` with a C++17 compiler. `src/deps/box2d` needs to be in
 the include path, and either `DEBUG` or `RELEASE` must be defined.
 
 An optimized build of Spry using MSVC looks like this:
