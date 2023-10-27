@@ -120,19 +120,10 @@ end
 
 class "World"
 
-local function _cell_pos(x, y)
-  return math.floor(x / 64), math.floor(y / 64)
-end
-
-local function _cell_key(x, y)
-  return x + y * 1e7
-end
-
 function World:new()
   self.next_id = 1
   self.by_id = {}
   self.by_mt = {}
-  self.by_cell = {}
   self.to_create = {}
   self.to_kill = {}
 end
@@ -186,25 +177,6 @@ function World:update(dt)
     end
   end
 
-  ---[[
-  for cell, arr in pairs(self.by_cell) do
-    for id in pairs(arr) do
-      arr[id] = nil
-    end
-  end
-
-  for id, obj in pairs(self.by_id) do
-    if obj.x and obj.y then
-      local cell = _cell_key(_cell_pos(obj.x, obj.y))
-      if self.by_cell[cell] == nil then
-        self.by_cell[cell] = {}
-      end
-
-      self.by_cell[cell][id] = obj
-    end
-  end
-  --]]
-
   for id, obj in pairs(self.by_id) do
     obj:update(dt)
   end
@@ -248,33 +220,6 @@ function World:query_mt(mt)
   end
 
   return self.by_mt[mt]
-end
-
-function World:query_near(x, y, mt)
-  local nearby = {}
-  x, y = _cell_pos(x, y)
-  for xx = x - 1, x + 1 do
-    for yy = y - 1, y + 1 do
-      local cell = _cell_key(xx, yy)
-      if self.by_cell[cell] == nil then
-        self.by_cell[cell] = {}
-      end
-
-      if mt == nil then
-        for id, obj in pairs(self.by_cell[cell]) do
-          nearby[id] = obj
-        end
-      else
-        for id, obj in pairs(self.by_cell[cell]) do
-          if getmetatable(obj) == mt then
-            nearby[id] = obj
-          end
-        end
-      end
-    end
-  end
-
-  return nearby
 end
 
 -- entity component system

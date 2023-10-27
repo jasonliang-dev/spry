@@ -1164,6 +1164,32 @@ $api_reference = [
           world:update(dt)
           world:draw()
         end
+
+        -- example Player class
+
+        class 'Player'
+
+        function Player:new(x, y)
+          self.x, self.y = x, y
+        end
+
+        function Player:on_create()
+          -- optional. called after object is inserted into the world.
+          -- use this to get the id before the first object update.
+        end
+
+        function Player:on_death()
+          -- optional. called right before the object is removed.
+          -- use this to clean up things like physics bodies.
+        end
+
+        function Player:update(dt)
+          -- required. called during world update phase.
+        end
+
+        function Player:draw()
+          -- required. called during world draw phase.
+        end
       ",
       "args" => [],
       "return" => "World",
@@ -1199,7 +1225,7 @@ $api_reference = [
       "desc" => "Find an actor with the given id.",
       "example" => "local enemy = world:query_id(self.enemy_id)",
       "args" => [
-        "obj" => ["number", "The actor id."],
+        "id" => ["number", "The actor id."],
       ],
       "return" => "table",
     ],
@@ -1213,21 +1239,6 @@ $api_reference = [
       ",
       "args" => [
         "mt" => ["table", "The metatable to search with."],
-      ],
-      "return" => "table",
-    ],
-    "World:query_near" => [
-      "desc" => "Find actors close to the given point. Returns a table of entities.",
-      "example" => "
-        local enemies = world:query_near(self.x, self.y)
-        for id, enemy in pairs(enemies) do
-          collision_check(self, enemy)
-        end
-      ",
-      "args" => [
-        "x" => ["number", "The x position."],
-        "y" => ["number", "The y position."],
-        "mt" => ["table", "A metatable to filter search results with.", "nil"],
       ],
       "return" => "table",
     ],
@@ -1362,7 +1373,7 @@ $api_reference = [
     "ECS:select" => [
       "desc" => "Returns an iterator over entities with the given components.",
       "example" => "
-        for id, e in ecs:query { 'pos', 'vel' } do
+        for id, e in ecs:select { 'pos', 'vel' } do
           e.pos = e.pos + e.vel * vec2(dt, dt)
         end
       ",
