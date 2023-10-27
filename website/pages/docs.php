@@ -1248,7 +1248,7 @@ $api_reference = [
   ],
   "Entity Component System" => [
     "ECS" => [
-      "desc" => "Create a new ECS object. Entities are created and removed after [`ECS:update()`](#ECS:update).",
+      "desc" => "Create a new ECS object. Entities are created and removed after [`ECS:update()`](#ecs:update).",
       "example" => "
         function spry.start()
           ecs = ECS()
@@ -1322,7 +1322,7 @@ $api_reference = [
     "ECS:get" => [
       "desc" => "Returns the entity with the given id, or `nil` if it doesn't exist.",
       "example" => "
-        local other = ECS:get(e.owner.id)
+        local other = ecs:get(e.owner.id)
         if other ~= nil then
           other.ammo.amount = other.ammo.amount - 1
         end
@@ -1784,18 +1784,14 @@ $api_reference = [
         style="outline-offset: 2px"
       />
     </form>
-    <ul class="list pl1 mt0" style="margin-top: -1rem">
+    <ul id="function-list" class="list pl1 mt0" style="margin-top: -1rem">
       <?php foreach ($api_reference as $header => $section): ?>
         <li>
           <span class="dib fw6 mt3 mb2"><?= $header ?></span>
           <ul class="list pl0 mt0">
             <?php foreach ($section as $name => $func): ?>
-              <li class="pv1">
-                <a
-                  href="#<?= $name ?>"
-                  class="dark-gray dm-silver link underline-hover lh-solid dib"
-                  data-key="<?= $name ?>"
-                >
+              <li class=" pv1" data-key="<?= strtolower($name) ?>">
+                <a href="#<?= strtolower($name) ?>" class="dark-gray dm-silver link underline-hover lh-solid dib">
                   <code><?= $name ?></code>
                 </a>
               </li>
@@ -1809,12 +1805,12 @@ $api_reference = [
     <?php foreach ($api_reference as $header => $section): ?>
       <?php foreach ($section as $name => $func): ?>
         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="<?= $name ?>" style="position: relative; top: -5rem"></span>
+          <span id="<?= strtolower($name) ?>" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             <?= $header ?>
           </p>
           <h2 class="mb2 f4">
-            <a href="#<?= $name ?>" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#<?= strtolower($name) ?>" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
                 <?php
                 $args = array_keys($func["args"]);
@@ -1899,5 +1895,41 @@ $api_reference = [
 </div>
 
 <script>
+  const search = document.getElementById('search')
 
+  function updateFunctionList() {
+    const groups = document.querySelectorAll('#function-list > li')
+    for (const group of groups) {
+      const items = group.querySelectorAll("ul > li")
+
+      let has_items = false
+      for (const item of items) {
+        if (item.dataset.key.includes(search.value.toLowerCase())) {
+          has_items = true
+          item.style.display = 'list-item'
+        } else {
+          item.style.display = 'none'
+        }
+      }
+
+      group.style.display = has_items ? 'list-item' : 'none'
+    }
+  }
+
+  search.addEventListener('input', updateFunctionList)
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Slash' && document.activeElement !== search) {
+      e.preventDefault()
+      search.focus()
+      search.select()
+    } else if (e.code === 'Escape') {
+      if (search.value.length > 0) {
+        search.value = ''
+        updateFunctionList()
+      } else {
+        search.blur()
+      }
+    }
+  })
 </script>
