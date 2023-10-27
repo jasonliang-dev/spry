@@ -8,7 +8,7 @@ function spry.start()
   font = spry.default_font()
   atlas = spry.atlas_load "atlas.rtpa"
   b2_world = spry.b2_world { gx = 0, gy = 9.81, meter = 80 }
-  world = World()
+  ecs = ECS()
 
   ground = {}
   ground.w = spry.window_width()
@@ -89,6 +89,8 @@ function spry.frame(dt)
     spry.quit()
   end
 
+  ecs:update()
+
   local dx, dy = spry.mouse_delta()
   local moved = dx ~= 0 or dy ~= 0
 
@@ -99,22 +101,91 @@ function spry.frame(dt)
 
   if moved and spry.mouse_down(0) or spry.mouse_click(0) then
     local mx, my = spry.mouse_pos()
-    world:add(Box(mx - camera.x, my - camera.y))
+
+    local id, e = ecs:add {
+      img = atlas:get_image(choose {
+        "stone3",
+        "stone3",
+        "stone3",
+        "stone3",
+        "stone3",
+
+        "stone4",
+        "stone5",
+        "stone6",
+        "stone7",
+        "stone8",
+        "stone9",
+      }),
+      body = b2_world:make_dynamic_body {
+        x = mx - camera.x,
+        y = my - camera.y,
+        angle = random(0, math.pi * 2),
+      },
+      life = {
+        time = 0,
+        max = 3,
+      },
+    }
+
+    e.body:make_box_fixture {
+      w = e.img:width() / 4 - 1,
+      h = e.img:height() / 4 - 1,
+      density = (e.img:width() * e.img:height()) / (70 * 70),
+      friction = 0.3,
+      udata = "box",
+    }
   end
 
   if moved and spry.mouse_down(1) or spry.mouse_click(1) then
     local mx, my = spry.mouse_pos()
-    world:add(Ball(mx - camera.x, my - camera.y))
+
+    local id, e = ecs:add {
+      img = atlas:get_image "stone1",
+      body = b2_world:make_dynamic_body {
+        x = mx - camera.x,
+        y = my - camera.y,
+      },
+      life = {
+        time = 0,
+        max = 3,
+      },
+    }
+
+    e.body:make_circle_fixture {
+      radius = e.img:width() / 4 - 1,
+      density = 1,
+      friction = 0.3,
+      restitution = 0.5,
+      udata = "ball",
+    }
   end
 
   b2_world:step(dt)
-  world:update(dt)
+
+  for id, e in ecs:select { 'body', 'life' } do
+    e.life.time = e.life.time + dt
+    if e.life.time > e.life.max then
+      e.body:destroy()
+      ecs:kill(id)
+    end
+  end
 
   spry.clear_color(32, 32, 32, 255)
   spry.push_matrix()
     spry.translate(camera.x, camera.y)
 
-    world:draw()
+    for id, e in ecs:select { 'body', 'img', 'life' } do
+      local x, y = e.body:position()
+      local angle = e.body:angle()
+      local ox = e.img:width() / 2
+      local oy = e.img:height() / 2
+
+      local alpha = lerp(255, 0, (e.life.time / e.life.max) ^ 20)
+      spry.push_color(255, 255, 255, alpha)
+      e.img:draw(x, y, angle, 0.5, 0.5, ox, oy)
+      spry.pop_color()
+    end
 
     ground.body:draw_fixtures()
     wall.body:draw_fixtures()
