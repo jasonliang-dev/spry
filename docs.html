@@ -8176,7 +8176,7 @@ end
 function Camera:cutscene_thread()
   self:move_to(door.x, door.y)
   door:open()
-  dt = sleep(3)
+  sleep(3)
   self:move_to(player.x, player.y)
 end
 </code></pre>
