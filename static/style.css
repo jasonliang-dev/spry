@@ -109,6 +109,8 @@ input:focus {
 .prose pre > code {
   border-radius: 0.5rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1em;
+  display: block;
 }
 
 .dark-mode .prose pre > code {
