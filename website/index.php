@@ -321,7 +321,7 @@ function render(string $page) {
               <?php endforeach ?>
               <li>
                 <a href="docs.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
-                  Reference
+                  API Reference
                 </a>
               </li>
             </ul>
