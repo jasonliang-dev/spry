@@ -21,6 +21,26 @@ function spry.frame(dt)
 end
 ```
 
+## Spry vs. LÖVE
+
+Spry takes heavy inspiration from [LÖVE](https://love2d.org/). Below is a
+non-exhaustive list of differences between the two:
+
+- Spry's API uses short function names more suitable for prototyping.
+- Spry implicitly loads all Lua scripts in a project.
+- Spry can load Aseprite and LDtk files without needing to convert/export
+  assets to `.json`. LÖVE cannot load these files directly.
+- Spry has hot reload support for images, sprites, and tilemaps.
+- Spry projects can be deployed to the web.
+- Spry is a single executable, weighting in at about 1.4mb (610kb zipped).
+  LÖVE is 10mb.
+- LÖVE uses `conf.lua` for configuration options. Spry does not need a
+  separate config file.
+- LÖVE has lots of documentation and community support.
+- LÖVE is mature, stable, and battle-tested.
+- LÖVE has more overall features, such as system threads, touchscreen support,
+  filesystem access, gamepad input, and networking sockets.
+
 ## Run the examples
 
 This repository includes some project examples. You can run them with the
@@ -44,3 +64,16 @@ An optimized build of Spry using MSVC looks like this:
 ```sh
 cl /std:c++17 /O2 /EHsc /DNOMINMAX /DRELEASE /Isrc/deps/box2d src/spry.cpp
 ```
+
+## Shoutouts
+
+Special thanks to:
+
+- floooh, for making [Sokol](https://github.com/floooh/sokol).
+- RandyGaul, for making [cute_headers](https://github.com/RandyGaul/cute_headers).
+- Casey Muratori, for showing me that I don't need to a huge engine to make
+  games through [Handmade Hero](https://handmadehero.org/).
+- rxi, for making [lite](https://github.com/rxi/lite). It was my introduction
+  to creating programs with Lua.
+- [LÖVE](https://love2d.org/), for being an awesome framework, and for being
+  the main inspiration for this project.
