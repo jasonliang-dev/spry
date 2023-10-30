@@ -34,10 +34,6 @@ function spry.start()
   end
 end
 
-local function order_by_z(lhs, rhs)
-  return lhs.entity.z_index < rhs.entity.z_index
-end
-
 function spry.frame(dt)
   ecs:update()
 
