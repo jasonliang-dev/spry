@@ -28,16 +28,17 @@ non-exhaustive list of differences between the two:
 
 - Spry's API uses short function names more suitable for prototyping.
 - Spry implicitly loads all Lua scripts in a project.
+- Spry projects can be deployed to the web.
+- Spry has hot reload support for images, sprites, and tilemaps.
 - Spry can load Aseprite and LDtk files without needing to convert/export
   assets to `.json`. LÖVE cannot load these files directly.
-- Spry has hot reload support for images, sprites, and tilemaps.
-- Spry projects can be deployed to the web.
 - Spry is a single executable, weighting in at about 1.4mb (610kb zipped).
   LÖVE is 10mb.
-- LÖVE uses `conf.lua` for configuration options. Spry does not need a
-  separate config file.
+- LÖVE uses LuaJIT 2.1. Spry uses PUC Lua 5.4.
 - LÖVE has lots of documentation and community support.
 - LÖVE is mature, stable, and battle-tested.
+- LÖVE uses `conf.lua` for configuration options. Spry does not need a
+  separate config file.
 - LÖVE has more overall features, such as system threads, touchscreen support,
   filesystem access, gamepad input, and networking sockets.
 
@@ -71,6 +72,7 @@ Special thanks to:
 
 - floooh, for making [Sokol](https://github.com/floooh/sokol).
 - RandyGaul, for making [cute_headers](https://github.com/RandyGaul/cute_headers).
+- Erin Catto for making [Box2D](https://github.com/erincatto/box2d).
 - Casey Muratori, for showing me that I don't need to a huge engine to make
   games through [Handmade Hero](https://handmadehero.org/).
 - rxi, for making [lite](https://github.com/rxi/lite). It was my introduction
