@@ -41,6 +41,10 @@ input:focus {
   outline-color: #999999;
 }
 
+summary::marker {
+  color: #777777;
+}
+
 .break-words {
   overflow-wrap: break-word;
 }

@@ -117,7 +117,7 @@ function footer(string $class) {
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang
     </div>
-    <a href="https://jasonliang.js.org/spry/docs.html" class="gray link underline-hover mr3 pv3 dib">
+    <a href="docs.html" class="gray link underline-hover mr3 pv3 dib">
       API Reference
     </a>
     <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover pv3 dib">

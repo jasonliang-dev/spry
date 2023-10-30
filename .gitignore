@@ -9,6 +9,7 @@
 spry
 .vs
 ignore
+dist
 *.data
 /spry.wasm
 /spry.js

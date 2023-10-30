@@ -1069,10 +1069,10 @@ $api_reference = [
     ],
     "vec2:lerp" => [
       "desc" => "Linearly interpolate between this vector and rhs. Produces a new vector.",
-      "example" => "pos = pos:lerp(other, dt)",
+      "example" => "pos = pos:lerp(other, t)",
       "args" => [
         "rhs" => ["vec2", "Another vector."],
-        "dt" => ["number", "Delta time."],
+        "t" => ["number", "The interpolation amount."],
       ],
       "return" => "vec2",
     ],
@@ -1485,6 +1485,7 @@ $api_reference = [
     "class" => [
       "desc" => "Create a new class.",
       "example" => "
+        -- create a global table called Player
         class 'Player'
 
         function Player:new(x, y)
@@ -1498,6 +1499,20 @@ $api_reference = [
 
         function Player:draw()
           img:draw(self.x, self.y)
+        end
+
+        function spry.start()
+          img = spry.image_load 'player.png'
+
+          -- create an instance of Player
+          player = Player(200, 200)
+          assert(getmetatable(player) == Player)
+        end
+
+        function spry.frame(dt)
+          -- update position and draw
+          player:update(dt)
+          player:draw()
         end
       ",
       "args" => [
@@ -1792,17 +1807,19 @@ $api_reference = [
     </form>
     <ul id="function-list" class="list pl1 mt0" style="margin-top: -1rem">
       <?php foreach ($api_reference as $header => $section): ?>
-        <li>
-          <span class="dib fw6 mt3 mb2"><?= $header ?></span>
-          <ul class="list pl0 mt0">
-            <?php foreach ($section as $name => $func): ?>
-              <li class=" pv1" data-key="<?= strtolower($name) ?>">
-                <a href="#<?= strtolower($name) ?>" class="dark-gray dm-silver link underline-hover lh-solid dib">
-                  <code><?= $name ?></code>
-                </a>
-              </li>
-            <?php endforeach ?>
-          </ul>
+        <li class="mt3">
+          <details>
+            <summary class="fw6 pointer"><?= $header ?></summary>
+            <ul class="list pl0 mt2">
+              <?php foreach ($section as $name => $func): ?>
+                <li class="pv1" data-key="<?= strtolower($name) ?>">
+                  <a href="#<?= strtolower($name) ?>" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                    <code><?= $name ?></code>
+                  </a>
+                </li>
+              <?php endforeach ?>
+            </ul>
+          </details>
         </li>
       <?php endforeach ?>
     </ul>
@@ -1828,6 +1845,12 @@ $api_reference = [
           </h2>
           <div class="lh-copy prose">
             <?= Parsedown::instance()->text(multiline_trim($func["desc"])); ?>
+          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem"><?= multiline_trim($func["example"]) ?></code></pre>
           </div>
           <?php if (count($func["args"]) > 0): ?>
             <?php
@@ -1884,20 +1907,13 @@ $api_reference = [
           <?php endif ?>
 
           <?php if ($func["return"]): ?>
-            <p>
+            <p class="mb0">
               <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
               <code class="inline-code"><?= $func["return"] ?></code>.
             </p>
           <?php else: ?>
-            <p class="i gray">Returns nothing.</p>
+            <p class="i gray mb0">Returns nothing.</p>
           <?php endif ?>
-
-          <div class="prose relative">
-            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
-              Example
-            </span>
-            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem"><?= multiline_trim($func["example"]) ?></code></pre>
-          </div>
         </div>
       <?php endforeach ?>
     <?php endforeach ?>
@@ -1906,7 +1922,9 @@ $api_reference = [
 
 <script>
   const search = document.getElementById('search')
+  const details = document.querySelectorAll('details')
 
+  let expand = false
   function updateFunctionList() {
     const groups = document.querySelectorAll('#function-list > li')
     for (const group of groups) {
@@ -1924,9 +1942,29 @@ $api_reference = [
 
       group.style.display = has_items ? 'list-item' : 'none'
     }
+
+    if (search.value.length > 0 && !expand) {
+      expand = true
+      for (const detail of details) {
+        detail.dataset.open = detail.open
+        detail.open = true
+      }
+    } else if (search.value.length === 0 && expand) {
+      expand = false
+      for (const detail of details) {
+        detail.open = detail.dataset.open === 'true'
+      }
+    }
   }
 
   search.addEventListener('input', updateFunctionList)
+
+  for (const link of document.querySelectorAll('.function-link')) {
+    link.addEventListener('click', e => {
+      const detail = e.target.closest('details')
+      detail.dataset.open = 'true'
+    })
+  }
 
   document.addEventListener('keydown', e => {
     if (e.code === 'Slash' && document.activeElement !== search) {
