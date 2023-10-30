@@ -10,6 +10,5 @@ spry
 .vs
 ignore
 *.data
-/index.html
 /spry.wasm
 /spry.js
