@@ -114,10 +114,10 @@ $code_examples = [
     <a class="blue link underline-hover" href="https://love2d.org/">LÖVE</a>.
   </h1>
   <a
-    class="mb2 mb3 shadow bg-blue hover-bg-dark-blue white br-pill ph4 pv2 bg-animate no-underline inline-flex items-center"
+    class="mb2 mb3 shadow bg-blue hover-bg-dark-blue white br-pill ph3 pv2 fw6 bg-animate no-underline inline-flex items-center"
     href="quick-start.html"
   >
-    <span style="margin-top: 2px">Get started</span>
+    <span class="mr1">Get started</span>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
       <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
     </svg>
@@ -147,9 +147,9 @@ $code_examples = [
               <source src="<?= $demo["video"] ?>" type="video/webm">
             </video>
           </a>
-          <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex">
+          <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex justify-center">
             <a
-              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              class="w-50 dark-gray dm-light-silver link underline-hover pa2 dn inline-flex-ns justify-center items-center"
               href="<?= $demo["page"] ?>.html"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
@@ -161,7 +161,7 @@ $code_examples = [
               </span>
             </a>
             <a
-              class="w-50 dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
+              class="w-100 w-50-ns dark-gray dm-light-silver link underline-hover pa2 inline-flex justify-center items-center"
               href="<?= $demo["source"] ?>"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
@@ -181,7 +181,7 @@ $code_examples = [
 <div class="mw8 center mt5">
   <div class="pl2 pl3-ns">
     <h2>Features</h2>
-    <p class="lh-copy mid-gray dm-silver mw6">
+    <p class="lh-copy dark-gray dm-light-silver mw6">
       Spry&#39;s features exist to improve the time it takes for you to to
       tweak, experiment, and iterate during the early stages of your
       project.
@@ -226,7 +226,7 @@ $code_examples = [
   <h2>Code Examples</h2>
 
   <?php foreach ($code_examples as $example): ?>
-    <p><?= $example["text"] ?></p>
+    <p class="dark-gray dm-light-silver"><?= $example["text"] ?></p>
     <div class="flex flex-wrap flex-nowrap-l mb5">
       <pre class="w-100 mt0 mb3 mb0-l mr3-l"><code class="language-lua br3 ba b--black-10 dm-b--white-10"><?= multiline_trim($example["code"]) ?></code></pre>
       <div style="max-width: 300px" class="w-100 flex-none">

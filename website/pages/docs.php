@@ -1884,15 +1884,19 @@ $api_reference = [
           <?php endif ?>
 
           <?php if ($func["return"]): ?>
-            <h4 class="mid-gray dm-moon-gray mt3 mb2">Return Type</h4>
-            <code><?= $func["return"] ?></code>
+            <p>
+              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
+              <code class="inline-code"><?= $func["return"] ?></code>.
+            </p>
           <?php else: ?>
             <p class="i gray">Returns nothing.</p>
           <?php endif ?>
 
-          <h4 class="mid-gray dm-moon-gray mt3 mb2">Example</h4>
-          <div class="prose">
-            <pre class="mb0"><code class="language-lua"><?= multiline_trim($func["example"]) ?></code></pre>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem"><?= multiline_trim($func["example"]) ?></code></pre>
           </div>
         </div>
       <?php endforeach ?>

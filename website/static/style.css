@@ -11,7 +11,7 @@ code {
   font-size: 0.95em;
 }
 
-pre > code {
+pre>code {
   line-height: 1.25;
 }
 
@@ -23,7 +23,12 @@ pre > code {
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
   font-weight: 600;
 }
@@ -52,6 +57,14 @@ input:focus {
   display: inline-block;
 }
 
+.prose {
+  color: #333333;
+}
+
+.dark-mode .prose {
+  color: #AAAAAA;
+}
+
 .prose h1,
 .prose h2,
 .prose h3,
@@ -60,6 +73,18 @@ input:focus {
 .prose h6 {
   margin-top: 2rem;
   margin-bottom: 0.5rem;
+  color: #000000;
+}
+
+.dark-mode .prose h1,
+.dark-mode .prose h2,
+.dark-mode .prose h3,
+.dark-mode .prose h4,
+.dark-mode .prose h5,
+.dark-mode .prose h6 {
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
 }
 
 @media screen and (min-width: 60em) {
@@ -81,7 +106,7 @@ input:focus {
   line-height: 1.5;
 }
 
-.prose li > p {
+.prose li>p {
   margin-top: 0;
   margin-bottom: 0.5rem;
 }
@@ -91,29 +116,32 @@ input:focus {
   text-decoration: none;
 }
 
-.prose a:hover, .prose a:focus {
+.prose a:hover,
+.prose a:focus {
   text-decoration: underline;
 }
 
-.prose :not(pre) > code {
+.inline-code,
+.prose :not(pre)>code {
   background-color: rgba(0, 0, 0, 0.05);
   padding-left: 0.2rem;
   padding-right: 0.2rem;
   border-radius: 0.25rem;
 }
 
-.dark-mode .prose :not(pre) > code {
+.dark-mode .inline-code,
+.dark-mode .prose :not(pre)>code {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.prose pre > code {
+.prose pre>code {
   border-radius: 0.5rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   padding: 1em;
   display: block;
 }
 
-.dark-mode .prose pre > code {
+.dark-mode .prose pre>code {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -132,7 +160,6 @@ input:focus {
 
 .dark-mode .placeholder::placeholder {
   color: #ffffff;
-  opacity: 0.5;
 }
 
 .video-overlay {
