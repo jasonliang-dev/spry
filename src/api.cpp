@@ -23,10 +23,6 @@
 #include "sprite.h"
 #include "tilemap.h"
 
-static Color top_color() {
-  return g_app->draw_colors[g_app->draw_colors_len - 1];
-}
-
 static bool get_asset(String filepath, Asset **out) {
   Asset *asset = nullptr;
   u64 key = fnv1a(filepath);
@@ -201,15 +197,13 @@ struct PhysicsContactListener : public b2ContactListener {
 };
 
 static void draw_fixtures_for_body(b2Body *body, float meter) {
-  Color color = top_color();
-
   for (b2Fixture *f = body->GetFixtureList(); f != nullptr; f = f->GetNext()) {
     switch (f->GetType()) {
     case b2Shape::e_circle: {
       b2CircleShape *circle = (b2CircleShape *)f->GetShape();
       b2Vec2 pos = body->GetWorldPoint(circle->m_p);
-      draw_line_circle(pos.x * meter, pos.y * meter, circle->m_radius * meter,
-                       color);
+      draw_line_circle(&g_app->renderer, pos.x * meter, pos.y * meter,
+                       circle->m_radius * meter);
       break;
     }
     case b2Shape::e_polygon: {
@@ -219,7 +213,7 @@ static void draw_fixtures_for_body(b2Body *body, float meter) {
         sgl_disable_texture();
         sgl_begin_line_strip();
 
-        sgl_c4b(color.r, color.g, color.b, color.a);
+        renderer_apply_color(&g_app->renderer);
 
         for (i32 i = 0; i < poly->m_count; i++) {
           b2Vec2 pos = body->GetWorldPoint(poly->m_vertices[i]);
@@ -244,7 +238,7 @@ static int mt_image_draw(lua_State *L) {
   u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
   Image img = g_app->assets[*udata].image;
   DrawDescription dd = luax_draw_description(L, 2);
-  draw(&img, &dd, top_color());
+  draw(&g_app->renderer, &img, &dd);
   return 0;
 }
 
@@ -309,7 +303,7 @@ static int mt_font_draw(lua_State *L) {
   lua_Number y = luaL_optnumber(L, 4, 0);
   lua_Number size = luaL_optnumber(L, 5, 12);
 
-  draw(font, (u64)size, (float)x, (float)y, text, top_color());
+  draw(&g_app->renderer, font, (u64)size, (float)x, (float)y, text);
   return 0;
 }
 
@@ -382,7 +376,7 @@ static int mt_sprite_renderer_draw(lua_State *L) {
       (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
   DrawDescription dd = luax_draw_description(L, 2);
 
-  draw(sr, &dd, top_color());
+  draw(&g_app->renderer, sr, &dd);
   return 0;
 }
 
@@ -446,7 +440,7 @@ static int mt_atlas_image_draw(lua_State *L) {
   dd.u1 = atlas_img->u1;
   dd.v1 = atlas_img->v1;
 
-  draw(&atlas_img->img, &dd, top_color());
+  draw(&g_app->renderer, &atlas_img->img, &dd);
   return 0;
 }
 
@@ -511,7 +505,7 @@ static int open_mt_atlas(lua_State *L) {
 static int mt_tilemap_draw(lua_State *L) {
   u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   Tilemap *tm = &g_app->assets[*udata].tilemap;
-  draw(tm, top_color());
+  draw(&g_app->renderer, tm);
   return 0;
 }
 
@@ -1350,12 +1344,14 @@ static int scroll_wheel(lua_State *L) {
 }
 
 static int push_matrix(lua_State *L) {
-  sgl_push_matrix();
+  bool ok = renderer_push_matrix(&g_app->renderer);
+  return ok ? 0 : luaL_error(L, "matrix stack is full");
   return 0;
 }
 
 static int pop_matrix(lua_State *L) {
-  sgl_pop_matrix();
+  bool ok = renderer_pop_matrix(&g_app->renderer);
+  return ok ? 0 : luaL_error(L, "matrix stack is full");
   return 0;
 }
 
@@ -1363,14 +1359,14 @@ static int translate(lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number y = luaL_checknumber(L, 2);
 
-  sgl_translate((float)x, (float)y, 0);
+  renderer_translate(&g_app->renderer, (float)x, (float)y);
   return 0;
 }
 
 static int rotate(lua_State *L) {
   lua_Number angle = luaL_checknumber(L, 1);
 
-  sgl_rotate((float)angle, 0, 0, 1);
+  renderer_rotate(&g_app->renderer, (float)angle);
   return 0;
 }
 
@@ -1378,7 +1374,7 @@ static int scale(lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number y = luaL_checknumber(L, 2);
 
-  sgl_scale((float)x, (float)y, 1);
+  renderer_scale(&g_app->renderer, (float)x, (float)y);
   return 0;
 }
 
@@ -1388,10 +1384,10 @@ static int clear_color(lua_State *L) {
   lua_Number b = luaL_checknumber(L, 3);
   lua_Number a = luaL_checknumber(L, 4);
 
-  g_app->clear_color[0] = (float)r / 255.0f;
-  g_app->clear_color[1] = (float)g / 255.0f;
-  g_app->clear_color[2] = (float)b / 255.0f;
-  g_app->clear_color[3] = (float)a / 255.0f;
+  g_app->renderer.clear_color[0] = (float)r / 255.0f;
+  g_app->renderer.clear_color[1] = (float)g / 255.0f;
+  g_app->renderer.clear_color[2] = (float)b / 255.0f;
+  g_app->renderer.clear_color[3] = (float)a / 255.0f;
 
   return 0;
 }
@@ -1408,21 +1404,13 @@ static int push_color(lua_State *L) {
   color.b = (u8)b;
   color.a = (u8)a;
 
-  if (g_app->draw_colors_len == array_size(g_app->draw_colors)) {
-    return luaL_error(L, "color stack is full");
-  }
-
-  g_app->draw_colors[g_app->draw_colors_len++] = color;
-  return 0;
+  bool ok = renderer_push_color(&g_app->renderer, color);
+  return ok ? 0 : luaL_error(L, "color stack is full");
 }
 
 static int pop_color(lua_State *L) {
-  if (g_app->draw_colors_len == 1) {
-    return luaL_error(L, "color stack can't be less than 1");
-  }
-
-  g_app->draw_colors_len--;
-  return 0;
+  bool ok = renderer_pop_color(&g_app->renderer);
+  return ok ? 0 : luaL_error(L, "color stack can't be less than 1");
 }
 
 static int default_font(lua_State *L) {
@@ -1439,13 +1427,13 @@ static int default_font(lua_State *L) {
 
 static int draw_filled_rect(lua_State *L) {
   RectDescription rd = luax_rect_description(L, 1);
-  draw_filled_rect(&rd, top_color());
+  draw_filled_rect(&g_app->renderer, &rd);
   return 0;
 }
 
 static int draw_line_rect(lua_State *L) {
   RectDescription rd = luax_rect_description(L, 1);
-  draw_line_rect(&rd, top_color());
+  draw_line_rect(&g_app->renderer, &rd);
   return 0;
 }
 
@@ -1454,7 +1442,7 @@ static int draw_line_circle(lua_State *L) {
   lua_Number y = luaL_checknumber(L, 2);
   lua_Number radius = luaL_checknumber(L, 3);
 
-  draw_line_circle(x, y, radius, top_color());
+  draw_line_circle(&g_app->renderer, x, y, radius);
   return 0;
 }
 

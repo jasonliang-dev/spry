@@ -33,7 +33,6 @@ struct App {
   u64 time_begin;
   double delta_time;
 
-  bool mounted;
   bool hot_reload_enabled;
   float reload_time_elapsed;
   float reload_interval;
@@ -43,9 +42,7 @@ struct App {
   FontFamily *default_font;
   bool default_font_loaded;
 
-  float clear_color[4];
-  Color draw_colors[32];
-  u64 draw_colors_len;
+  Renderer2D renderer;
 
   bool error_mode;
   String fatal_error;

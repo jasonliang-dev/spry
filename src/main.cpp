@@ -89,16 +89,7 @@ static void init() {
   stm_setup();
   g_app->time_begin = stm_now();
 
-  g_app->clear_color[0] = 0.0f;
-  g_app->clear_color[1] = 0.0f;
-  g_app->clear_color[2] = 0.0f;
-  g_app->clear_color[3] = 1.0f;
-
-  g_app->draw_colors[0].r = 255;
-  g_app->draw_colors[0].g = 255;
-  g_app->draw_colors[0].b = 255;
-  g_app->draw_colors[0].a = 255;
-  g_app->draw_colors_len = 1;
+  renderer_setup(&g_app->renderer);
 
   if (!g_app->error_mode) {
     lua_getglobal(L, "spry");
@@ -162,10 +153,10 @@ static void frame() {
   if (g_app->error_mode) {
     pass.colors[0].value = {0.0f, 0.0f, 0.0f, 1.0f};
   } else {
-    pass.colors[0].value.r = g_app->clear_color[0];
-    pass.colors[0].value.g = g_app->clear_color[1];
-    pass.colors[0].value.b = g_app->clear_color[2];
-    pass.colors[0].value.a = g_app->clear_color[3];
+    pass.colors[0].value.r = g_app->renderer.clear_color[0];
+    pass.colors[0].value.g = g_app->renderer.clear_color[1];
+    pass.colors[0].value.b = g_app->renderer.clear_color[2];
+    pass.colors[0].value.a = g_app->renderer.clear_color[3];
   }
   sg_begin_default_pass(pass, sapp_width(), sapp_height());
 
@@ -182,20 +173,24 @@ static void frame() {
       g_app->default_font_loaded = true;
     }
 
+    g_app->renderer.draw_colors[g_app->renderer.draw_colors_len - 1] = {
+        255, 255, 255, 255};
+
     float x = 10;
     float y = 10;
     u64 font_size = 16;
 
-    Color color = {255, 255, 255, 255};
-    draw(g_app->default_font, font_size, x, y, "oh no! there's an error! :(",
-         color);
+    draw(&g_app->renderer, g_app->default_font, font_size, x, y,
+         "oh no! there's an error! :(");
     y += font_size * 2;
 
-    draw(g_app->default_font, font_size, x, y, g_app->fatal_error, color);
+    draw(&g_app->renderer, g_app->default_font, font_size, x, y,
+         g_app->fatal_error);
     y += font_size * 2;
 
     if (g_app->traceback.data) {
-      draw(g_app->default_font, font_size, x, y, g_app->traceback, color);
+      draw(&g_app->renderer, g_app->default_font, font_size, x, y,
+           g_app->traceback);
     }
   }
 
@@ -495,16 +490,7 @@ EM_ASYNC_JS(void, web_load_files, (), {
 });
 #endif
 
-static int string_cmp(const void *a, const void *b) {
-  String *lhs = (String *)a;
-  String *rhs = (String *)b;
-  return strcmp(lhs->data, rhs->data);
-}
-
-sapp_desc sokol_main(int argc, char **argv) {
-  g_app = (App *)mem_alloc(sizeof(App));
-  *g_app = {};
-
+static void setup_lua() {
   L = luaL_newstate();
 
   luaL_openlibs(L);
@@ -531,8 +517,10 @@ sapp_desc sokol_main(int argc, char **argv) {
   if (lua_pcall(L, 0, 0, 1) != LUA_OK) {
     panic("failed to run bootstrap");
   }
+}
 
-  bool ok = false;
+static void mount_files(int argc, char **argv, bool *mount_ok, bool *files_ok) {
+  bool archive_ok = false;
 
 #ifdef __EMSCRIPTEN__
   String mount_dir = web_mount_dir();
@@ -540,62 +528,83 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   if (ends_with(mount_dir, ".zip")) {
     web_load_zip();
-    ok = load_zip_archive(&g_app->archive, mount_dir);
+    archive_ok = load_zip_archive(&g_app->archive, mount_dir);
   } else {
     web_load_files();
-    ok = load_filesystem_archive(&g_app->archive, mount_dir);
+    archive_ok = load_filesystem_archive(&g_app->archive, mount_dir);
   }
 
-  g_app->mounted = true;
+  *mount_ok = true;
 #else
   if (argc == 1) {
     String path = program_path();
 #ifdef DEBUG
     printf("program path: %s\n", path.data);
 #endif
-    ok = load_zip_archive(&g_app->archive, path);
-    g_app->mounted = ok;
+    archive_ok = load_zip_archive(&g_app->archive, path);
+    *mount_ok = archive_ok;
   } else if (argc == 2) {
     String mount_dir = argv[1];
 
     if (ends_with(mount_dir, ".zip")) {
-      ok = load_zip_archive(&g_app->archive, mount_dir);
+      archive_ok = load_zip_archive(&g_app->archive, mount_dir);
     } else {
-      ok = load_filesystem_archive(&g_app->archive, mount_dir);
+      archive_ok = load_filesystem_archive(&g_app->archive, mount_dir);
       g_app->hot_reload_enabled = true;
     }
 
-    g_app->mounted = true;
+    *mount_ok = archive_ok;
   }
 #endif
 
-  if (g_app->mounted) {
-    if (!ok) {
-      StringBuilder sb = format("failed to mount: %s", argv[1]);
+  *files_ok = archive_ok;
+}
+
+static void load_all_lua_scripts() {
+  Array<String> files = {};
+  defer({
+    for (String str : files) {
+      mem_free(str.data);
+    }
+    drop(&files);
+  });
+
+  bool ok = g_app->archive.list_all_files(&g_app->archive, &files);
+  if (!ok) {
+    panic("failed to list all files");
+  }
+  qsort(files.data, files.len, sizeof(String),
+        [](const void *a, const void *b) -> int {
+          String *lhs = (String *)a;
+          String *rhs = (String *)b;
+          return strcmp(lhs->data, rhs->data);
+        });
+
+  for (String file : files) {
+    if (file != "main.lua" && ends_with(file, ".lua")) {
+      require_lua_script(&g_app->archive, file);
+    }
+  }
+  require_lua_script(&g_app->archive, "main.lua");
+}
+
+sapp_desc sokol_main(int argc, char **argv) {
+  g_app = (App *)mem_alloc(sizeof(App));
+  *g_app = {};
+
+  setup_lua();
+
+  bool mounted = false, files_ok = false;
+  mount_files(argc, argv, &mounted, &files_ok);
+
+  if (mounted) {
+    if (!files_ok) {
+      StringBuilder sb = format("failed to load: %s", argv[1]);
       defer(drop(&sb));
 
       fatal_error(as_string(&sb));
     } else {
-      Array<String> files = {};
-      defer({
-        for (String str : files) {
-          mem_free(str.data);
-        }
-        drop(&files);
-      });
-
-      ok = g_app->archive.list_all_files(&g_app->archive, &files);
-      if (!ok) {
-        panic("failed to list all files");
-      }
-      qsort(files.data, files.len, sizeof(String), string_cmp);
-
-      for (String file : files) {
-        if (file != "main.lua" && ends_with(file, ".lua")) {
-          require_lua_script(&g_app->archive, file);
-        }
-      }
-      require_lua_script(&g_app->archive, "main.lua");
+      load_all_lua_scripts();
     }
   }
 

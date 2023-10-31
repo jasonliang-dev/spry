@@ -92,6 +92,7 @@ App *g_app;
 #define SOKOL_D3D11
 #ifdef DEBUG
 #define SOKOL_WIN32_FORCE_MAIN
+#define SOKOL_DEBUG
 #endif
 #elif defined(__linux__)
 #define SOKOL_GLCORE33

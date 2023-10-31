@@ -4,6 +4,7 @@
 #include "image.h"
 #include "sprite.h"
 #include "tilemap.h"
+#include "algebra.h"
 
 struct DrawDescription {
   float x;
@@ -41,11 +42,32 @@ struct Color {
   u8 r, g, b, a;
 };
 
-void draw(Image *img, DrawDescription *desc, Color c);
-void draw(SpriteRenderer *sr, DrawDescription *desc, Color c);
-void draw(FontFamily *font, float size, float x, float y, String text, Color c);
-void draw(Tilemap *tm, Color c);
-void draw_filled_rect(RectDescription *desc, Color c);
-void draw_line_rect(RectDescription *desc, Color c);
-void draw_line_circle(float x, float y, float radius, Color c);
-void draw_line(float x0, float y0, float x1, float y1, Color c);
+struct Renderer2D {
+  Matrix4 matrices[32];
+  u64 matrices_len;
+
+  float clear_color[4];
+  Color draw_colors[32];
+  u64 draw_colors_len;
+};
+
+void renderer_setup(Renderer2D *ren);
+void renderer_apply_color(Renderer2D *ren);
+bool renderer_push_color(Renderer2D *ren, Color c);
+bool renderer_pop_color(Renderer2D *ren);
+bool renderer_push_matrix(Renderer2D *ren);
+bool renderer_pop_matrix(Renderer2D *ren);
+Matrix4 *renderer_peek_matrix(Renderer2D *ren);
+void renderer_translate(Renderer2D *ren, float x, float y);
+void renderer_rotate(Renderer2D *ren, float angle);
+void renderer_scale(Renderer2D *ren, float x, float y);
+void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex);
+
+void draw(Renderer2D *ren, Image *img, DrawDescription *desc);
+void draw(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc);
+void draw(Renderer2D *ren, FontFamily *font, float size, float x, float y, String text);
+void draw(Renderer2D *ren, Tilemap *tm);
+void draw_filled_rect(Renderer2D *ren, RectDescription *desc);
+void draw_line_rect(Renderer2D *ren, RectDescription *desc);
+void draw_line_circle(Renderer2D *ren, float x, float y, float radius);
+void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1);

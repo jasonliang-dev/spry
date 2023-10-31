@@ -31,11 +31,6 @@ using isize = ptrdiff_t;
 inline i32 min(i32 a, i32 b) { return a < b ? a : b; }
 inline i32 max(i32 a, i32 b) { return a > b ? a : b; }
 
-struct vec2 {
-  vec2(float x, float y) : x(x), y(y) {}
-  float x, y;
-};
-
 struct DebugAllocInfo {
   const char *file;
   i32 line;
