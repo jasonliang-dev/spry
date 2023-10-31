@@ -98,9 +98,17 @@ $code_examples = [
       end
 
       function Player:draw()
-        local w = self.sprite:width() / 2
-        local h = self.sprite:height() / 2
-        self.sprite:draw(self.x, self.y, angle, 1, 1, w, h)
+        local scale = 4
+        self.sprite:draw(self.x, self.y, 0, scale, scale)
+      end
+
+      function spry.start()
+        player = Player(100, 100)
+      end
+
+      function spry.frame(dt)
+        player:update(dt)
+        player:draw()
       end
     ",
   ],
