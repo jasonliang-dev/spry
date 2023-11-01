@@ -66,6 +66,11 @@ An optimized build of Spry using MSVC looks like this:
 cl /std:c++17 /O2 /EHsc /DNOMINMAX /DRELEASE /Isrc/deps/box2d src/spry.cpp
 ```
 
+Depending on your platform, you might need to link to some system libraries.
+See [`build.bat`](https://github.com/jasonliang-dev/spry/blob/master/build.bat)
+and [`build.sh`](https://github.com/jasonliang-dev/spry/blob/master/build.sh)
+for details.
+
 ## Shoutouts
 
 Special thanks to:
