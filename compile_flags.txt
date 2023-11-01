@@ -2,3 +2,5 @@
 -std=c++17
 -Wall
 -Isrc/deps/box2d
+-DDEBUG
+-DSSE_AVAILABLE

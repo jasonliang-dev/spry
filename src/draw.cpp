@@ -74,52 +74,76 @@ Matrix4 *renderer_peek_matrix(Renderer2D *ren) {
 }
 
 void renderer_translate(Renderer2D *ren, float x, float y) {
-  Matrix4 m = {};
-  m.cols[0][0] = 1.0f;
-  m.cols[1][1] = 1.0f;
-  m.cols[2][2] = 1.0f;
-  m.cols[3][3] = 1.0f;
-
-  m.cols[3][0] = x;
-  m.cols[3][1] = y;
-
   Matrix4 *top = renderer_peek_matrix(ren);
-  *top = mat4_mul_mat4(*top, m);
+
+#ifdef SSE_AVAILABLE
+  __m128 v0 = top->sse[0];
+  __m128 v1 = top->sse[1];
+  __m128 v2 = top->sse[2];
+  __m128 v3 = top->sse[3];
+
+  __m128 xx = _mm_mul_ps(_mm_set1_ps(x), v0);
+  __m128 yy = _mm_mul_ps(_mm_set1_ps(y), v1);
+
+  top->sse[3] = _mm_add_ps(_mm_add_ps(xx, yy), _mm_add_ps(v2, v3));
+#else
+  for (i32 i = 0; i < 4; i++) {
+    float xx = x * top->cols[0][i];
+    float yy = y * top->cols[1][i];
+    top->cols[3][i] = xx + yy + top->cols[2][i] + top->cols[3][i];
+  }
+#endif
 }
 
 void renderer_rotate(Renderer2D *ren, float angle) {
-  float s = sinf(angle);
-  float c = cosf(angle);
-
-  Matrix4 m = {};
-  m.cols[0][0] = c;
-  m.cols[0][1] = s;
-  m.cols[1][0] = -s;
-  m.cols[1][1] = c;
-  m.cols[2][2] = 1.0f;
-  m.cols[3][3] = 1.0f;
-
   Matrix4 *top = renderer_peek_matrix(ren);
-  *top = mat4_mul_mat4(*top, m);
+
+#ifdef SSE_AVAILABLE
+  __m128 v0 = top->sse[0];
+  __m128 v1 = top->sse[1];
+
+  __m128 theta = _mm_set1_ps(-angle);
+  __m128 c = _mm_cos_ps(theta);
+  __m128 s = _mm_sin_ps(theta);
+
+  top->sse[0] = _mm_sub_ps(_mm_mul_ps(c, v0), _mm_mul_ps(s, v1));
+  top->sse[1] = _mm_add_ps(_mm_mul_ps(s, v0), _mm_mul_ps(c, v1));
+#else
+  float c = cos(-angle);
+  float s = sin(-angle);
+
+  for (i32 i = 0; i < 4; i++) {
+    float x = c * top->cols[0][i] - s * top->cols[1][i];
+    float y = s * top->cols[0][i] + c * top->cols[1][i];
+    top->cols[0][i] = x;
+    top->cols[1][i] = y;
+  }
+#endif
 }
 
 void renderer_scale(Renderer2D *ren, float x, float y) {
-  Matrix4 m = {};
-  m.cols[0][0] = x;
-  m.cols[1][1] = y;
-  m.cols[2][2] = 1.0f;
-  m.cols[3][3] = 1.0f;
-
   Matrix4 *top = renderer_peek_matrix(ren);
-  *top = mat4_mul_mat4(*top, m);
+
+#ifdef SSE_AVAILABLE
+  __m128 v0 = top->sse[0];
+  __m128 v1 = top->sse[1];
+
+  top->sse[0] = _mm_mul_ps(v0, _mm_set1_ps(x));
+  top->sse[1] = _mm_mul_ps(v1, _mm_set1_ps(y));
+#else
+  for (i32 i = 0; i < 4; i++) {
+    top->cols[0][i] *= x;
+    top->cols[1][i] *= y;
+  }
+#endif
 }
 
 void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex) {
   Matrix4 top = *renderer_peek_matrix(ren);
-  Vector4 a = vec4_mul_mat4({pos.x, pos.y, 0, 1}, top);
-  Vector4 b = vec4_mul_mat4({pos.x, pos.w, 0, 1}, top);
-  Vector4 c = vec4_mul_mat4({pos.z, pos.w, 0, 1}, top);
-  Vector4 d = vec4_mul_mat4({pos.z, pos.y, 0, 1}, top);
+  Vector4 a = vec4_mul_mat4(vec4_xy(pos.x, pos.y), top);
+  Vector4 b = vec4_mul_mat4(vec4_xy(pos.x, pos.w), top);
+  Vector4 c = vec4_mul_mat4(vec4_xy(pos.z, pos.w), top);
+  Vector4 d = vec4_mul_mat4(vec4_xy(pos.z, pos.y), top);
 
   sgl_v2f_t2f(a.x, a.y, tex.x, tex.y);
   sgl_v2f_t2f(b.x, b.y, tex.x, tex.w);
@@ -147,8 +171,8 @@ void draw(Renderer2D *ren, Image *img, DrawDescription *desc) {
   float y1 = (desc->v1 - desc->v0) * img->height - desc->oy;
 
   renderer_apply_color(ren);
-  renderer_push_quad(ren, {x0, y0, x1, y1},
-                     {desc->u0, desc->v0, desc->u1, desc->v1});
+  renderer_push_quad(ren, vec4(x0, y0, x1, y1),
+                     vec4(desc->u0, desc->v0, desc->u1, desc->v1));
 
   sgl_end();
   renderer_pop_matrix(ren);
@@ -186,7 +210,7 @@ void draw(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
   SpriteFrame f = spr->frames[index];
 
   renderer_apply_color(ren);
-  renderer_push_quad(ren, {x0, y0, x1, y1}, {f.u0, f.v0, f.u1, f.v1});
+  renderer_push_quad(ren, vec4(x0, y0, x1, y1), vec4(f.u0, f.v0, f.u1, f.v1));
 
   sgl_end();
   renderer_pop_matrix(ren);
@@ -210,8 +234,8 @@ void draw(Renderer2D *ren, FontFamily *font, float size, float x, float y,
 
       sgl_texture({atlas});
       sgl_begin_quads();
-      renderer_push_quad(ren, {x + q.x0, y + q.y0, x + q.x1, y + q.y1},
-                         {q.s0, q.t0, q.s1, q.t1});
+      renderer_push_quad(ren, vec4(x + q.x0, y + q.y0, x + q.x1, y + q.y1),
+                         vec4(q.s0, q.t0, q.s1, q.t1));
       sgl_end();
 
       x = xpos;
@@ -243,8 +267,8 @@ void draw(Renderer2D *ren, Tilemap *tm) {
         float x1 = tile.x + layer.grid_size;
         float y1 = tile.y + layer.grid_size;
 
-        renderer_push_quad(ren, {x0, y0, x1, y1},
-                           {tile.u0, tile.v0, tile.u1, tile.v1});
+        renderer_push_quad(ren, vec4(x0, y0, x1, y1),
+                           vec4(tile.u0, tile.v0, tile.u1, tile.v1));
       }
       sgl_end();
     }
@@ -271,7 +295,7 @@ void draw_filled_rect(Renderer2D *ren, RectDescription *desc) {
   float y1 = desc->h - desc->oy;
 
   renderer_apply_color(ren);
-  renderer_push_quad(ren, {x0, y0, x1, y1}, {0, 0, 0, 0});
+  renderer_push_quad(ren, vec4(x0, y0, x1, y1), vec4(0, 0, 0, 0));
 
   sgl_end();
   renderer_pop_matrix(ren);
@@ -290,22 +314,23 @@ void draw_line_rect(Renderer2D *ren, RectDescription *desc) {
   sgl_disable_texture();
   sgl_begin_line_strip();
 
-  Matrix4 top = *renderer_peek_matrix(ren);
-  Vector4 xy0 = vec4_mul_mat4({-desc->ox, -desc->oy, 0, 1}, top);
-  Vector4 xy1 =
-      vec4_mul_mat4({desc->w - desc->ox, desc->h - desc->oy, 0, 1}, top);
+  float x0 = -desc->ox;
+  float y0 = -desc->oy;
+  float x1 = desc->w - desc->ox;
+  float y1 = desc->h - desc->oy;
 
-  float x0 = xy0.x;
-  float y0 = xy0.y;
-  float x1 = xy1.x;
-  float y1 = xy1.y;
+  Matrix4 top = *renderer_peek_matrix(ren);
+  Vector4 a = vec4_mul_mat4(vec4_xy(x0, y0), top);
+  Vector4 b = vec4_mul_mat4(vec4_xy(x0, y1), top);
+  Vector4 c = vec4_mul_mat4(vec4_xy(x1, y1), top);
+  Vector4 d = vec4_mul_mat4(vec4_xy(x1, y0), top);
 
   renderer_apply_color(ren);
-  sgl_v2f(x0, y0);
-  sgl_v2f(x0, y1);
-  sgl_v2f(x1, y1);
-  sgl_v2f(x1, y0);
-  sgl_v2f(x0, y0);
+  sgl_v2f(a.x, a.y);
+  sgl_v2f(b.x, b.y);
+  sgl_v2f(c.x, c.y);
+  sgl_v2f(d.x, d.y);
+  sgl_v2f(a.x, a.y);
 
   sgl_end();
   renderer_pop_matrix(ren);
@@ -321,7 +346,7 @@ void draw_line_circle(Renderer2D *ren, float x, float y, float radius) {
   for (float i = 0; i <= tau + 0.001f; i += tau / 36.0f) {
     float c = cosf(i) * radius;
     float s = sinf(i) * radius;
-    Vector4 pos = vec4_mul_mat4({x + c, y + s, 0, 1}, top);
+    Vector4 pos = vec4_mul_mat4(vec4_xy(x + c, y + s), top);
     sgl_v2f(pos.x, pos.y);
   }
 
@@ -335,10 +360,10 @@ void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1) {
   renderer_apply_color(ren);
 
   Matrix4 top = *renderer_peek_matrix(ren);
-  Vector4 xy0 = vec4_mul_mat4({x0, y0, 0, 1}, top);
-  Vector4 xy1 = vec4_mul_mat4({x1, y1, 0, 1}, top);
-  sgl_v2f(xy0.x, xy0.y);
-  sgl_v2f(xy1.x, xy1.y);
+  Vector4 a = vec4_mul_mat4(vec4_xy(x0, y0), top);
+  Vector4 b = vec4_mul_mat4(vec4_xy(x1, y1), top);
+  sgl_v2f(a.x, b.y);
+  sgl_v2f(b.x, b.y);
 
   sgl_end();
 }
