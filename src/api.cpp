@@ -1100,13 +1100,13 @@ static int open_mt_b2_world(lua_State *L) {
 
 // spry api
 
-static int quit(lua_State *L) {
+static int spry_quit(lua_State *L) {
   (void)L;
   sapp_request_quit();
   return 0;
 }
 
-static int platform(lua_State *L) {
+static int spry_platform(lua_State *L) {
 #if defined(__EMSCRIPTEN__)
   lua_pushliteral(L, "html5");
 #elif defined(_WIN32)
@@ -1117,18 +1117,18 @@ static int platform(lua_State *L) {
   return 1;
 }
 
-static int dt(lua_State *L) {
+static int spry_dt(lua_State *L) {
   lua_pushnumber(L, g_app->time.delta);
   return 1;
 }
 
-static int window_width(lua_State *L) {
+static int spry_window_width(lua_State *L) {
   float width = sapp_widthf();
   lua_pushnumber(L, width);
   return 1;
 }
 
-static int window_height(lua_State *L) {
+static int spry_window_height(lua_State *L) {
   float height = sapp_heightf();
   lua_pushnumber(L, height);
   return 1;
@@ -1260,7 +1260,7 @@ static i32 keyboard_lookup(String str) {
   }
 }
 
-static int key_down(lua_State *L) {
+static int spry_key_down(lua_State *L) {
   String str = luax_check_string(L, 1);
   i32 key = keyboard_lookup(str);
   bool is_down = g_app->key_state[key];
@@ -1268,7 +1268,7 @@ static int key_down(lua_State *L) {
   return 1;
 }
 
-static int key_release(lua_State *L) {
+static int spry_key_release(lua_State *L) {
   String str = luax_check_string(L, 1);
   i32 key = keyboard_lookup(str);
   bool is_release = !g_app->key_state[key] && g_app->prev_key_state[key];
@@ -1276,7 +1276,7 @@ static int key_release(lua_State *L) {
   return 1;
 }
 
-static int key_press(lua_State *L) {
+static int spry_key_press(lua_State *L) {
   String str = luax_check_string(L, 1);
   i32 key = keyboard_lookup(str);
   bool is_press = g_app->key_state[key] && !g_app->prev_key_state[key];
@@ -1284,7 +1284,7 @@ static int key_press(lua_State *L) {
   return 1;
 }
 
-static int mouse_down(lua_State *L) {
+static int spry_mouse_down(lua_State *L) {
   lua_Integer n = luaL_checkinteger(L, 1);
   if (n >= 0 && n < array_size(g_app->mouse_state)) {
     lua_pushboolean(L, g_app->mouse_state[n]);
@@ -1295,7 +1295,7 @@ static int mouse_down(lua_State *L) {
   return 1;
 }
 
-static int mouse_release(lua_State *L) {
+static int spry_mouse_release(lua_State *L) {
   lua_Integer n = luaL_checkinteger(L, 1);
   if (n >= 0 && n < array_size(g_app->mouse_state)) {
     bool is_release = !g_app->mouse_state[n] && g_app->prev_mouse_state[n];
@@ -1307,7 +1307,7 @@ static int mouse_release(lua_State *L) {
   return 1;
 }
 
-static int mouse_click(lua_State *L) {
+static int spry_mouse_click(lua_State *L) {
   lua_Integer n = luaL_checkinteger(L, 1);
   if (n >= 0 && n < array_size(g_app->mouse_state)) {
     bool is_click = g_app->mouse_state[n] && !g_app->prev_mouse_state[n];
@@ -1319,43 +1319,43 @@ static int mouse_click(lua_State *L) {
   return 1;
 }
 
-static int mouse_pos(lua_State *L) {
+static int spry_mouse_pos(lua_State *L) {
   lua_pushnumber(L, g_app->mouse_x);
   lua_pushnumber(L, g_app->mouse_y);
   return 2;
 }
 
-static int mouse_delta(lua_State *L) {
+static int spry_mouse_delta(lua_State *L) {
   lua_pushnumber(L, g_app->mouse_dx);
   lua_pushnumber(L, g_app->mouse_dy);
   return 2;
 }
 
-static int show_mouse(lua_State *L) {
+static int spry_show_mouse(lua_State *L) {
   bool show = lua_toboolean(L, 1);
   sapp_show_mouse(show);
   return 0;
 }
 
-static int scroll_wheel(lua_State *L) {
+static int spry_scroll_wheel(lua_State *L) {
   lua_pushnumber(L, g_app->scroll_x);
   lua_pushnumber(L, g_app->scroll_y);
   return 2;
 }
 
-static int push_matrix(lua_State *L) {
+static int spry_push_matrix(lua_State *L) {
   bool ok = renderer_push_matrix(&g_app->renderer);
   return ok ? 0 : luaL_error(L, "matrix stack is full");
   return 0;
 }
 
-static int pop_matrix(lua_State *L) {
+static int spry_pop_matrix(lua_State *L) {
   bool ok = renderer_pop_matrix(&g_app->renderer);
   return ok ? 0 : luaL_error(L, "matrix stack is full");
   return 0;
 }
 
-static int translate(lua_State *L) {
+static int spry_translate(lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number y = luaL_checknumber(L, 2);
 
@@ -1363,14 +1363,14 @@ static int translate(lua_State *L) {
   return 0;
 }
 
-static int rotate(lua_State *L) {
+static int spry_rotate(lua_State *L) {
   lua_Number angle = luaL_checknumber(L, 1);
 
   renderer_rotate(&g_app->renderer, (float)angle);
   return 0;
 }
 
-static int scale(lua_State *L) {
+static int spry_scale(lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number y = luaL_checknumber(L, 2);
 
@@ -1378,7 +1378,7 @@ static int scale(lua_State *L) {
   return 0;
 }
 
-static int clear_color(lua_State *L) {
+static int spry_clear_color(lua_State *L) {
   lua_Number r = luaL_checknumber(L, 1);
   lua_Number g = luaL_checknumber(L, 2);
   lua_Number b = luaL_checknumber(L, 3);
@@ -1392,7 +1392,7 @@ static int clear_color(lua_State *L) {
   return 0;
 }
 
-static int push_color(lua_State *L) {
+static int spry_push_color(lua_State *L) {
   lua_Number r = luaL_checknumber(L, 1);
   lua_Number g = luaL_checknumber(L, 2);
   lua_Number b = luaL_checknumber(L, 3);
@@ -1408,12 +1408,12 @@ static int push_color(lua_State *L) {
   return ok ? 0 : luaL_error(L, "color stack is full");
 }
 
-static int pop_color(lua_State *L) {
+static int spry_pop_color(lua_State *L) {
   bool ok = renderer_pop_color(&g_app->renderer);
   return ok ? 0 : luaL_error(L, "color stack can't be less than 1");
 }
 
-static int default_font(lua_State *L) {
+static int spry_default_font(lua_State *L) {
   if (!g_app->default_font_loaded) {
     g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
     font_load_default(g_app->default_font);
@@ -1425,19 +1425,19 @@ static int default_font(lua_State *L) {
   return 1;
 }
 
-static int draw_filled_rect(lua_State *L) {
+static int spry_draw_filled_rect(lua_State *L) {
   RectDescription rd = luax_rect_description(L, 1);
   draw_filled_rect(&g_app->renderer, &rd);
   return 0;
 }
 
-static int draw_line_rect(lua_State *L) {
+static int spry_draw_line_rect(lua_State *L) {
   RectDescription rd = luax_rect_description(L, 1);
   draw_line_rect(&g_app->renderer, &rd);
   return 0;
 }
 
-static int draw_line_circle(lua_State *L) {
+static int spry_draw_line_circle(lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number y = luaL_checknumber(L, 2);
   lua_Number radius = luaL_checknumber(L, 3);
@@ -1446,7 +1446,7 @@ static int draw_line_circle(lua_State *L) {
   return 0;
 }
 
-static int image_load(lua_State *L) {
+static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset *asset = nullptr;
@@ -1463,7 +1463,7 @@ static int image_load(lua_State *L) {
   return 1;
 }
 
-static int font_load(lua_State *L) {
+static int spry_font_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   FontFamily *font = (FontFamily *)mem_alloc(sizeof(FontFamily));
@@ -1477,7 +1477,7 @@ static int font_load(lua_State *L) {
   return 1;
 }
 
-static int audio_load(lua_State *L) {
+static int spry_audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   i64 index = audio_load(&g_app->audio_sources, &g_app->archive, str);
@@ -1489,7 +1489,7 @@ static int audio_load(lua_State *L) {
   return 1;
 }
 
-static int set_master_volume(lua_State *L) {
+static int spry_set_master_volume(lua_State *L) {
   float vol = (float)luaL_checknumber(L, 1);
 
   if (vol > 1.0f) {
@@ -1502,7 +1502,7 @@ static int set_master_volume(lua_State *L) {
   return 0;
 }
 
-static int sprite_load(lua_State *L) {
+static int spry_sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset *asset = nullptr;
@@ -1522,7 +1522,7 @@ static int sprite_load(lua_State *L) {
   return 1;
 }
 
-static int atlas_load(lua_State *L) {
+static int spry_atlas_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Atlas atlas = {};
@@ -1535,7 +1535,7 @@ static int atlas_load(lua_State *L) {
   return 1;
 }
 
-static int tilemap_load(lua_State *L) {
+static int spry_tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset *asset = nullptr;
@@ -1552,7 +1552,7 @@ static int tilemap_load(lua_State *L) {
   return 1;
 }
 
-static int b2_world(lua_State *L) {
+static int spry_b2_world(lua_State *L) {
   lua_Number gx = luax_number_field(L, "gx", 0);
   lua_Number gy = luax_number_field(L, "gy", 9.81);
   lua_Number meter = luax_number_field(L, "meter", 16);
@@ -1574,41 +1574,41 @@ static int b2_world(lua_State *L) {
 
 static int open_spry(lua_State *L) {
   luaL_Reg reg[] = {
-      {"quit", quit},
-      {"platform", platform},
-      {"dt", dt},
-      {"window_width", window_width},
-      {"window_height", window_height},
-      {"key_down", key_down},
-      {"key_release", key_release},
-      {"key_press", key_press},
-      {"mouse_down", mouse_down},
-      {"mouse_release", mouse_release},
-      {"mouse_click", mouse_click},
-      {"mouse_pos", mouse_pos},
-      {"mouse_delta", mouse_delta},
-      {"show_mouse", show_mouse},
-      {"scroll_wheel", scroll_wheel},
-      {"push_matrix", push_matrix},
-      {"pop_matrix", pop_matrix},
-      {"translate", translate},
-      {"rotate", rotate},
-      {"scale", scale},
-      {"clear_color", clear_color},
-      {"push_color", push_color},
-      {"pop_color", pop_color},
-      {"default_font", default_font},
-      {"draw_filled_rect", draw_filled_rect},
-      {"draw_line_rect", draw_line_rect},
-      {"draw_line_circle", draw_line_circle},
-      {"image_load", image_load},
-      {"font_load", font_load},
-      {"audio_load", audio_load},
-      {"set_master_volume", set_master_volume},
-      {"sprite_load", sprite_load},
-      {"atlas_load", atlas_load},
-      {"tilemap_load", tilemap_load},
-      {"b2_world", b2_world},
+      {"quit", spry_quit},
+      {"platform", spry_platform},
+      {"dt", spry_dt},
+      {"window_width", spry_window_width},
+      {"window_height", spry_window_height},
+      {"key_down", spry_key_down},
+      {"key_release", spry_key_release},
+      {"key_press", spry_key_press},
+      {"mouse_down", spry_mouse_down},
+      {"mouse_release", spry_mouse_release},
+      {"mouse_click", spry_mouse_click},
+      {"mouse_pos", spry_mouse_pos},
+      {"mouse_delta", spry_mouse_delta},
+      {"show_mouse", spry_show_mouse},
+      {"scroll_wheel", spry_scroll_wheel},
+      {"push_matrix", spry_push_matrix},
+      {"pop_matrix", spry_pop_matrix},
+      {"translate", spry_translate},
+      {"rotate", spry_rotate},
+      {"scale", spry_scale},
+      {"clear_color", spry_clear_color},
+      {"push_color", spry_push_color},
+      {"pop_color", spry_pop_color},
+      {"default_font", spry_default_font},
+      {"draw_filled_rect", spry_draw_filled_rect},
+      {"draw_line_rect", spry_draw_line_rect},
+      {"draw_line_circle", spry_draw_line_circle},
+      {"image_load", spry_image_load},
+      {"font_load", spry_font_load},
+      {"audio_load", spry_audio_load},
+      {"set_master_volume", spry_set_master_volume},
+      {"sprite_load", spry_sprite_load},
+      {"atlas_load", spry_atlas_load},
+      {"tilemap_load", spry_tilemap_load},
+      {"b2_world", spry_b2_world},
       {nullptr, nullptr},
   };
 
