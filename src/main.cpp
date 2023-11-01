@@ -212,6 +212,8 @@ static void frame() {
     u64 time_now = stm_now();
     time->delta = stm_sec(time_now - time->last);
     time->last = time_now;
+
+#ifndef __EMSCRIPTEN__
     time->accumulator += time->delta;
 
     if (time->target_fps > 0) {
@@ -235,6 +237,7 @@ static void frame() {
         }
       }
     }
+#endif
   }
 
   {
@@ -442,7 +445,8 @@ static void cleanup() {
   printf("  --- allocations (%d) ---\n", allocs);
   for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
        info = info->next) {
-    printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size, info->file, info->line);
+    printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
+           info->file, info->line);
   }
 #endif
 }
@@ -547,7 +551,8 @@ static void setup_lua() {
   }
 }
 
-static void mount_files(int argc, char **argv, bool *mount_ok, bool *files_ok) {
+static void mount_files(int argc, char **argv, bool *mounted, bool *files_ok,
+                        bool *can_hot_reload) {
   bool archive_ok = false;
 
 #ifdef __EMSCRIPTEN__
@@ -562,7 +567,7 @@ static void mount_files(int argc, char **argv, bool *mount_ok, bool *files_ok) {
     archive_ok = load_filesystem_archive(&g_app->archive, mount_dir);
   }
 
-  *mount_ok = true;
+  *mounted = true;
 #else
   if (argc == 1) {
     String path = os_program_path();
@@ -570,7 +575,7 @@ static void mount_files(int argc, char **argv, bool *mount_ok, bool *files_ok) {
     printf("program path: %s\n", path.data);
 #endif
     archive_ok = load_zip_archive(&g_app->archive, path);
-    *mount_ok = archive_ok;
+    *mounted = archive_ok;
   } else if (argc == 2) {
     String mount_dir = argv[1];
 
@@ -578,10 +583,10 @@ static void mount_files(int argc, char **argv, bool *mount_ok, bool *files_ok) {
       archive_ok = load_zip_archive(&g_app->archive, mount_dir);
     } else {
       archive_ok = load_filesystem_archive(&g_app->archive, mount_dir);
-      g_app->hot_reload_enabled = true;
+      *can_hot_reload = true;
     }
 
-    *mount_ok = archive_ok;
+    *mounted = archive_ok;
   }
 #endif
 
@@ -622,8 +627,8 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   setup_lua();
 
-  bool mounted = false, files_ok = false;
-  mount_files(argc, argv, &mounted, &files_ok);
+  bool mounted = false, files_ok = false, can_hot_reload = false;
+  mount_files(argc, argv, &mounted, &files_ok, &can_hot_reload);
 
   if (mounted) {
     if (!files_ok) {
@@ -659,7 +664,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   lua_pop(L, 1);
 
-  g_app->hot_reload_enabled = g_app->hot_reload_enabled && hot_reload;
+  g_app->hot_reload_enabled = can_hot_reload && hot_reload;
   g_app->reload_interval = reload_interval;
   g_app->time.target_fps = target_fps;
 
