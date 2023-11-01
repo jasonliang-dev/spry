@@ -278,7 +278,8 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
 
   tilemap.images = images;
 
-  printf("loaded tilemap with %llu levels\n", tilemap.levels.len);
+  printf("loaded tilemap with %llu levels\n",
+         (unsigned long long)tilemap.levels.len);
   *tm = tilemap;
   return true;
 }

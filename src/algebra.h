@@ -7,12 +7,6 @@
 #include <immintrin.h>
 #endif
 
-#ifdef SSE_AVAILABLE
-// lsp can't see trig functions
-__m128 _mm_cos_ps(__m128 x);
-__m128 _mm_sin_ps(__m128 x);
-#endif
-
 union Vector4 {
   struct {
     float x, y, z, w;

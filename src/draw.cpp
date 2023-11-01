@@ -101,9 +101,8 @@ void renderer_rotate(Renderer2D *ren, float angle) {
   __m128 v0 = top->sse[0];
   __m128 v1 = top->sse[1];
 
-  __m128 theta = _mm_set1_ps(-angle);
-  __m128 c = _mm_cos_ps(theta);
-  __m128 s = _mm_sin_ps(theta);
+  __m128 c = _mm_set1_ps(cos(-angle));
+  __m128 s = _mm_set1_ps(sin(-angle));
 
   top->sse[0] = _mm_sub_ps(_mm_mul_ps(c, v0), _mm_mul_ps(s, v1));
   top->sse[1] = _mm_add_ps(_mm_mul_ps(s, v0), _mm_mul_ps(c, v1));

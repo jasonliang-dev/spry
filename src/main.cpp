@@ -442,7 +442,7 @@ static void cleanup() {
   printf("  --- allocations (%d) ---\n", allocs);
   for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
        info = info->next) {
-    printf("  %10llu bytes: %s:%d\n", info->size, info->file, info->line);
+    printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size, info->file, info->line);
   }
 #endif
 }

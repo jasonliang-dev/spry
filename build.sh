@@ -1,11 +1,17 @@
 #!/bin/sh
 
+em_cflags="-Wall -Isrc/deps/box2d"
+em_lflags="-lpthread -sASYNCIFY -sNO_DISABLE_EXCEPTION_CATCHING -sALLOW_MEMORY_GROWTH"
+
+cflags="-std=c++17 -Wall -Isrc/deps/box2d"
+lflags="-lX11 -lXi -lXcursor -lasound -lGL -ldl -lpthread -lm"
+
 if [ "$1" = "web_release" ]; then
-  emcc -Wall -O2 -DRELEASE -Isrc/deps/box2d src/spry.cpp -o spry.js -lpthread -sASYNCIFY -sNO_DISABLE_EXCEPTION_CATCHING -sALLOW_MEMORY_GROWTH
+  emcc $em_cflags -O2 -DRELEASE src/spry.cpp -o spry.js $em_lflags
 elif [ "$1" = "web" ]; then
-  emcc -Wall -DDEBUG -Isrc/deps/box2d src/spry.cpp -o spry.js -lpthread -sASYNCIFY -sNO_DISABLE_EXCEPTION_CATCHING -sALLOW_MEMORY_GROWTH
+  emcc $em_cflags -DDEBUG src/spry.cpp -o spry.js $em_lflags
 elif [ "$1" = "release" ]; then
-  clang++ -std=c++17 -Wall -O2 -DRELEASE -Isrc/deps/box2d src/spry.cpp -o spry -lX11 -lXi -lXcursor -lasound -lGL -ldl -lpthread -lm
+  clang++ $cflags -O2 -DRELEASE src/spry.cpp -o spry $lflags
 else
-  clang++ -std=c++17 -Wall -g -DDEBUG -Isrc/deps/box2d src/spry.cpp -o spry -lX11 -lXi -lXcursor -lasound -lGL -ldl -lpthread -lm
+  clang++ $cflags -g -DDEBUG src/spry.cpp -o spry $lflags
 fi
