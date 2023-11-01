@@ -9,36 +9,36 @@ Allocator g_allocator = debug_allocator();
 // prelude
 
 UTEST(prelude, string_null_term) {
-  String str = "Hello World!"_str;
+  String str = "Hello World!";
   ASSERT_EQ(str.data[str.len], 0);
 }
 
 UTEST(prelude, string_lines) {
-  String str = "line1\nl2\nthis is a very long line 3"_str;
+  String str = "line1\nl2\nthis is a very long line 3";
   SplitLinesIterator it = begin(SplitLines(str));
 
-  ASSERT_EQ(*it, "line1"_str);
+  ASSERT_EQ(*it, "line1");
   ++it;
-  ASSERT_EQ(*it, "l2"_str);
+  ASSERT_EQ(*it, "l2");
   ++it;
-  ASSERT_EQ(*it, "this is a very long line 3"_str);
+  ASSERT_EQ(*it, "this is a very long line 3");
   ++it;
 }
 
 UTEST(prelude, split_lines_non_null_term) {
   String str =
-      "line1\nl2\nline 3 some extra stuff that won't be in the string"_str;
+      "line1\nl2\nline 3 some extra stuff that won't be in the string";
   str.len = 15;
 
   SplitLinesIterator it = begin(SplitLines(str));
 
-  ASSERT_EQ(*it, "line1"_str);
+  ASSERT_EQ(*it, "line1");
   ++it;
-  ASSERT_EQ(*it, "l2"_str);
+  ASSERT_EQ(*it, "l2");
   ++it;
-  ASSERT_EQ(*it, "line 3"_str);
+  ASSERT_EQ(*it, "line 3");
   ++it;
-  ASSERT_EQ(*it, ""_str);
+  ASSERT_EQ(*it, "");
   ++it;
 }
 
@@ -104,18 +104,18 @@ UTEST(hash_map, insert) {
   HashMap<String> map;
   defer(hashmap_trash(&map));
 
-  map[10] = "ten"_str;
-  map[20] = "twenty"_str;
-  map[30] = "thirty"_str;
+  map[10] = "ten";
+  map[20] = "twenty";
+  map[30] = "thirty";
 }
 
 UTEST(hash_map, lookup) {
   HashMap<String> map;
   defer(hashmap_trash(&map));
 
-  map[10] = "ten"_str;
-  map[20] = "twenty"_str;
-  map[30] = "thirty"_str;
+  map[10] = "ten";
+  map[20] = "twenty";
+  map[30] = "thirty";
 
   String *ten = hashmap_get(&map, 10);
   ASSERT_NE(ten, nullptr);
@@ -134,9 +134,9 @@ UTEST(hash_map, unset) {
   HashMap<String> map;
   defer(hashmap_trash(&map));
 
-  map[1] = "one"_str;
-  map[2] = "two"_str;
-  map[3] = "three"_str;
+  map[1] = "one";
+  map[2] = "two";
+  map[3] = "three";
 
   hashmap_unset(&map, 2);
 
@@ -149,9 +149,9 @@ UTEST(hash_map, iterator) {
   HashMap<String> map;
   defer(hashmap_trash(&map));
 
-  String one = "one"_str;
-  String two = "two"_str;
-  String three = "three"_str;
+  String one = "one";
+  String two = "two";
+  String three = "three";
   map[1] = one;
   map[2] = two;
   map[3] = three;
@@ -171,9 +171,9 @@ UTEST(hash_map, drop_arrays) {
   HashMap<Array<u64>> map;
   defer({
     for (auto [k, v] : map) {
-      drop(v);
+      array_trash(v);
     }
-    array_trash(&map);
+    hashmap_trash(&map);
   });
 
   for (u64 i = 1; i <= 100; i++) {
