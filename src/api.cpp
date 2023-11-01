@@ -217,11 +217,11 @@ static void draw_fixtures_for_body(b2Body *body, float meter) {
 
         for (i32 i = 0; i < poly->m_count; i++) {
           b2Vec2 pos = body->GetWorldPoint(poly->m_vertices[i]);
-          sgl_v2f(pos.x * meter, pos.y * meter);
+          renderer_push_xy(&g_app->renderer, pos.x * meter, pos.y * meter);
         }
 
         b2Vec2 pos = body->GetWorldPoint(poly->m_vertices[0]);
-        sgl_v2f(pos.x * meter, pos.y * meter);
+        renderer_push_xy(&g_app->renderer, pos.x * meter, pos.y * meter);
 
         sgl_end();
       }

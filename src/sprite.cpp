@@ -71,7 +71,7 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   }
 
   printf("created sprite with image id: %d and %llu frames\n", img.id,
-         frames.len);
+         (unsigned long long)frames.len);
 
   Sprite s = {};
   s.img = img;

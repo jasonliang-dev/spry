@@ -78,7 +78,7 @@ bool atlas_load(Atlas *atlas, Archive *ar, String filepath) {
   }
 
   printf("created atlas with image id: %d and %llu entries\n", img.id,
-         by_name.load);
+         (unsigned long long)by_name.load);
 
   Atlas a;
   a.by_name = by_name;

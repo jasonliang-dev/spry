@@ -101,9 +101,8 @@ void renderer_rotate(Renderer2D *ren, float angle) {
   __m128 v0 = top->sse[0];
   __m128 v1 = top->sse[1];
 
-  __m128 theta = _mm_set1_ps(-angle);
-  __m128 c = _mm_cos_ps(theta);
-  __m128 s = _mm_sin_ps(theta);
+  __m128 c = _mm_set1_ps(cos(-angle));
+  __m128 s = _mm_set1_ps(sin(-angle));
 
   top->sse[0] = _mm_sub_ps(_mm_mul_ps(c, v0), _mm_mul_ps(s, v1));
   top->sse[1] = _mm_add_ps(_mm_mul_ps(s, v0), _mm_mul_ps(c, v1));
@@ -148,6 +147,12 @@ void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex) {
   sgl_v2f_t2f(b.x, b.y, tex.x, tex.w);
   sgl_v2f_t2f(c.x, c.y, tex.z, tex.w);
   sgl_v2f_t2f(d.x, d.y, tex.z, tex.y);
+}
+
+void renderer_push_xy(Renderer2D *ren, float x, float y) {
+  Matrix4 top = *renderer_peek_matrix(ren);
+  Vector4 v = vec4_mul_mat4(vec4_xy(x, y), top);
+  sgl_v2f(v.x, v.y);
 }
 
 void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
@@ -340,13 +345,11 @@ void draw_line_circle(Renderer2D *ren, float x, float y, float radius) {
   sgl_begin_line_strip();
 
   renderer_apply_color(ren);
-  Matrix4 top = *renderer_peek_matrix(ren);
   constexpr float tau = MATH_PI * 2.0f;
   for (float i = 0; i <= tau + 0.001f; i += tau / 36.0f) {
     float c = cosf(i) * radius;
     float s = sinf(i) * radius;
-    Vector4 pos = vec4_mul_mat4(vec4_xy(x + c, y + s), top);
-    sgl_v2f(pos.x, pos.y);
+    renderer_push_xy(ren, x + c, y + s);
   }
 
   sgl_end();
@@ -358,11 +361,8 @@ void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1) {
 
   renderer_apply_color(ren);
 
-  Matrix4 top = *renderer_peek_matrix(ren);
-  Vector4 a = vec4_mul_mat4(vec4_xy(x0, y0), top);
-  Vector4 b = vec4_mul_mat4(vec4_xy(x1, y1), top);
-  sgl_v2f(a.x, b.y);
-  sgl_v2f(b.x, b.y);
+  renderer_push_xy(ren, x0, y0);
+  renderer_push_xy(ren, x1, y1);
 
   sgl_end();
 }

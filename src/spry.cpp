@@ -37,6 +37,9 @@ App *g_app;
 
 #include "main.cpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+
 #include "deps/box2d/collision/b2_broad_phase.cpp"
 #include "deps/box2d/collision/b2_chain_shape.cpp"
 #include "deps/box2d/collision/b2_circle_shape.cpp"
@@ -82,6 +85,8 @@ App *g_app;
 #include "deps/box2d/dynamics/b2_world.cpp"
 #include "deps/box2d/dynamics/b2_world_callbacks.cpp"
 #include "deps/box2d/rope/b2_rope.cpp"
+
+#pragma clang diagnostic pop
 
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "deps/cute_aseprite.h"
