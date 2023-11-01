@@ -46,16 +46,16 @@ UTEST(prelude, split_lines_non_null_term) {
 
 UTEST(array, empty) {
   Array<int> arr = {};
-  drop(&arr);
+  array_trash(&arr);
 }
 
 UTEST(array, push) {
   Array<int> arr = {};
-  defer(drop(&arr));
+  defer(array_trash(&arr));
 
-  push(&arr, 1);
-  push(&arr, 2);
-  push(&arr, 3);
+  array_push(&arr, 1);
+  array_push(&arr, 2);
+  array_push(&arr, 3);
 
   ASSERT_EQ(arr.len, 3);
 
@@ -66,10 +66,10 @@ UTEST(array, push) {
 
 UTEST(array, pop) {
   Array<int> arr = {};
-  defer(drop(&arr));
+  defer(array_trash(&arr));
 
-  push(&arr, 1);
-  push(&arr, 2);
+  array_push(&arr, 1);
+  array_push(&arr, 2);
 
   ASSERT_EQ(arr.len, 2);
 
@@ -79,10 +79,10 @@ UTEST(array, pop) {
 
 UTEST(array, begin_end) {
   Array<int> arr = {};
-  defer(drop(&arr));
+  defer(array_trash(&arr));
 
   for (i32 i = 0; i < 1000; i++) {
-    push(&arr, i);
+    array_push(&arr, i);
   }
 
   i32 i = 0;
@@ -97,12 +97,12 @@ UTEST(array, begin_end) {
 
 UTEST(hash_map, empty) {
   HashMap<String> map;
-  drop(&map);
+  hashmap_trash(&map);
 }
 
 UTEST(hash_map, insert) {
   HashMap<String> map;
-  defer(drop(&map));
+  defer(hashmap_trash(&map));
 
   map[10] = "ten"_str;
   map[20] = "twenty"_str;
@@ -111,43 +111,43 @@ UTEST(hash_map, insert) {
 
 UTEST(hash_map, lookup) {
   HashMap<String> map;
-  defer(drop(&map));
+  defer(hashmap_trash(&map));
 
   map[10] = "ten"_str;
   map[20] = "twenty"_str;
   map[30] = "thirty"_str;
 
-  String *ten = get(&map, 10);
+  String *ten = hashmap_get(&map, 10);
   ASSERT_NE(ten, nullptr);
   ASSERT_STREQ(ten->data, "ten");
 
-  String *twenty = get(&map, 20);
+  String *twenty = hashmap_get(&map, 20);
   ASSERT_NE(twenty, nullptr);
   ASSERT_STREQ(twenty->data, "twenty");
 
-  String *thirty = get(&map, 30);
+  String *thirty = hashmap_get(&map, 30);
   ASSERT_NE(thirty, nullptr);
   ASSERT_STREQ(thirty->data, "thirty");
 }
 
 UTEST(hash_map, unset) {
   HashMap<String> map;
-  defer(drop(&map));
+  defer(hashmap_trash(&map));
 
   map[1] = "one"_str;
   map[2] = "two"_str;
   map[3] = "three"_str;
 
-  unset(&map, 2);
+  hashmap_unset(&map, 2);
 
-  ASSERT_NE(get(&map, 1), nullptr);
-  ASSERT_EQ(get(&map, 2), nullptr);
-  ASSERT_NE(get(&map, 3), nullptr);
+  ASSERT_NE(hashmap_get(&map, 1), nullptr);
+  ASSERT_EQ(hashmap_get(&map, 2), nullptr);
+  ASSERT_NE(hashmap_get(&map, 3), nullptr);
 }
 
 UTEST(hash_map, iterator) {
   HashMap<String> map;
-  defer(drop(&map));
+  defer(hashmap_trash(&map));
 
   String one = "one"_str;
   String two = "two"_str;
@@ -173,14 +173,14 @@ UTEST(hash_map, drop_arrays) {
     for (auto [k, v] : map) {
       drop(v);
     }
-    drop(&map);
+    array_trash(&map);
   });
 
   for (u64 i = 1; i <= 100; i++) {
     Array<u64> arr;
-    reserve(&arr, i);
+    array_reserve(&arr, i);
     for (u64 j = 0; j < i; j++) {
-      push(&arr, j);
+      array_push(&arr, j);
     }
     map[i] = arr;
   }

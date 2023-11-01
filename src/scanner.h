@@ -10,5 +10,5 @@ struct Scanner {
 };
 
 Scanner make_scanner(String str);
-String next_string(Scanner *s);
-i32 next_int(Scanner *s);
+String scan_next_string(Scanner *s);
+i32 scan_next_int(Scanner *s);

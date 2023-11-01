@@ -63,10 +63,10 @@ void renderer_rotate(Renderer2D *ren, float angle);
 void renderer_scale(Renderer2D *ren, float x, float y);
 void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex);
 
-void draw(Renderer2D *ren, Image *img, DrawDescription *desc);
-void draw(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc);
-void draw(Renderer2D *ren, FontFamily *font, float size, float x, float y, String text);
-void draw(Renderer2D *ren, Tilemap *tm);
+void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc);
+void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc);
+void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y, String text);
+void draw_tilemap(Renderer2D *ren, Tilemap *tm);
 void draw_filled_rect(Renderer2D *ren, RectDescription *desc);
 void draw_line_rect(Renderer2D *ren, RectDescription *desc);
 void draw_line_circle(Renderer2D *ren, float x, float y, float radius);

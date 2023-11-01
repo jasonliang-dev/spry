@@ -17,15 +17,15 @@ bool atlas_load(Atlas *atlas, Archive *ar, String filepath) {
     switch (line.data[0]) {
     case 'a': {
       StringBuilder sb = string_builder_make();
-      defer(drop(&sb));
+      defer(string_builder_trash(&sb));
 
       Scanner scan = make_scanner(line);
-      next_string(&scan); // discard 'a'
-      String filename = next_string(&scan);
+      scan_next_string(&scan); // discard 'a'
+      String filename = scan_next_string(&scan);
 
-      relative_path(&sb, filepath, filename);
+      string_builder_swap_filename(&sb, filepath, filename);
 
-      bool ok = image_load(&img, ar, as_string(&sb));
+      bool ok = image_load(&img, ar, string_builder_as_string(&sb));
       if (!ok) {
         return false;
       }
@@ -37,20 +37,20 @@ bool atlas_load(Atlas *atlas, Archive *ar, String filepath) {
       }
 
       Scanner scan = make_scanner(line);
-      next_string(&scan); // discard 's'
-      String name = next_string(&scan);
-      next_string(&scan); // discard origin x
-      next_string(&scan); // discard origin y
-      i32 x = next_int(&scan);
-      i32 y = next_int(&scan);
-      i32 width = next_int(&scan);
-      i32 height = next_int(&scan);
-      i32 padding = next_int(&scan);
-      i32 trimmed = next_int(&scan);
-      next_int(&scan); // discard trim x
-      next_int(&scan); // discard trim y
-      i32 trim_width = next_int(&scan);
-      i32 trim_height = next_int(&scan);
+      scan_next_string(&scan); // discard 's'
+      String name = scan_next_string(&scan);
+      scan_next_string(&scan); // discard origin x
+      scan_next_string(&scan); // discard origin y
+      i32 x = scan_next_int(&scan);
+      i32 y = scan_next_int(&scan);
+      i32 width = scan_next_int(&scan);
+      i32 height = scan_next_int(&scan);
+      i32 padding = scan_next_int(&scan);
+      i32 trimmed = scan_next_int(&scan);
+      scan_next_int(&scan); // discard trim x
+      scan_next_int(&scan); // discard trim y
+      i32 trim_width = scan_next_int(&scan);
+      i32 trim_height = scan_next_int(&scan);
 
       AtlasImage atlas_img = {};
       atlas_img.img = img;
@@ -88,12 +88,12 @@ bool atlas_load(Atlas *atlas, Archive *ar, String filepath) {
   return true;
 }
 
-void drop(Atlas *atlas) {
-  drop(&atlas->by_name);
-  drop(&atlas->img);
+void atlas_trash(Atlas *atlas) {
+  hashmap_trash(&atlas->by_name);
+  image_trash(&atlas->img);
 }
 
 AtlasImage *atlas_get(Atlas *atlas, String name) {
   u64 key = fnv1a(name);
-  return get(&atlas->by_name, key);
+  return hashmap_get(&atlas->by_name, key);
 }

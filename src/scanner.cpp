@@ -38,7 +38,7 @@ static void skip_whitespace(Scanner *s) {
   }
 }
 
-String next_string(Scanner *s) {
+String scan_next_string(Scanner *s) {
   skip_whitespace(s);
   s->pos = s->end;
 
@@ -53,7 +53,7 @@ String next_string(Scanner *s) {
   return {&s->data[s->pos], s->end - s->pos};
 }
 
-i32 next_int(Scanner *s) {
+i32 scan_next_int(Scanner *s) {
   skip_whitespace(s);
   s->pos = s->end;
 

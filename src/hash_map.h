@@ -35,13 +35,13 @@ template <typename T> struct HashMap {
   T &operator[](u64 key);
 };
 
-template <typename T> void drop(HashMap<T> *map) {
+template <typename T> void hashmap_trash(HashMap<T> *map) {
   mem_free(map->keys);
   mem_free(map->values);
   mem_free(map->kinds);
 }
 
-template <typename T> u64 find_entry(HashMap<T> *map, u64 key) {
+template <typename T> u64 hashmap_find_entry(HashMap<T> *map, u64 key) {
   u64 index = key & (map->capacity - 1);
   u64 tombstone = (u64)-1;
   while (true) {
@@ -59,7 +59,7 @@ template <typename T> u64 find_entry(HashMap<T> *map, u64 key) {
 }
 
 // capacity must be a power of 2
-template <typename T> void reserve(HashMap<T> *old, u64 capacity) {
+template <typename T> void hashmap_reserve(HashMap<T> *old, u64 capacity) {
   if (capacity <= old->capacity) {
     return;
   }
@@ -83,7 +83,7 @@ template <typename T> void reserve(HashMap<T> *old, u64 capacity) {
       continue;
     }
 
-    u64 index = find_entry(&map, old->keys[i]);
+    u64 index = hashmap_find_entry(&map, old->keys[i]);
     map.keys[index] = old->keys[i];
     map.values[index] = old->values[i];
     map.kinds[index] = HashMapKind_Some;
@@ -96,21 +96,21 @@ template <typename T> void reserve(HashMap<T> *old, u64 capacity) {
   *old = map;
 }
 
-template <typename T> T *get(HashMap<T> *map, u64 key) {
+template <typename T> T *hashmap_get(HashMap<T> *map, u64 key) {
   if (map->load == 0) {
     return nullptr;
   }
 
-  u64 index = find_entry(map, key);
+  u64 index = hashmap_find_entry(map, key);
   return map->kinds[index] == HashMapKind_Some ? &map->values[index] : nullptr;
 }
 
-template <typename T> bool get(HashMap<T> *map, u64 key, T **value) {
+template <typename T> bool hashmap_index(HashMap<T> *map, u64 key, T **value) {
   if (map->load >= map->capacity * HASH_MAP_LOAD_FACTOR) {
-    reserve(map, map->capacity > 0 ? map->capacity * 2 : 16);
+    hashmap_reserve(map, map->capacity > 0 ? map->capacity * 2 : 16);
   }
 
-  u64 index = find_entry(map, key);
+  u64 index = hashmap_find_entry(map, key);
   bool exists = map->kinds[index] == HashMapKind_Some;
   if (map->kinds[index] == HashMapKind_None) {
     map->load++;
@@ -125,22 +125,22 @@ template <typename T> bool get(HashMap<T> *map, u64 key, T **value) {
 
 template <typename T> T &HashMap<T>::operator[](u64 key) {
   T *value;
-  get(this, key, &value);
+  hashmap_index(this, key, &value);
   return *value;
 }
 
-template <typename T> void unset(HashMap<T> *map, u64 key) {
+template <typename T> void hashmap_unset(HashMap<T> *map, u64 key) {
   if (map->load == 0) {
     return;
   }
 
-  u64 index = find_entry(map, key);
+  u64 index = hashmap_find_entry(map, key);
   if (map->kinds[index] != HashMapKind_None) {
     map->kinds[index] = HashMapKind_Tombstone;
   }
 }
 
-template <typename T> void clear(HashMap<T> *map) {
+template <typename T> void hashmap_clear(HashMap<T> *map) {
   memset(map->keys, 0, sizeof(u64) * map->capacity);
   memset(map->values, 0, sizeof(T) * map->capacity);
   memset(map->kinds, 0, sizeof(HashMapKind) * map->capacity);

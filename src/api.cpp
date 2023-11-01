@@ -27,7 +27,7 @@ static bool get_asset(String filepath, Asset **out) {
   Asset *asset = nullptr;
   u64 key = fnv1a(filepath);
 
-  bool ok = get(&g_app->assets, key, &asset);
+  bool ok = hashmap_index(&g_app->assets, key, &asset);
   if (!ok) {
     asset->name = to_cstr(filepath).data;
     asset->hash = key;
@@ -238,7 +238,7 @@ static int mt_image_draw(lua_State *L) {
   u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
   Image img = g_app->assets[*udata].image;
   DrawDescription dd = luax_draw_description(L, 2);
-  draw(&g_app->renderer, &img, &dd);
+  draw_image(&g_app->renderer, &img, &dd);
   return 0;
 }
 
@@ -275,7 +275,7 @@ static int mt_font_gc(lua_State *L) {
   FontFamily *font = *udata;
 
   if (font != g_app->default_font) {
-    drop(font);
+    font_trash(font);
     mem_free(font);
   }
   return 0;
@@ -303,7 +303,7 @@ static int mt_font_draw(lua_State *L) {
   lua_Number y = luaL_optnumber(L, 4, 0);
   lua_Number size = luaL_optnumber(L, 5, 12);
 
-  draw(&g_app->renderer, font, (u64)size, (float)x, (float)y, text);
+  draw_font(&g_app->renderer, font, (u64)size, (float)x, (float)y, text);
   return 0;
 }
 
@@ -324,7 +324,7 @@ static int open_mt_font(lua_State *L) {
 static int mt_audio_gc(lua_State *L) {
   i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
   if (*udata != -1) {
-    drop(&g_app->audio_sources, *udata);
+    audio_wave_trash(&g_app->audio_sources, *udata);
     *udata = -1;
   }
   return 0;
@@ -376,7 +376,7 @@ static int mt_sprite_renderer_draw(lua_State *L) {
       (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
   DrawDescription dd = luax_draw_description(L, 2);
 
-  draw(&g_app->renderer, sr, &dd);
+  draw_sprite(&g_app->renderer, sr, &dd);
   return 0;
 }
 
@@ -440,7 +440,7 @@ static int mt_atlas_image_draw(lua_State *L) {
   dd.u1 = atlas_img->u1;
   dd.v1 = atlas_img->v1;
 
-  draw(&g_app->renderer, &atlas_img->img, &dd);
+  draw_image(&g_app->renderer, &atlas_img->img, &dd);
   return 0;
 }
 
@@ -472,7 +472,7 @@ static int open_mt_atlas_image(lua_State *L) {
 
 static int mt_atlas_gc(lua_State *L) {
   Atlas *atlas = (Atlas *)luaL_checkudata(L, 1, "mt_atlas");
-  drop(atlas);
+  atlas_trash(atlas);
   return 0;
 }
 
@@ -505,7 +505,7 @@ static int open_mt_atlas(lua_State *L) {
 static int mt_tilemap_draw(lua_State *L) {
   u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   Tilemap *tm = &g_app->assets[*udata].tilemap;
-  draw(&g_app->renderer, tm);
+  draw_tilemap(&g_app->renderer, tm);
   return 0;
 }
 
@@ -549,13 +549,13 @@ static int mt_tilemap_make_collision(lua_State *L) {
   Tilemap *tm = &g_app->assets[*udata].tilemap;
 
   Array<TilemapInt> walls = {};
-  defer(drop(&walls));
+  defer(array_trash(&walls));
 
   lua_Unsigned n = lua_rawlen(L, 4);
   for (i32 i = 1; i <= n; i++) {
     lua_rawgeti(L, 4, i);
     lua_Number tile = luaL_checknumber(L, -1);
-    push(&walls, (TilemapInt)tile);
+    array_push(&walls, (TilemapInt)tile);
     lua_pop(L, 1);
   }
 
@@ -570,7 +570,7 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
 
   Tilemap *tm = &g_app->assets[*udata].tilemap;
 
-  b2Body **body = get(&tm->bodies, fnv1a(name));
+  b2Body **body = hashmap_get(&tm->bodies, fnv1a(name));
   if (body != nullptr) {
     draw_fixtures_for_body(*body, physics->meter);
   }
@@ -701,14 +701,14 @@ static int b2_body_unref(lua_State *L, bool destroy) {
 
     if (pud->ref_count == 0 || destroy) {
       Array<PhysicsUserData *> puds = {};
-      defer(drop(&puds));
+      defer(array_trash(&puds));
 
       for (b2Fixture *f = physics->body->GetFixtureList(); f != nullptr;
            f = f->GetNext()) {
         PhysicsUserData *p = (PhysicsUserData *)f->GetUserData().pointer;
-        push(&puds, p);
+        array_push(&puds, p);
       }
-      push(&puds, pud);
+      array_push(&puds, pud);
 
       physics->world->DestroyBody(physics->body);
       physics->body = nullptr;

@@ -13,9 +13,9 @@ template <typename T> struct Array {
   }
 };
 
-template <typename T> void drop(Array<T> *arr) { mem_free(arr->data); }
+template <typename T> void array_trash(Array<T> *arr) { mem_free(arr->data); }
 
-template <typename T> void reserve(Array<T> *arr, u64 capacity) {
+template <typename T> void array_reserve(Array<T> *arr, u64 capacity) {
   if (capacity > arr->capacity) {
     size_t bytes = sizeof(T) * capacity;
     T *buf = (T *)mem_alloc(bytes);
@@ -26,19 +26,19 @@ template <typename T> void reserve(Array<T> *arr, u64 capacity) {
   }
 }
 
-template <typename T> void resize(Array<T> *arr, u64 len) {
-  reserve(arr, len);
+template <typename T> void array_resize(Array<T> *arr, u64 len) {
+  array_reserve(arr, len);
   arr->len = len;
 }
 
-template <typename T> void push(Array<T> *arr, T item) {
+template <typename T> void array_push(Array<T> *arr, T item) {
   if (arr->len == arr->capacity) {
-    reserve(arr, arr->capacity * 2 + 8);
+    array_reserve(arr, arr->capacity * 2 + 8);
   }
   arr->data[arr->len++] = item;
 }
 
-template <typename T> void pop(Array<T> *arr) {
+template <typename T> void array_pop(Array<T> *arr) {
   assert(arr->len != 0);
   arr->len--;
 }

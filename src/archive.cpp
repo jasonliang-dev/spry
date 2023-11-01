@@ -57,13 +57,13 @@ static bool list_all_files(Array<String> *files, String path) {
 
     if (strcmp(file.name, ".") != 0 && strcmp(file.name, "..") != 0) {
       if (file.is_dir) {
-        StringBuilder sb = format("%s%s/", path.data, file.name);
-        defer(drop(&sb));
+        StringBuilder sb = str_format("%s%s/", path.data, file.name);
+        defer(string_builder_trash(&sb));
 
-        list_all_files(files, as_string(&sb));
+        list_all_files(files, string_builder_as_string(&sb));
       } else {
-        StringBuilder sb = format("%s%s", path.data, file.name);
-        push(files, as_string(&sb));
+        StringBuilder sb = str_format("%s%s", path.data, file.name);
+        array_push(files, string_builder_as_string(&sb));
       }
     }
 
@@ -180,7 +180,7 @@ static bool zip_archive_list_all_files(Archive *self, Array<String> *files) {
     }
 
     String name = {file_stat.m_filename, strlen(file_stat.m_filename)};
-    push(files, to_cstr(name));
+    array_push(files, to_cstr(name));
   }
 
   return true;

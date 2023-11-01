@@ -139,7 +139,7 @@ static void frame() {
   i32 channels = saudio_channels();
   i32 samples = frames * channels;
   if (g_app->audio_buffer.capacity < samples) {
-    reserve(&g_app->audio_buffer, samples);
+    array_reserve(&g_app->audio_buffer, samples);
   }
 
   if (samples > 0) {
@@ -180,16 +180,16 @@ static void frame() {
     float y = 10;
     u64 font_size = 16;
 
-    draw(&g_app->renderer, g_app->default_font, font_size, x, y,
+    draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
          "oh no! there's an error! :(");
     y += font_size * 2;
 
-    draw(&g_app->renderer, g_app->default_font, font_size, x, y,
+    draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
          g_app->fatal_error);
     y += font_size * 2;
 
     if (g_app->traceback.data) {
-      draw(&g_app->renderer, g_app->default_font, font_size, x, y,
+      draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
            g_app->traceback);
     }
   }
@@ -255,15 +255,15 @@ static void frame() {
       bool ok = false;
       switch (v->kind) {
       case AssetKind_Image:
-        drop(&v->image);
+        image_trash(&v->image);
         ok = image_load(&v->image, &g_app->archive, v->name);
         break;
       case AssetKind_Sprite:
-        drop(&v->sprite);
+        sprite_trash(&v->sprite);
         ok = sprite_load(&v->sprite, &g_app->archive, v->name);
         break;
       case AssetKind_Tilemap:
-        drop(&v->tilemap);
+        tilemap_trash(&v->tilemap);
         ok = tilemap_load(&v->tilemap, &g_app->archive, v->name);
         break;
       case AssetKind_None:
@@ -271,9 +271,9 @@ static void frame() {
       }
 
       if (!ok) {
-        StringBuilder sb = format("failed to hot reload: %s", v->name);
-        defer(drop(&sb));
-        fatal_error(as_string(&sb));
+        StringBuilder sb = str_format("failed to hot reload: %s", v->name);
+        defer(string_builder_trash(&sb));
+        fatal_error(string_builder_as_string(&sb));
       } else {
         printf("reloaded: %s\n", v->name);
       }
@@ -285,17 +285,17 @@ static void cleanup() {
   for (auto [k, v] : g_app->modules) {
     mem_free(v->name);
   }
-  drop(&g_app->modules);
+  hashmap_trash(&g_app->modules);
 
   lua_close(L);
 
   saudio_shutdown();
 
-  drop(&g_app->audio_buffer);
-  drop(&g_app->audio_sources);
+  array_trash(&g_app->audio_buffer);
+  audio_sources_trash(&g_app->audio_sources);
 
   if (g_app->default_font_loaded) {
-    drop(g_app->default_font);
+    font_trash(g_app->default_font);
     mem_free(g_app->default_font);
   }
 
@@ -303,14 +303,14 @@ static void cleanup() {
     mem_free(v->name);
 
     switch (v->kind) {
-    case AssetKind_Image: drop(&v->image); break;
-    case AssetKind_Sprite: drop(&v->sprite); break;
-    case AssetKind_Tilemap: drop(&v->tilemap); break;
+    case AssetKind_Image: image_trash(&v->image); break;
+    case AssetKind_Sprite: sprite_trash(&v->sprite); break;
+    case AssetKind_Tilemap: tilemap_trash(&v->tilemap); break;
     case AssetKind_None:
     default: break;
     }
   }
-  drop(&g_app->assets);
+  hashmap_trash(&g_app->assets);
 
   sgl_destroy_pipeline(g_pipeline);
   sgl_shutdown();
@@ -348,7 +348,7 @@ static i32 require_lua_script(Archive *ar, String filepath) {
     return LUA_REFNIL;
   }
 
-  Module *module = get(&g_app->modules, fnv1a(filepath));
+  Module *module = hashmap_get(&g_app->modules, fnv1a(filepath));
   if (module != nullptr) {
     bool needs_file_load = false;
     if (g_app->hot_reload_enabled) {
@@ -370,10 +370,10 @@ static i32 require_lua_script(Archive *ar, String filepath) {
   bool ok = ar->read_entire_file(ar, &contents, filepath);
   if (!ok) {
     StringBuilder sb = string_builder_make();
-    defer(drop(&sb));
-    concat(&sb, "failed to read file: ");
-    concat(&sb, filepath);
-    fatal_error(as_string(&sb));
+    defer(string_builder_trash(&sb));
+    string_builder_concat(&sb, "failed to read file: ");
+    string_builder_concat(&sb, filepath);
+    fatal_error(string_builder_as_string(&sb));
     return LUA_REFNIL;
   }
   defer(mem_free(contents.data));
@@ -566,7 +566,7 @@ static void load_all_lua_scripts() {
     for (String str : files) {
       mem_free(str.data);
     }
-    drop(&files);
+    array_trash(&files);
   });
 
   bool ok = g_app->archive.list_all_files(&g_app->archive, &files);
@@ -599,10 +599,10 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   if (mounted) {
     if (!files_ok) {
-      StringBuilder sb = format("failed to load: %s", argv[1]);
-      defer(drop(&sb));
+      StringBuilder sb = str_format("failed to load: %s", argv[1]);
+      defer(string_builder_trash(&sb));
 
-      fatal_error(as_string(&sb));
+      fatal_error(string_builder_as_string(&sb));
     } else {
       load_all_lua_scripts();
     }

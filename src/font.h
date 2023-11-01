@@ -20,7 +20,7 @@ struct FontFamily {
 
 bool font_load(FontFamily *font, Archive *ar, String filepath);
 void font_load_default(FontFamily *font);
-void drop(FontFamily *font);
+void font_trash(FontFamily *font);
 stbtt_aligned_quad font_quad(FontFamily *font, u32 *img, float *x, float *y,
                              float size, i32 ch);
 float font_width(FontFamily *font, float size, String text);

@@ -17,5 +17,5 @@ struct Atlas {
 };
 
 bool atlas_load(Atlas *atlas, Archive *ar, String filepath);
-void drop(Atlas *atlas);
+void atlas_trash(Atlas *atlas);
 AtlasImage *atlas_get(Atlas *atlas, String name);

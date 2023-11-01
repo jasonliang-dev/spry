@@ -18,11 +18,11 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   i32 rect = ase->w * ase->h * 4;
 
   Array<SpriteFrame> frames = {};
-  reserve(&frames, ase->frame_count);
+  array_reserve(&frames, ase->frame_count);
 
   Array<char> pixels = {};
-  reserve(&pixels, ase->frame_count * rect);
-  defer(drop(&pixels));
+  array_reserve(&pixels, ase->frame_count * rect);
+  defer(array_trash(&pixels));
 
   for (i32 i = 0; i < ase->frame_count; i++) {
     ase_frame_t &frame = ase->frames[i];
@@ -35,7 +35,7 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
     sf.u1 = 1;
     sf.v1 = (float)(i + 1) / ase->frame_count;
 
-    push(&frames, sf);
+    array_push(&frames, sf);
     memcpy(pixels.data + (i * rect), &frame.pixels[0].r, rect);
   }
 
@@ -55,7 +55,7 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   img.height = desc.height;
 
   HashMap<SpriteLoop> by_tag;
-  reserve(&by_tag, hash_map_reserve_size((u64)ase->tag_count));
+  hashmap_reserve(&by_tag, hash_map_reserve_size((u64)ase->tag_count));
 
   for (i32 i = 0; i < ase->tag_count; i++) {
     ase_tag_t &tag = ase->tags[i];
@@ -63,7 +63,7 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
     SpriteLoop loop = {};
 
     for (i32 j = tag.from_frame; j <= tag.to_frame; j++) {
-      push(&loop.indices, j);
+      array_push(&loop.indices, j);
     }
 
     u64 key = fnv1a(tag.name, strlen(tag.name));
@@ -83,13 +83,13 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   return true;
 }
 
-void drop(Sprite *spr) {
-  drop(&spr->frames);
+void sprite_trash(Sprite *spr) {
+  array_trash(&spr->frames);
 
   for (auto [k, v] : spr->by_tag) {
-    drop(&v->indices);
+    array_trash(&v->indices);
   }
-  drop(&spr->by_tag);
+  hashmap_trash(&spr->by_tag);
 }
 
 void sprite_renderer_play(SpriteRenderer *sr, String tag) {
@@ -103,7 +103,7 @@ void sprite_renderer_update(SpriteRenderer *sr, float dt) {
   u64 len = 0;
 
   Sprite *sprite = &g_app->assets[sr->sprite].sprite;
-  SpriteLoop *loop = get(&sprite->by_tag, sr->loop);
+  SpriteLoop *loop = hashmap_get(&sprite->by_tag, sr->loop);
 
   if (loop != nullptr) {
     index = loop->indices[sr->current_frame];
@@ -131,7 +131,7 @@ void sprite_renderer_set_frame(SpriteRenderer *sr, i32 frame) {
   i32 len;
 
   Sprite *sprite = &g_app->assets[sr->sprite].sprite;
-  SpriteLoop *loop = get(&sprite->by_tag, sr->loop);
+  SpriteLoop *loop = hashmap_get(&sprite->by_tag, sr->loop);
 
   if (loop != nullptr) {
     len = loop->indices.len;

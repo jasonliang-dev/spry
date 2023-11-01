@@ -58,4 +58,4 @@ bool image_load(Image *image, Archive *ar, String filepath) {
   return true;
 }
 
-void drop(Image *image) { sg_destroy_image({image->id}); }
+void image_trash(Image *image) { sg_destroy_image({image->id}); }

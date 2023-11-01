@@ -73,7 +73,7 @@ inline i32 as_int(json_value_s *value) {
   String str = {(char *)num->number, num->number_size};
 
   Scanner scan = make_scanner(str);
-  return next_int(&scan);
+  return scan_next_int(&scan);
 }
 
 inline u64 hash(json_string_t *str) {

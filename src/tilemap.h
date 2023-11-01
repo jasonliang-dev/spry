@@ -58,7 +58,7 @@ struct Tilemap {
 };
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath);
-void drop(Tilemap *tm);
+void tilemap_trash(Tilemap *tm);
 
 class b2World;
 void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,

@@ -179,11 +179,11 @@ void font_load_default(FontFamily *font) {
   *font = f;
 }
 
-void drop(FontFamily *font) {
+void font_trash(FontFamily *font) {
   for (auto [k, v] : font->ranges) {
-    drop(&v->image);
+    image_trash(&v->image);
   }
-  drop(&font->ranges);
+  hashmap_trash(&font->ranges);
   mem_free(font->ttf.data);
 }
 
@@ -247,7 +247,7 @@ static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
 
 static FontRange *get_range(FontFamily *font, FontKey key) {
   u64 hash = *(u64 *)&key;
-  FontRange *range = get(&font->ranges, hash);
+  FontRange *range = hashmap_get(&font->ranges, hash);
   if (range == nullptr) {
     range = &font->ranges[hash];
     make_font_range(range, font, key);

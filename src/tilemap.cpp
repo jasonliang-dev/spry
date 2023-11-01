@@ -86,14 +86,14 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
       }
 
       StringBuilder sb = string_builder_make();
-      defer(drop(&sb));
+      defer(string_builder_trash(&sb));
 
-      relative_path(&sb, filepath, as_string(el->value));
+      string_builder_swap_filename(&sb, filepath, as_string(el->value));
 
-      String fullpath = as_string(&sb);
+      String fullpath = string_builder_as_string(&sb);
       u64 key = fnv1a(fullpath);
 
-      Image *img = get(images, key);
+      Image *img = hashmap_get(images, key);
       if (img != nullptr) {
         layer->image = *img;
       } else {
@@ -113,10 +113,10 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
       json_array_t *arr = as_array(el->value);
 
       Array<TilemapInt> grid = {};
-      reserve(&grid, arr->length);
+      array_reserve(&grid, arr->length);
 
       for (ArrayEl *el : arr) {
-        push(&grid, (TilemapInt)as_int(el->value));
+        array_push(&grid, (TilemapInt)as_int(el->value));
       }
 
       layer->int_grid = grid;
@@ -131,7 +131,7 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
       json_array_t *arr = as_array(el->value);
 
       Array<TilemapTile> tiles = {};
-      reserve(&tiles, arr->length);
+      array_reserve(&tiles, arr->length);
 
       for (ArrayEl *el : arr) {
         TilemapTile tile = {};
@@ -139,7 +139,7 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
         if (!ok) {
           return false;
         }
-        push(&tiles, tile);
+        array_push(&tiles, tile);
       }
 
       layer->tiles = tiles;
@@ -149,7 +149,7 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
       json_array_t *arr = as_array(el->value);
 
       Array<TilemapEntity> entities = {};
-      reserve(&entities, arr->length);
+      array_reserve(&entities, arr->length);
 
       for (ArrayEl *el : arr) {
         TilemapEntity entity = {};
@@ -157,7 +157,7 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
         if (!ok) {
           return false;
         }
-        push(&entities, entity);
+        array_push(&entities, entity);
       }
 
       layer->entities = entities;
@@ -210,7 +210,7 @@ static bool level_from_json(TilemapLevel *level, json_object_t *value,
       json_array_t *arr = as_array(el->value);
 
       Array<TilemapLayer> layers = {};
-      reserve(&layers, arr->length);
+      array_reserve(&layers, arr->length);
 
       for (ArrayEl *el : arr) {
         TilemapLayer layer = {};
@@ -219,7 +219,7 @@ static bool level_from_json(TilemapLevel *level, json_object_t *value,
         if (!ok) {
           return false;
         }
-        push(&layers, layer);
+        array_push(&layers, layer);
       }
 
       level->layers = layers;
@@ -257,7 +257,7 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
       json_array_t *arr = as_array(el->value);
 
       Array<TilemapLevel> levels = {};
-      reserve(&levels, arr->length);
+      array_reserve(&levels, arr->length);
 
       for (ArrayEl *el : arr) {
         TilemapLevel level = {};
@@ -266,7 +266,7 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
         if (!ok) {
           return false;
         }
-        push(&levels, level);
+        array_push(&levels, level);
       }
 
       tilemap.levels = levels;
@@ -283,7 +283,7 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   return true;
 }
 
-void drop(Tilemap *tm) {
+void tilemap_trash(Tilemap *tm) {
   for (TilemapLevel &level : tm->levels) {
     for (TilemapLayer &layer : level.layers) {
       for (TilemapEntity &entity : layer.entities) {
@@ -291,23 +291,23 @@ void drop(Tilemap *tm) {
       }
 
       mem_free(layer.identifier.data);
-      drop(&layer.entities);
-      drop(&layer.tiles);
-      drop(&layer.int_grid);
+      array_trash(&layer.entities);
+      array_trash(&layer.tiles);
+      array_trash(&layer.int_grid);
     }
 
     mem_free(level.identifier.data);
     mem_free(level.iid.data);
-    drop(&level.layers);
+    array_trash(&level.layers);
   }
 
   for (auto [k, v] : tm->images) {
-    drop(v);
+    image_trash(v);
   }
 
-  drop(&tm->levels);
-  drop(&tm->images);
-  drop(&tm->bodies);
+  array_trash(&tm->levels);
+  hashmap_trash(&tm->images);
+  hashmap_trash(&tm->bodies);
 }
 
 static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
@@ -328,8 +328,8 @@ static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
   };
 
   Array<bool> filled = {};
-  defer(drop(&filled));
-  resize(&filled, layer->c_width * layer->c_height);
+  defer(array_trash(&filled));
+  array_resize(&filled, layer->c_width * layer->c_height);
   memset(filled.data, 0, layer->c_width * layer->c_height);
   for (i32 y = 0; y < layer->c_height; y++) {
     for (i32 x = 0; x < layer->c_width; x++) {

@@ -188,13 +188,13 @@ StringBuilder string_builder_make() {
   return sb;
 }
 
-void drop(StringBuilder *sb) {
+void string_builder_trash(StringBuilder *sb) {
   if (sb->data != s_empty) {
     mem_free(sb->data);
   }
 }
 
-void reserve(StringBuilder *sb, u64 capacity) {
+void string_builder_reserve(StringBuilder *sb, u64 capacity) {
   if (capacity > sb->capacity) {
     char *buf = (char *)mem_alloc(capacity);
     memset(buf, 0, capacity);
@@ -209,7 +209,7 @@ void reserve(StringBuilder *sb, u64 capacity) {
   }
 }
 
-void concat(StringBuilder *sb, String str) {
+void string_builder_concat(StringBuilder *sb, String str) {
   u64 desired = sb->len + str.len + 1;
   u64 capacity = sb->capacity;
 
@@ -219,7 +219,7 @@ void concat(StringBuilder *sb, String str) {
       growth = desired;
     }
 
-    reserve(sb, growth);
+    string_builder_reserve(sb, growth);
   }
 
   memcpy(&sb->data[sb->len], str.data, str.len);
@@ -227,26 +227,26 @@ void concat(StringBuilder *sb, String str) {
   sb->data[sb->len] = 0;
 }
 
-void clear(StringBuilder *sb) {
+void string_builder_clear(StringBuilder *sb) {
   sb->len = 0;
   if (sb->data != s_empty) {
     sb->data[0] = 0;
   }
 }
 
-void relative_path(StringBuilder *sb, String filepath, String file) {
-  clear(sb);
+void string_builder_swap_filename(StringBuilder *sb, String filepath, String file) {
+  string_builder_clear(sb);
 
   u64 slash = last_of(filepath, '/');
   if (slash != (u64)-1) {
     String path = substr(filepath, 0, slash + 1);
-    concat(sb, path);
+    string_builder_concat(sb, path);
   }
 
-  concat(sb, file);
+  string_builder_concat(sb, file);
 }
 
-StringBuilder format(const char *fmt, ...) {
+StringBuilder str_format(const char *fmt, ...) {
   StringBuilder sb = string_builder_make();
 
   va_list args;
@@ -256,7 +256,7 @@ StringBuilder format(const char *fmt, ...) {
 
   if (len > 0) {
     if (len + 1 >= sb.capacity) {
-      reserve(&sb, len + 1);
+      string_builder_reserve(&sb, len + 1);
     }
 
     va_start(args, fmt);

@@ -151,7 +151,7 @@ void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex) {
   sgl_v2f_t2f(d.x, d.y, tex.z, tex.y);
 }
 
-void draw(Renderer2D *ren, Image *img, DrawDescription *desc) {
+void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
   bool ok = renderer_push_matrix(ren);
   if (!ok) {
     return;
@@ -178,9 +178,9 @@ void draw(Renderer2D *ren, Image *img, DrawDescription *desc) {
   renderer_pop_matrix(ren);
 }
 
-void draw(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
+void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
   Sprite *spr = &g_app->assets[sr->sprite].sprite;
-  SpriteLoop *loop = get(&spr->by_tag, sr->loop);
+  SpriteLoop *loop = hashmap_get(&spr->by_tag, sr->loop);
 
   bool ok = renderer_push_matrix(ren);
   if (!ok) {
@@ -216,7 +216,7 @@ void draw(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
   renderer_pop_matrix(ren);
 }
 
-void draw(Renderer2D *ren, FontFamily *font, float size, float x, float y,
+void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
           String text) {
   float start_x = x;
   y += size;
@@ -247,7 +247,7 @@ void draw(Renderer2D *ren, FontFamily *font, float size, float x, float y,
   }
 }
 
-void draw(Renderer2D *ren, Tilemap *tm) {
+void draw_tilemap(Renderer2D *ren, Tilemap *tm) {
   sgl_enable_texture();
   renderer_apply_color(ren);
   for (TilemapLevel &level : tm->levels) {

@@ -31,7 +31,7 @@ struct Sprite {
 };
 
 bool sprite_load(Sprite *spr, Archive *ar, String filepath);
-void drop(Sprite *spr);
+void sprite_trash(Sprite *spr);
 void sprite_renderer_play(SpriteRenderer *sr, String tag);
 void sprite_renderer_update(SpriteRenderer *sr, float dt);
 SpriteFrame sprite_renderer_frame(SpriteRenderer *sr);

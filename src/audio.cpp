@@ -42,7 +42,7 @@ i32 audio_load(AudioSources *srcs, Archive *ar, String filepath) {
   wave.channels = 2;
   wave.sample_rate = rate;
 
-  push(&srcs->waves, wave);
+  array_push(&srcs->waves, wave);
   return srcs->waves.len - 1;
 }
 
@@ -106,10 +106,10 @@ void audio_play(AudioSources *srcs, i32 wave, float vol, bool loop) {
   src.index = wave;
   src.volume = vol;
   src.looping = loop;
-  push(&srcs->playing, src);
+  array_push(&srcs->playing, src);
 }
 
-void drop(AudioSources *srcs, i32 wave) {
+void audio_wave_trash(AudioSources *srcs, i32 wave) {
   Array<AudioWave> waves = srcs->waves;
   if (waves[wave].data != nullptr) {
     mem_free(waves[wave].data);
@@ -117,12 +117,12 @@ void drop(AudioSources *srcs, i32 wave) {
   }
 }
 
-void drop(AudioSources *srcs) {
+void audio_sources_trash(AudioSources *srcs) {
   for (AudioWave wave : srcs->waves) {
     if (wave.data != nullptr) {
       mem_free(wave.data);
     }
   }
-  drop(&srcs->waves);
-  drop(&srcs->playing);
+  array_trash(&srcs->waves);
+  array_trash(&srcs->playing);
 }

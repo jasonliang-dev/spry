@@ -60,16 +60,16 @@ struct StringBuilder {
 };
 
 StringBuilder string_builder_make();
-void drop(StringBuilder *sb);
-void reserve(StringBuilder *sb, u64 capacity);
-void concat(StringBuilder *sb, String str);
-void clear(StringBuilder *sb);
-void relative_path(StringBuilder *sb, String filepath, String file);
+void string_builder_trash(StringBuilder *sb);
+void string_builder_reserve(StringBuilder *sb, u64 capacity);
+void string_builder_concat(StringBuilder *sb, String str);
+void string_builder_clear(StringBuilder *sb);
+void string_builder_swap_filename(StringBuilder *sb, String filepath, String file);
 
 FORMAT_ARGS(1)
-StringBuilder format(const char *fmt, ...);
+StringBuilder str_format(const char *fmt, ...);
 
-inline String as_string(StringBuilder *sb) { return {sb->data, sb->len}; }
-inline void concat(StringBuilder *sb, char *cstr) {
-  concat(sb, {cstr, strlen(cstr)});
+inline String string_builder_as_string(StringBuilder *sb) { return {sb->data, sb->len}; }
+inline void string_builder_concat(StringBuilder *sb, char *cstr) {
+  string_builder_concat(sb, {cstr, strlen(cstr)});
 }
