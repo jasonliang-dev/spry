@@ -17,6 +17,7 @@
 #include "hash_map.h"
 #include "image.h"
 #include "luax.h"
+#include "os.h"
 #include "prelude.h"
 #include "sprite.h"
 #include "strings.h"
@@ -87,7 +88,7 @@ static void init() {
   g_pipeline = sgl_make_pipeline(sg_pipline);
 
   stm_setup();
-  g_app->time_begin = stm_now();
+  g_app->time.last = stm_now();
 
   renderer_setup(&g_app->renderer);
 
@@ -129,23 +130,126 @@ static void event(const sapp_event *e) {
   }
 }
 
-static i32 require_lua_script(Archive *ar, String filepath);
-static void frame() {
-  u64 time_now = stm_now();
-  g_app->delta_time = stm_sec(time_now - g_app->time_begin);
-  g_app->time_begin = time_now;
-
-  i32 frames = saudio_expect();
-  i32 channels = saudio_channels();
-  i32 samples = frames * channels;
-  if (g_app->audio_buffer.capacity < samples) {
-    array_reserve(&g_app->audio_buffer, samples);
+static i32 require_lua_script(Archive *ar, String filepath) {
+  if (g_app->error_mode) {
+    return LUA_REFNIL;
   }
 
-  if (samples > 0) {
-    audio_playback(&g_app->audio_sources, g_app->audio_buffer.data, frames,
-                   channels, g_app->master_volume);
-    saudio_push(g_app->audio_buffer.data, samples);
+  Module *module = hashmap_get(&g_app->modules, fnv1a(filepath));
+  if (module != nullptr) {
+    bool needs_file_load = false;
+    if (g_app->hot_reload_enabled) {
+      u64 modtime = os_file_modtime(module->name);
+      if (modtime > module->modtime) {
+        needs_file_load = true;
+      }
+    }
+
+    if (!needs_file_load) {
+      return module->ref;
+    }
+  }
+
+  String path = to_cstr(filepath);
+  defer(mem_free(path.data));
+
+  String contents;
+  bool ok = ar->read_entire_file(ar, &contents, filepath);
+  if (!ok) {
+    StringBuilder sb = string_builder_make();
+    defer(string_builder_trash(&sb));
+    string_builder_concat(&sb, "failed to read file: ");
+    string_builder_concat(&sb, filepath);
+    fatal_error(string_builder_as_string(&sb));
+    return LUA_REFNIL;
+  }
+  defer(mem_free(contents.data));
+
+  // [1] {}
+  lua_newtable(L);
+  i32 table_index = lua_gettop(L);
+
+  if (luaL_loadbuffer(L, contents.data, contents.len, path.data) != LUA_OK) {
+    fatal_error(luax_check_string(L, -1));
+    return LUA_REFNIL;
+  }
+
+  // [1] {}
+  // ...
+  // [n] any
+  if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {
+    lua_pop(L, 2);
+    return LUA_REFNIL;
+  }
+
+  // [1] {...}
+  i32 top = lua_gettop(L);
+  for (i32 i = 1; i <= top - table_index; i++) {
+    lua_seti(L, table_index, i);
+  }
+
+  if (module != nullptr) {
+    if (module->ref != LUA_REFNIL) {
+      luaL_unref(L, LUA_REGISTRYINDEX, module->ref);
+    }
+
+    module->modtime = os_file_modtime(module->name);
+    module->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    return module->ref;
+  } else {
+    Module m = {};
+    m.name = to_cstr(filepath).data;
+    m.modtime = os_file_modtime(m.name);
+    m.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    g_app->modules[fnv1a(filepath)] = m;
+    return m.ref;
+  }
+}
+
+static void frame() {
+  {
+    AppTime *time = &g_app->time;
+    u64 time_now = stm_now();
+    time->delta = stm_sec(time_now - time->last);
+    time->last = time_now;
+    time->accumulator += time->delta;
+
+    if (time->target_fps > 0) {
+      float target_step = 1.0f / (float)time->target_fps;
+
+      while (time->accumulator < target_step) {
+        u32 ms = (u32)(target_step - time->accumulator);
+        os_sleep(ms);
+
+        u64 time_now = stm_now();
+        float delta = stm_sec(time_now - time->last);
+        time->delta += delta;
+        time->last = time_now;
+        time->accumulator += delta;
+      }
+
+      while (time->accumulator >= 1.0f / (time->target_fps + 1)) {
+        time->accumulator -= 1.0f / (time->target_fps - 1);
+        if (time->accumulator < 0) {
+          time->accumulator = 0;
+        }
+      }
+    }
+  }
+
+  {
+    i32 frames = saudio_expect();
+    i32 channels = saudio_channels();
+    i32 samples = frames * channels;
+    if (g_app->audio_buffer.capacity < samples) {
+      array_reserve(&g_app->audio_buffer, samples);
+    }
+
+    if (samples > 0) {
+      audio_playback(&g_app->audio_sources, g_app->audio_buffer.data, frames,
+                     channels, g_app->master_volume);
+      saudio_push(g_app->audio_buffer.data, samples);
+    }
   }
 
   sg_pass_action pass = {};
@@ -181,16 +285,16 @@ static void frame() {
     u64 font_size = 16;
 
     draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
-         "oh no! there's an error! :(");
+              "oh no! there's an error! :(");
     y += font_size * 2;
 
     draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
-         g_app->fatal_error);
+              g_app->fatal_error);
     y += font_size * 2;
 
     if (g_app->traceback.data) {
       draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
-           g_app->traceback);
+                g_app->traceback);
     }
   }
 
@@ -198,7 +302,7 @@ static void frame() {
 
   if (!g_app->error_mode) {
     lua_getfield(L, -1, "timer_update");
-    lua_pushnumber(L, g_app->delta_time);
+    lua_pushnumber(L, g_app->time.delta);
     if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
       lua_pop(L, 1);
     }
@@ -206,7 +310,7 @@ static void frame() {
 
   if (!g_app->error_mode) {
     lua_getfield(L, -1, "frame");
-    lua_pushnumber(L, g_app->delta_time);
+    lua_pushnumber(L, g_app->time.delta);
     if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
       lua_pop(L, 1);
     }
@@ -236,7 +340,7 @@ static void frame() {
   g_app->scroll_x = 0;
   g_app->scroll_y = 0;
 
-  g_app->reload_time_elapsed += g_app->delta_time;
+  g_app->reload_time_elapsed += g_app->time.delta;
   if (g_app->hot_reload_enabled &&
       g_app->reload_time_elapsed > g_app->reload_interval) {
     g_app->reload_time_elapsed -= g_app->reload_interval;
@@ -246,7 +350,7 @@ static void frame() {
     }
 
     for (auto [k, v] : g_app->assets) {
-      u64 modtime = file_modtime(v->name);
+      u64 modtime = os_file_modtime(v->name);
       if (modtime <= v->modtime) {
         continue;
       }
@@ -341,82 +445,6 @@ static void cleanup() {
     printf("  %10llu bytes: %s:%d\n", info->size, info->file, info->line);
   }
 #endif
-}
-
-static i32 require_lua_script(Archive *ar, String filepath) {
-  if (g_app->error_mode) {
-    return LUA_REFNIL;
-  }
-
-  Module *module = hashmap_get(&g_app->modules, fnv1a(filepath));
-  if (module != nullptr) {
-    bool needs_file_load = false;
-    if (g_app->hot_reload_enabled) {
-      u64 modtime = file_modtime(module->name);
-      if (modtime > module->modtime) {
-        needs_file_load = true;
-      }
-    }
-
-    if (!needs_file_load) {
-      return module->ref;
-    }
-  }
-
-  String path = to_cstr(filepath);
-  defer(mem_free(path.data));
-
-  String contents;
-  bool ok = ar->read_entire_file(ar, &contents, filepath);
-  if (!ok) {
-    StringBuilder sb = string_builder_make();
-    defer(string_builder_trash(&sb));
-    string_builder_concat(&sb, "failed to read file: ");
-    string_builder_concat(&sb, filepath);
-    fatal_error(string_builder_as_string(&sb));
-    return LUA_REFNIL;
-  }
-  defer(mem_free(contents.data));
-
-  // [1] {}
-  lua_newtable(L);
-  i32 table_index = lua_gettop(L);
-
-  if (luaL_loadbuffer(L, contents.data, contents.len, path.data) != LUA_OK) {
-    fatal_error(luax_check_string(L, -1));
-    return LUA_REFNIL;
-  }
-
-  // [1] {}
-  // ...
-  // [n] any
-  if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {
-    lua_pop(L, 2);
-    return LUA_REFNIL;
-  }
-
-  // [1] {...}
-  i32 top = lua_gettop(L);
-  for (i32 i = 1; i <= top - table_index; i++) {
-    lua_seti(L, table_index, i);
-  }
-
-  if (module != nullptr) {
-    if (module->ref != LUA_REFNIL) {
-      luaL_unref(L, LUA_REGISTRYINDEX, module->ref);
-    }
-
-    module->modtime = file_modtime(module->name);
-    module->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    return module->ref;
-  } else {
-    Module m = {};
-    m.name = to_cstr(filepath).data;
-    m.modtime = file_modtime(m.name);
-    m.ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    g_app->modules[fnv1a(filepath)] = m;
-    return m.ref;
-  }
 }
 
 static int require_lua_script(lua_State *L) {
@@ -537,7 +565,7 @@ static void mount_files(int argc, char **argv, bool *mount_ok, bool *files_ok) {
   *mount_ok = true;
 #else
   if (argc == 1) {
-    String path = program_path();
+    String path = os_program_path();
 #ifdef DEBUG
     printf("program path: %s\n", path.data);
 #endif
@@ -624,6 +652,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   bool hot_reload = luax_boolean_field(L, "hot_reload", true);
   lua_Number reload_interval = luax_number_field(L, "reload_interval", 0.1);
   lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
+  lua_Number target_fps = luax_number_field(L, "target_fps", 240);
   lua_Number width = luax_number_field(L, "window_width", 800);
   lua_Number height = luax_number_field(L, "window_height", 600);
   String title = luax_string_field(L, "window_title", "Spry");
@@ -632,6 +661,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   g_app->hot_reload_enabled = g_app->hot_reload_enabled && hot_reload;
   g_app->reload_interval = reload_interval;
+  g_app->time.target_fps = target_fps;
 
   sapp_desc sapp = {};
   sapp.init_cb = init;

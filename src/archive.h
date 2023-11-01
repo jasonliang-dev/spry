@@ -16,6 +16,6 @@ struct Archive {
 bool load_filesystem_archive(Archive *ar, String mount);
 bool load_zip_archive(Archive *ar, String mount);
 void drop(Archive *ar);
-String program_dir();
-String program_path();
-u64 file_modtime(const char *filename);
+String os_program_dir();
+String os_program_path();
+u64 os_file_modtime(const char *filename);

@@ -1,19 +1,10 @@
 #include "archive.h"
 #include "deps/tinydir.h"
+#include "os.h"
 #include "prelude.h"
 #include "strings.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#if defined(_WIN32)
-#include <direct.h>
-#include <windows.h>
-#elif defined(__EMSCRIPTEN__)
-#include <unistd.h>
-#elif defined(__linux__) || defined(__unix__)
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
 
 static bool read_entire_file_raw(String *out, String filepath) {
   String path = to_cstr(filepath);
@@ -102,7 +93,7 @@ bool load_filesystem_archive(Archive *ar, String mount) {
   String path = to_cstr(mount);
   defer(mem_free(path.data));
 
-  if (chdir(path.data) != 0) {
+  if (os_change_dir(path.data) != 0) {
     return false;
   }
 
@@ -246,82 +237,4 @@ void drop(Archive *ar) {
     mz_zip_reader_end(&ar->zip);
     mem_free(ar->zip_contents.data);
   }
-}
-
-String program_dir() {
-  String str = program_path();
-  char *buf = str.data;
-
-  for (i32 i = (i32)str.len; i >= 0; i--) {
-    if (buf[i] == '/') {
-      buf[i + 1] = 0;
-      return {str.data, (u64)i + 1};
-    }
-  }
-
-  return str;
-}
-
-String program_path() {
-  static char s_buf[2048];
-
-#ifdef _WIN32
-  DWORD len = GetModuleFileNameA(NULL, s_buf, array_size(s_buf));
-
-  for (i32 i = 0; s_buf[i]; i++) {
-    if (s_buf[i] == '\\') {
-      s_buf[i] = '/';
-    }
-  }
-#endif
-
-#ifdef __linux__
-  i32 len = (i32)readlink("/proc/self/exe", s_buf, array_size(s_buf));
-#endif
-
-#ifdef __EMSCRIPTEN__
-  i32 len = 0;
-#endif
-
-  return {s_buf, (u64)len};
-}
-
-u64 file_modtime(const char *filename) {
-#ifdef _WIN32
-  HANDLE handle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
-                             OPEN_EXISTING, 0, NULL);
-
-  if (handle == INVALID_HANDLE_VALUE) {
-    return 0;
-  }
-  defer(CloseHandle(handle));
-
-  FILETIME create = {};
-  FILETIME access = {};
-  FILETIME write = {};
-  bool ok = GetFileTime(handle, &create, &access, &write);
-  if (!ok) {
-    return 0;
-  }
-
-  ULARGE_INTEGER time = {};
-  time.LowPart = write.dwLowDateTime;
-  time.HighPart = write.dwHighDateTime;
-
-  return time.QuadPart;
-#endif
-
-#if defined(__linux__) || defined(__unix__)
-  struct stat attrib = {};
-  i32 err = stat(filename, &attrib);
-  if (err == 0) {
-    return (u64)attrib.st_mtime;
-  } else {
-    return 0;
-  }
-#endif
-
-#ifdef __EMSCRIPTEN__
-  return 0;
-#endif
 }

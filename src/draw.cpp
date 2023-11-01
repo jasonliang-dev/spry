@@ -88,9 +88,8 @@ void renderer_translate(Renderer2D *ren, float x, float y) {
   top->sse[3] = _mm_add_ps(_mm_add_ps(xx, yy), _mm_add_ps(v2, v3));
 #else
   for (i32 i = 0; i < 4; i++) {
-    float xx = x * top->cols[0][i];
-    float yy = y * top->cols[1][i];
-    top->cols[3][i] = xx + yy + top->cols[2][i] + top->cols[3][i];
+    top->cols[3][i] = x * top->cols[0][i] + y * top->cols[1][i] +
+                      top->cols[2][i] + top->cols[3][i];
   }
 #endif
 }
@@ -217,7 +216,7 @@ void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
 }
 
 void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
-          String text) {
+               String text) {
   float start_x = x;
   y += size;
   sgl_enable_texture();

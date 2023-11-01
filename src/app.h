@@ -1,8 +1,8 @@
 #pragma once
 
 #include "audio.h"
-#include "font.h"
 #include "draw.h"
+#include "font.h"
 
 struct Module {
   char *name;
@@ -29,9 +29,15 @@ struct Asset {
   };
 };
 
+struct AppTime {
+  u64 last;
+  double delta;
+  double accumulator;
+  double target_fps;
+};
+
 struct App {
-  u64 time_begin;
-  double delta_time;
+  AppTime time;
 
   bool hot_reload_enabled;
   float reload_time_elapsed;

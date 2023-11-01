@@ -29,6 +29,7 @@ App *g_app;
 #include "font.cpp"
 #include "image.cpp"
 #include "luax.cpp"
+#include "os.cpp"
 #include "scanner.cpp"
 #include "sprite.cpp"
 #include "strings.cpp"

@@ -31,7 +31,7 @@ static bool get_asset(String filepath, Asset **out) {
   if (!ok) {
     asset->name = to_cstr(filepath).data;
     asset->hash = key;
-    asset->modtime = file_modtime(asset->name);
+    asset->modtime = os_file_modtime(asset->name);
   }
 
   *out = asset;
@@ -994,7 +994,7 @@ static int mt_b2_world_gc(lua_State *L) {
 
 static int mt_b2_world_step(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_world");
-  lua_Number dt = luaL_optnumber(L, 2, g_app->delta_time);
+  lua_Number dt = luaL_optnumber(L, 2, g_app->time.delta);
   lua_Integer vel_iters = luaL_optinteger(L, 3, 6);
   lua_Integer pos_iters = luaL_optinteger(L, 4, 2);
 
@@ -1118,7 +1118,7 @@ static int platform(lua_State *L) {
 }
 
 static int dt(lua_State *L) {
-  lua_pushnumber(L, g_app->delta_time);
+  lua_pushnumber(L, g_app->time.delta);
   return 1;
 }
 

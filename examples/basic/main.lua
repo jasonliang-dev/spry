@@ -1,5 +1,6 @@
 function spry.conf(t)
   t.swap_interval = 0
+  t.target_fps = 500
 end
 
 function spry.start()
