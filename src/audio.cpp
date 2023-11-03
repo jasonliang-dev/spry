@@ -5,7 +5,7 @@
 
 i32 audio_load(AudioSources *srcs, Archive *ar, String filepath) {
   String contents = {};
-  bool ok = ar->read_entire_file(ar, &contents, filepath);
+  bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
     return -1;
   }
@@ -95,7 +95,7 @@ void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels,
   }
 }
 
-void audio_play(AudioSources *srcs, i32 wave, float vol, bool loop) {
+i32 audio_play(AudioSources *srcs, i32 wave, float vol, bool loop) {
   if (vol > 1.0f) {
     vol = 1.0f;
   } else if (vol < 0.0f) {
@@ -107,6 +107,7 @@ void audio_play(AudioSources *srcs, i32 wave, float vol, bool loop) {
   src.volume = vol;
   src.looping = loop;
   array_push(&srcs->playing, src);
+  return (i32)(srcs->playing.len - 1);
 }
 
 void audio_wave_trash(AudioSources *srcs, i32 wave) {

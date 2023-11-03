@@ -6,7 +6,7 @@
 
 bool image_load(Image *image, Archive *ar, String filepath) {
   String contents = {};
-  bool ok = ar->read_entire_file(ar, &contents, filepath);
+  bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }

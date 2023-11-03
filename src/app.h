@@ -42,7 +42,7 @@ struct App {
   bool hot_reload_enabled;
   float reload_time_elapsed;
   float reload_interval;
-  Archive archive;
+  Archive *archive;
   HashMap<Module> modules;
 
   FontFamily *default_font;

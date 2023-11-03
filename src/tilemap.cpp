@@ -236,7 +236,7 @@ static void *json_parse_alloc(void *, size_t bytes) { return mem_alloc(bytes); }
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   String contents = {};
-  bool ok = ar->read_entire_file(ar, &contents, filepath);
+  bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }

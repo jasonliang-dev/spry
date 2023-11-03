@@ -73,6 +73,7 @@ static void init() {
   sgl_setup(sgl);
 
   saudio_desc saudio = {};
+  saudio.sample_rate = 44100;
   saudio.logger.func = slog_func;
   saudio.num_channels = 2;
   saudio.allocator.alloc = sokol_alloc;
@@ -154,7 +155,7 @@ static i32 require_lua_script(Archive *ar, String filepath) {
   defer(mem_free(path.data));
 
   String contents;
-  bool ok = ar->read_entire_file(ar, &contents, filepath);
+  bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
     StringBuilder sb = string_builder_make();
     defer(string_builder_trash(&sb));
@@ -349,7 +350,7 @@ static void frame() {
     g_app->reload_time_elapsed -= g_app->reload_interval;
 
     for (auto [k, v] : g_app->modules) {
-      require_lua_script(&g_app->archive, v->name);
+      require_lua_script(g_app->archive, v->name);
     }
 
     for (auto [k, v] : g_app->assets) {
@@ -363,15 +364,15 @@ static void frame() {
       switch (v->kind) {
       case AssetKind_Image:
         image_trash(&v->image);
-        ok = image_load(&v->image, &g_app->archive, v->name);
+        ok = image_load(&v->image, g_app->archive, v->name);
         break;
       case AssetKind_Sprite:
         sprite_trash(&v->sprite);
-        ok = sprite_load(&v->sprite, &g_app->archive, v->name);
+        ok = sprite_load(&v->sprite, g_app->archive, v->name);
         break;
       case AssetKind_Tilemap:
         tilemap_trash(&v->tilemap);
-        ok = tilemap_load(&v->tilemap, &g_app->archive, v->name);
+        ok = tilemap_load(&v->tilemap, g_app->archive, v->name);
         break;
       case AssetKind_None:
       default: ok = true; break;
@@ -423,7 +424,8 @@ static void cleanup() {
   sgl_shutdown();
   sg_shutdown();
 
-  drop(&g_app->archive);
+  g_app->archive->trash();
+  mem_free(g_app->archive);
 
   if (g_app->fatal_error.data != nullptr) {
     mem_free(g_app->fatal_error.data);
@@ -451,9 +453,9 @@ static void cleanup() {
 #endif
 }
 
-static int require_lua_script(lua_State *L) {
+static int spry_require_lua_script(lua_State *L) {
   String path = luax_check_string(L, 1);
-  i32 ref = require_lua_script(&g_app->archive, path);
+  i32 ref = require_lua_script(g_app->archive, path);
 
   if (ref != LUA_REFNIL) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
@@ -532,7 +534,7 @@ static void setup_lua() {
   lua_pushcfunction(L, luax_msgh);
 
   lua_getglobal(L, "spry");
-  lua_pushcfunction(L, require_lua_script);
+  lua_pushcfunction(L, spry_require_lua_script);
   lua_setfield(L, -2, "_require_lua_script");
   lua_pop(L, 1);
 
@@ -551,46 +553,36 @@ static void setup_lua() {
   }
 }
 
-static void mount_files(int argc, char **argv, bool *mounted, bool *files_ok,
-                        bool *can_hot_reload) {
-  bool archive_ok = false;
-
+static void mount_files(int argc, char **argv, bool *can_hot_reload) {
 #ifdef __EMSCRIPTEN__
   String mount_dir = web_mount_dir();
   defer(free(mount_dir.data));
 
   if (ends_with(mount_dir, ".zip")) {
     web_load_zip();
-    archive_ok = load_zip_archive(&g_app->archive, mount_dir);
+    g_app->archive = load_zip_archive(mount_dir);
   } else {
     web_load_files();
-    archive_ok = load_filesystem_archive(&g_app->archive, mount_dir);
+    g_app->archive = load_filesystem_archive(mount_dir);
   }
-
-  *mounted = true;
 #else
   if (argc == 1) {
     String path = os_program_path();
 #ifdef DEBUG
     printf("program path: %s\n", path.data);
 #endif
-    archive_ok = load_zip_archive(&g_app->archive, path);
-    *mounted = archive_ok;
+    g_app->archive = load_zip_archive(path);
   } else if (argc == 2) {
     String mount_dir = argv[1];
 
     if (ends_with(mount_dir, ".zip")) {
-      archive_ok = load_zip_archive(&g_app->archive, mount_dir);
+      g_app->archive = load_zip_archive(mount_dir);
     } else {
-      archive_ok = load_filesystem_archive(&g_app->archive, mount_dir);
+      g_app->archive = load_filesystem_archive(mount_dir);
       *can_hot_reload = true;
     }
-
-    *mounted = archive_ok;
   }
 #endif
-
-  *files_ok = archive_ok;
 }
 
 static void load_all_lua_scripts() {
@@ -602,7 +594,7 @@ static void load_all_lua_scripts() {
     array_trash(&files);
   });
 
-  bool ok = g_app->archive.list_all_files(&g_app->archive, &files);
+  bool ok = g_app->archive->list_all_files(&files);
   if (!ok) {
     panic("failed to list all files");
   }
@@ -615,10 +607,10 @@ static void load_all_lua_scripts() {
 
   for (String file : files) {
     if (file != "main.lua" && ends_with(file, ".lua")) {
-      require_lua_script(&g_app->archive, file);
+      require_lua_script(g_app->archive, file);
     }
   }
-  require_lua_script(&g_app->archive, "main.lua");
+  require_lua_script(g_app->archive, "main.lua");
 }
 
 sapp_desc sokol_main(int argc, char **argv) {
@@ -627,18 +619,16 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   setup_lua();
 
-  bool mounted = false, files_ok = false, can_hot_reload = false;
-  mount_files(argc, argv, &mounted, &files_ok, &can_hot_reload);
+  bool can_hot_reload = false;
+  mount_files(argc, argv, &can_hot_reload);
 
-  if (mounted) {
-    if (!files_ok) {
-      StringBuilder sb = str_format("failed to load: %s", argv[1]);
-      defer(string_builder_trash(&sb));
+  if (argc == 2 && g_app->archive == nullptr) {
+    StringBuilder sb = str_format("failed to load: %s", argv[1]);
+    defer(string_builder_trash(&sb));
 
-      fatal_error(string_builder_as_string(&sb));
-    } else {
-      load_all_lua_scripts();
-    }
+    fatal_error(string_builder_as_string(&sb));
+  } else {
+    load_all_lua_scripts();
   }
 
   lua_newtable(L);

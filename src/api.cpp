@@ -19,6 +19,7 @@
 #include "font.h"
 #include "image.h"
 #include "luax.h"
+#include "os.h"
 #include "prelude.h"
 #include "sprite.h"
 #include "tilemap.h"
@@ -1453,7 +1454,7 @@ static int spry_image_load(lua_State *L) {
   bool loaded = get_asset(str, &asset);
   if (!loaded) {
     asset->kind = AssetKind_Image;
-    bool ok = image_load(&asset->image, &g_app->archive, str);
+    bool ok = image_load(&asset->image, g_app->archive, str);
     if (!ok) {
       return 0;
     }
@@ -1467,7 +1468,7 @@ static int spry_font_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   FontFamily *font = (FontFamily *)mem_alloc(sizeof(FontFamily));
-  bool ok = font_load(font, &g_app->archive, str);
+  bool ok = font_load(font, g_app->archive, str);
   if (!ok) {
     return 0;
   }
@@ -1480,7 +1481,7 @@ static int spry_font_load(lua_State *L) {
 static int spry_audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  i64 index = audio_load(&g_app->audio_sources, &g_app->archive, str);
+  i64 index = audio_load(&g_app->audio_sources, g_app->archive, str);
   if (index == -1) {
     return 0;
   }
@@ -1509,7 +1510,7 @@ static int spry_sprite_load(lua_State *L) {
   bool loaded = get_asset(str, &asset);
   if (!loaded) {
     asset->kind = AssetKind_Sprite;
-    bool ok = sprite_load(&asset->sprite, &g_app->archive, str);
+    bool ok = sprite_load(&asset->sprite, g_app->archive, str);
     if (!ok) {
       return 0;
     }
@@ -1526,7 +1527,7 @@ static int spry_atlas_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Atlas atlas = {};
-  bool ok = atlas_load(&atlas, &g_app->archive, str);
+  bool ok = atlas_load(&atlas, g_app->archive, str);
   if (!ok) {
     return 0;
   }
@@ -1542,7 +1543,7 @@ static int spry_tilemap_load(lua_State *L) {
   bool loaded = get_asset(str, &asset);
   if (!loaded) {
     asset->kind = AssetKind_Tilemap;
-    bool ok = tilemap_load(&asset->tilemap, &g_app->archive, str);
+    bool ok = tilemap_load(&asset->tilemap, g_app->archive, str);
     if (!ok) {
       return 0;
     }

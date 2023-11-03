@@ -5,7 +5,7 @@
 
 bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   String contents;
-  bool ok = ar->read_entire_file(ar, &contents, filepath);
+  bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }

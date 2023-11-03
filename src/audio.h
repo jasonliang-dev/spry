@@ -25,6 +25,7 @@ struct AudioSources {
 i32 audio_load(AudioSources *srcs, Archive *ar, String filepath);
 void audio_playback(AudioSources *srcs, float *buf, i32 frames, i32 channels,
                     float master_volume);
-void audio_play(AudioSources *srcs, i32 wave, float vol, bool loop);
+i32 audio_play(AudioSources *srcs, i32 wave, float vol, bool loop);
+i32 audio_stop(AudioSources *srcs, i32 src);
 void audio_wave_trash(AudioSources *srcs, i32 wave);
 void audio_sources_trash(AudioSources *srcs);
