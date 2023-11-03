@@ -395,6 +395,8 @@ static void cleanup() {
   }
   hashmap_trash(&g_app->assets);
 
+  ma_engine_uninit(&g_app->audio_engine);
+
   sgl_destroy_pipeline(g_pipeline);
   sgl_shutdown();
   sg_shutdown();

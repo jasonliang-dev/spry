@@ -234,7 +234,8 @@ void string_builder_clear(StringBuilder *sb) {
   }
 }
 
-void string_builder_swap_filename(StringBuilder *sb, String filepath, String file) {
+void string_builder_swap_filename(StringBuilder *sb, String filepath,
+                                  String file) {
   string_builder_clear(sb);
 
   u64 slash = last_of(filepath, '/');

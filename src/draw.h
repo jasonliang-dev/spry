@@ -1,10 +1,10 @@
 #pragma once
 
+#include "algebra.h"
 #include "font.h"
 #include "image.h"
 #include "sprite.h"
 #include "tilemap.h"
-#include "algebra.h"
 
 struct DrawDescription {
   float x;
@@ -66,7 +66,8 @@ void renderer_push_xy(Renderer2D *ren, float x, float y);
 
 void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc);
 void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc);
-void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y, String text);
+void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
+               String text);
 void draw_tilemap(Renderer2D *ren, Tilemap *tm);
 void draw_filled_rect(Renderer2D *ren, RectDescription *desc);
 void draw_line_rect(Renderer2D *ren, RectDescription *desc);

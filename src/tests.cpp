@@ -26,8 +26,7 @@ UTEST(prelude, string_lines) {
 }
 
 UTEST(prelude, split_lines_non_null_term) {
-  String str =
-      "line1\nl2\nline 3 some extra stuff that won't be in the string";
+  String str = "line1\nl2\nline 3 some extra stuff that won't be in the string";
   str.len = 15;
 
   SplitLinesIterator it = begin(SplitLines(str));

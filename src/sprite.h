@@ -1,8 +1,8 @@
 #pragma once
 
-#include "image.h"
 #include "array.h"
 #include "hash_map.h"
+#include "image.h"
 
 struct SpriteFrame {
   i32 duration;

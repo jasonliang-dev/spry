@@ -2,6 +2,7 @@
 #include "app.h"
 #include "archive.h"
 #include "atlas.h"
+#include "audio.h"
 #include "box2d/b2_body.h"
 #include "box2d/b2_circle_shape.h"
 #include "box2d/b2_contact.h"
@@ -319,16 +320,68 @@ static int open_mt_font(lua_State *L) {
   return 1;
 }
 
+// mt_sound
+
+static int mt_sound_gc(lua_State *L) {
+  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
+  Sound *sound = *udata;
+  sound_trash(sound);
+  mem_free(sound);
+  return 0;
+}
+
+static int mt_sound_start(lua_State *L) {
+  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
+  Sound *sound = *udata;
+
+  ma_result res = ma_sound_start(&sound->ma);
+  if (res != MA_SUCCESS) {
+    luaL_error(L, "failed to start sound");
+  }
+
+  return 0;
+}
+
+static int open_mt_sound(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"__gc", mt_sound_gc},
+      {"start", mt_sound_start},
+      {nullptr, nullptr},
+  };
+
+  luax_new_class(L, "mt_sound", reg);
+  return 1;
+}
+
 // mt_audio
 
-static int mt_audio_play(lua_State *L) {
-  Audio *audio = (Audio *)luaL_checkudata(L, 1, "mt_audio");
+static int mt_audio_gc(lua_State *L) {
+  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
+  Audio *audio = *udata;
+  audio_trash(audio);
+  mem_free(audio);
   return 0;
+}
+
+static int mt_audio_make_sound(lua_State *L) {
+  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
+  Audio *audio = *udata;
+
+  Sound *sound = (Sound *)mem_alloc(sizeof(Sound));
+  bool ok = sound_load(sound, audio);
+  if (!ok) {
+    mem_free(sound);
+    return 0;
+  }
+
+  luax_newuserdata(L, sound, "mt_sound");
+  return 1;
 }
 
 static int open_mt_audio(lua_State *L) {
   luaL_Reg reg[] = {
-      {"play", mt_audio_play},
+      {"__gc", mt_audio_gc},
+      {"make_sound", mt_audio_make_sound},
       {nullptr, nullptr},
   };
 
@@ -1465,8 +1518,8 @@ static int spry_font_load(lua_State *L) {
 static int spry_audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Audio audio = {};
-  bool ok = audio_load(&audio, g_app->archive, str);
+  Audio *audio = (Audio *)mem_alloc(sizeof(Audio));
+  bool ok = audio_load(audio, g_app->archive, str);
   if (!ok) {
     return 0;
   }
@@ -1590,9 +1643,11 @@ static int open_spry(lua_State *L) {
 
 void open_spry_api(lua_State *L) {
   lua_CFunction mt_funcs[] = {
-      open_mt_image,           open_mt_font,        open_mt_audio,
-      open_mt_sprite_renderer, open_mt_atlas_image, open_mt_atlas,
-      open_mt_tilemap,         open_mt_b2_fixture,  open_mt_b2_body,
+      open_mt_image,           open_mt_font,
+      open_mt_sound,           open_mt_audio,
+      open_mt_sprite_renderer, open_mt_atlas_image,
+      open_mt_atlas,           open_mt_tilemap,
+      open_mt_b2_fixture,      open_mt_b2_body,
       open_mt_b2_world,
   };
 

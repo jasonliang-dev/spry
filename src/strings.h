@@ -64,12 +64,15 @@ void string_builder_trash(StringBuilder *sb);
 void string_builder_reserve(StringBuilder *sb, u64 capacity);
 void string_builder_concat(StringBuilder *sb, String str);
 void string_builder_clear(StringBuilder *sb);
-void string_builder_swap_filename(StringBuilder *sb, String filepath, String file);
+void string_builder_swap_filename(StringBuilder *sb, String filepath,
+                                  String file);
 
 FORMAT_ARGS(1)
 StringBuilder str_format(const char *fmt, ...);
 
-inline String string_builder_as_string(StringBuilder *sb) { return {sb->data, sb->len}; }
+inline String string_builder_as_string(StringBuilder *sb) {
+  return {sb->data, sb->len};
+}
 inline void string_builder_concat(StringBuilder *sb, char *cstr) {
   string_builder_concat(sb, {cstr, strlen(cstr)});
 }

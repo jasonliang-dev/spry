@@ -53,7 +53,7 @@ struct TilemapLevel {
 class b2Body;
 struct Tilemap {
   Array<TilemapLevel> levels;
-  HashMap<Image> images; // key: filepath
+  HashMap<Image> images;    // key: filepath
   HashMap<b2Body *> bodies; // key: layer name
 };
 

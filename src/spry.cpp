@@ -24,6 +24,7 @@ App *g_app;
 #include "api.cpp"
 #include "archive.cpp"
 #include "atlas.cpp"
+#include "audio.cpp"
 #include "draw.cpp"
 #include "font.cpp"
 #include "image.cpp"
@@ -94,10 +95,6 @@ App *g_app;
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "deps/cute_aseprite.h"
 
-#define MA_NO_RESOURCE_MANAGER
-#define MINIAUDIO_IMPLEMENTATION
-#include "deps/miniaudio.h"
-
 #include "deps/miniz.c"
 
 #define SOKOL_IMPL
@@ -124,3 +121,13 @@ App *g_app;
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "deps/stb_truetype.h"
+
+#define STB_VORBIS_HEADER_ONLY
+#include "deps/stb_vorbis.c"
+
+#define MA_NO_RESOURCE_MANAGER
+#define MINIAUDIO_IMPLEMENTATION
+#include "deps/miniaudio.h"
+
+#undef STB_VORBIS_HEADER_ONLY
+#include "deps/stb_vorbis.c"
