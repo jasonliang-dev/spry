@@ -424,8 +424,10 @@ static void cleanup() {
   sgl_shutdown();
   sg_shutdown();
 
-  g_app->archive->trash();
-  mem_free(g_app->archive);
+  if (g_app->archive != nullptr) {
+    g_app->archive->trash();
+    mem_free(g_app->archive);
+  }
 
   if (g_app->fatal_error.data != nullptr) {
     mem_free(g_app->fatal_error.data);
@@ -610,7 +612,6 @@ static void load_all_lua_scripts() {
       require_lua_script(g_app->archive, file);
     }
   }
-  require_lua_script(g_app->archive, "main.lua");
 }
 
 sapp_desc sokol_main(int argc, char **argv) {
@@ -627,8 +628,8 @@ sapp_desc sokol_main(int argc, char **argv) {
     defer(string_builder_trash(&sb));
 
     fatal_error(string_builder_as_string(&sb));
-  } else {
-    load_all_lua_scripts();
+  } else if (g_app->archive != nullptr) {
+    require_lua_script(g_app->archive, "main.lua");
   }
 
   lua_newtable(L);
@@ -645,6 +646,8 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   bool console_attach = luax_boolean_field(L, "console_attach", false);
   bool hot_reload = luax_boolean_field(L, "hot_reload", true);
+  bool startup_load_scripts =
+      luax_boolean_field(L, "startup_load_scripts", true);
   lua_Number reload_interval = luax_number_field(L, "reload_interval", 0.1);
   lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
   lua_Number target_fps = luax_number_field(L, "target_fps", 240);
@@ -653,6 +656,10 @@ sapp_desc sokol_main(int argc, char **argv) {
   String title = luax_string_field(L, "window_title", "Spry");
 
   lua_pop(L, 1);
+
+  if (startup_load_scripts && g_app->archive != nullptr) {
+    load_all_lua_scripts();
+  }
 
   g_app->hot_reload_enabled = can_hot_reload && hot_reload;
   g_app->reload_interval = reload_interval;

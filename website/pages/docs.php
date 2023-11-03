@@ -58,6 +58,7 @@ $api_reference = [
         "t" => ["table", "The table to edit options with."],
         " .console_attach" => ["boolean", "Windows only. If true, attach a console to the program.", "false"],
         " .hot_reload" => ["boolean", "Enable/disable hot reloading of scripts and assets.", "true"],
+        " .startup_load_scripts" => ["boolean", "Enable/disable loading all lua scripts in the project", "true"],
         " .reload_interval" => ["number", "The time in seconds to update files for hot reloading.", 0.1],
         " .swap_interval" => ["number", "Set the swap interval. Typically 1 for VSync, or 0 for no VSync.", 1],
         " .target_fps" => ["number", "Set the maximum frames to render per second. No FPS limit if target is 0.", 240],
