@@ -1387,7 +1387,25 @@ $api_reference = [
   "Spring" => [
     "Spring" => [
       "desc" => "Create a new spring object, which can simulate bouncy behaviour.",
-      "example" => "self.spring = Spring()",
+      "example" => "
+        function Thing:new()
+          self.spring = Spring()
+        end
+
+        function Thing:on_hit()
+          self.spring:pull(0.5)
+        end
+
+        function Thing:update(dt)
+          self.spring:update(dt)
+        end
+
+        function Thing:draw()
+          local sx = 1 + self.spring.x
+          local sy = 1 - self.spring.x
+          img:draw(self.x, self.y, 0, sx, sy)
+        end
+      ",
       "args" => [
         "k" => ["number", "The spring's stiffness.", 400],
         "d" => ["number", "The spring's damping.", 28],
@@ -1465,24 +1483,7 @@ $api_reference = [
       "return" => false,
     ],
   ],
-  "Utility Functions" => [
-    "require" => [
-      "desc" => "
-        Include a Lua file relative to the root of the project directory. The
-        format is in a similar style as the `require` function in vanilla
-        Lua. Path separators are `.` instead of `/`, and the `.lua` extension
-        is excluded.
-      ",
-      "example" => "
-        function spry.start()
-          lume = require 'deps.lume'
-        end
-      ",
-      "args" => [
-        "file" => ["string", "The file to include."],
-      ],
-      "return" => "any",
-    ],
+  "Object Oriented" => [
     "class" => [
       "desc" => "Create a new class.",
       "example" => "
@@ -1518,8 +1519,62 @@ $api_reference = [
       ",
       "args" => [
         "name" => ["string", "The name of the class."],
+        "parent" => ["table", "the parent class to inherit from.", "Object"],
       ],
       "return" => false,
+    ],
+    "Object:__call" => [
+      "desc" => "Call the object's constructor.",
+      "example" => "
+        class 'Enemy'
+
+        function Enemy:new(x, y)
+          self.x, self.y = x, y
+        end
+
+        e = Enemy(100, 200)
+      ",
+      "args" => [
+        "..." => [false, "The arguments to pass to the constructor."],
+      ],
+      "return" => "table",
+    ],
+    "Object:is" => [
+      "desc" => "Check if this object has the given metatable.",
+      "example" => "
+        class 'Car'
+        class 'Animal'
+        class('Cat', Animal)
+
+        local cat = Cat()
+
+        assert(cat:is(Animal))
+        assert(cat:is(Cat))
+        assert(not cat:is(Car))
+      ",
+      "args" => [
+        "T" => ["table", "The metatable."],
+      ],
+      "return" => "boolean",
+    ],
+  ],
+  "Utility Functions" => [
+    "require" => [
+      "desc" => "
+        Include a Lua file relative to the root of the project directory. The
+        format is in a similar style as the `require` function in vanilla
+        Lua. Path separators are `.` instead of `/`, and the `.lua` extension
+        is excluded.
+      ",
+      "example" => "
+        function spry.start()
+          lume = require 'deps.lume'
+        end
+      ",
+      "args" => [
+        "file" => ["string", "The file to include."],
+      ],
+      "return" => "any",
     ],
     "stringify" => [
       "desc" => "Get a string representation of a value, table fields included (unlike `tostring`).",

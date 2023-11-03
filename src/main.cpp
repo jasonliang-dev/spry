@@ -304,7 +304,7 @@ static void frame() {
   lua_getglobal(L, "spry");
 
   if (!g_app->error_mode) {
-    lua_getfield(L, -1, "timer_update");
+    lua_getfield(L, -1, "_timer_update");
     lua_pushnumber(L, g_app->time.delta);
     if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
       lua_pop(L, 1);
@@ -533,7 +533,7 @@ static void setup_lua() {
 
   lua_getglobal(L, "spry");
   lua_pushcfunction(L, require_lua_script);
-  lua_setfield(L, -2, "require_lua_script");
+  lua_setfield(L, -2, "_require_lua_script");
   lua_pop(L, 1);
 
   const char *bootstrap =

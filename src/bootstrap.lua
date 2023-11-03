@@ -18,25 +18,51 @@ function spry.frame(dt)
   local x = (spry.window_width() - default_font:width(text, text_size)) / 2
   local y = (spry.window_height() - text_size) * 0.45
 
-  if default_font == nil then
-    default_font = spry.default_font()
-  end
   default_font:draw(text, x, y, text_size)
 end
 
 -- object oriented
 
-local class_mt = {}
-function class_mt:__call(...)
+Object = {}
+Object.__index = Object
+
+function Object:__call(...)
   local obj = setmetatable({}, self)
-  obj:new(...)
+  if obj.new ~= nil then
+    obj:new(...)
+  end
   return obj
 end
 
-function class(name)
-  local obj = {}
-  obj.__index = obj
-  rawset(_G, name, setmetatable(obj, class_mt))
+function Object:is(T)
+  local mt = getmetatable(self)
+  while mt ~= nil do
+    if mt == T then
+      return true
+    end
+    mt = getmetatable(mt)
+  end
+  return false
+end
+
+function class(name, parent)
+  parent = parent or Object
+
+  local cls = {}
+
+  for k, v in pairs(parent) do
+    if k:sub(1, 2) == '__' then
+      cls[k] = v
+    end
+  end
+
+  cls.super = parent
+
+  function cls:__index(key)
+    return rawget(_G, name)[key]
+  end
+
+  rawset(_G, name, setmetatable(cls, parent))
 end
 
 -- 2d vector
@@ -339,13 +365,12 @@ end
 -- intervals/timeouts
 
 local timer = {}
-spry.timer = timer
 
 timer.next_id = 0
 timer.intervals = {}
 timer.timeouts = {}
 
-function spry.timer_update(dt)
+function spry._timer_update(dt)
   for id, t in pairs(timer.intervals) do
     t.elapsed = t.elapsed + dt
     if t.elapsed >= t.seconds then
@@ -576,7 +601,7 @@ function require(name)
     path = path .. ".lua"
   end
 
-  local ret = spry.require_lua_script(path)
+  local ret = spry._require_lua_script(path)
   return table.unpack(ret)
 end
 
