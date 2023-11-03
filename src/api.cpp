@@ -2,7 +2,6 @@
 #include "app.h"
 #include "archive.h"
 #include "atlas.h"
-#include "audio.h"
 #include "box2d/b2_body.h"
 #include "box2d/b2_circle_shape.h"
 #include "box2d/b2_contact.h"
@@ -322,28 +321,13 @@ static int open_mt_font(lua_State *L) {
 
 // mt_audio
 
-static int mt_audio_gc(lua_State *L) {
-  i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
-  if (*udata != -1) {
-    audio_wave_trash(&g_app->audio_sources, *udata);
-    *udata = -1;
-  }
-  return 0;
-}
-
 static int mt_audio_play(lua_State *L) {
-  i64 *udata = (i64 *)luaL_checkudata(L, 1, "mt_audio");
-  float vol = (float)luaL_optnumber(L, 2, 1.0f);
-  bool loop = lua_toboolean(L, 3);
-
-  audio_play(&g_app->audio_sources, *udata, vol, loop);
+  Audio *audio = (Audio *)luaL_checkudata(L, 1, "mt_audio");
   return 0;
 }
 
 static int open_mt_audio(lua_State *L) {
   luaL_Reg reg[] = {
-      {"__gc", mt_audio_gc},
-      {"destroy", mt_audio_gc},
       {"play", mt_audio_play},
       {nullptr, nullptr},
   };
@@ -1481,26 +1465,14 @@ static int spry_font_load(lua_State *L) {
 static int spry_audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  i64 index = audio_load(&g_app->audio_sources, g_app->archive, str);
-  if (index == -1) {
+  Audio audio = {};
+  bool ok = audio_load(&audio, g_app->archive, str);
+  if (!ok) {
     return 0;
   }
 
-  luax_newuserdata(L, index, "mt_audio");
+  luax_newuserdata(L, audio, "mt_audio");
   return 1;
-}
-
-static int spry_set_master_volume(lua_State *L) {
-  float vol = (float)luaL_checknumber(L, 1);
-
-  if (vol > 1.0f) {
-    vol = 1.0f;
-  } else if (vol < 0.0f) {
-    vol = 0.0f;
-  }
-
-  g_app->master_volume = vol;
-  return 0;
 }
 
 static int spry_sprite_load(lua_State *L) {
@@ -1605,7 +1577,6 @@ static int open_spry(lua_State *L) {
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
       {"audio_load", spry_audio_load},
-      {"set_master_volume", spry_set_master_volume},
       {"sprite_load", spry_sprite_load},
       {"atlas_load", spry_atlas_load},
       {"tilemap_load", spry_tilemap_load},

@@ -1,12 +1,10 @@
 #include "api.h"
 #include "app.h"
 #include "archive.h"
-#include "audio.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/lua/lualib.h"
 #include "deps/sokol_app.h"
-#include "deps/sokol_audio.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "deps/sokol_glue.h"
@@ -72,14 +70,6 @@ static void init() {
   sgl.allocator.free = sokol_free;
   sgl_setup(sgl);
 
-  saudio_desc saudio = {};
-  saudio.sample_rate = 44100;
-  saudio.logger.func = slog_func;
-  saudio.num_channels = 2;
-  saudio.allocator.alloc = sokol_alloc;
-  saudio.allocator.free = sokol_free;
-  saudio_setup(saudio);
-
   sg_pipeline_desc sg_pipline = {};
   sg_pipline.depth.write_enabled = true;
   sg_pipline.colors[0].blend.enabled = true;
@@ -88,10 +78,15 @@ static void init() {
       SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
   g_pipeline = sgl_make_pipeline(sg_pipline);
 
-  stm_setup();
-  g_app->time.last = stm_now();
+  ma_result res = ma_engine_init(nullptr, &g_app->audio_engine);
+  if (res != MA_SUCCESS) {
+    fatal_error("failed to initialize audio engine");
+  }
 
   renderer_setup(&g_app->renderer);
+
+  stm_setup();
+  g_app->time.last = stm_now();
 
   if (!g_app->error_mode) {
     lua_getglobal(L, "spry");
@@ -241,21 +236,6 @@ static void frame() {
 #endif
   }
 
-  {
-    i32 frames = saudio_expect();
-    i32 channels = saudio_channels();
-    i32 samples = frames * channels;
-    if (g_app->audio_buffer.capacity < samples) {
-      array_reserve(&g_app->audio_buffer, samples);
-    }
-
-    if (samples > 0) {
-      audio_playback(&g_app->audio_sources, g_app->audio_buffer.data, frames,
-                     channels, g_app->master_volume);
-      saudio_push(g_app->audio_buffer.data, samples);
-    }
-  }
-
   sg_pass_action pass = {};
   pass.colors[0].action = SG_ACTION_CLEAR;
   if (g_app->error_mode) {
@@ -396,11 +376,6 @@ static void cleanup() {
   hashmap_trash(&g_app->modules);
 
   lua_close(L);
-
-  saudio_shutdown();
-
-  array_trash(&g_app->audio_buffer);
-  audio_sources_trash(&g_app->audio_sources);
 
   if (g_app->default_font_loaded) {
     font_trash(g_app->default_font);

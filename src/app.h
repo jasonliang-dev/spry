@@ -1,8 +1,7 @@
 #pragma once
 
-#include "audio.h"
+#include "deps/miniaudio.h"
 #include "draw.h"
-#include "font.h"
 
 struct Module {
   char *name;
@@ -66,9 +65,7 @@ struct App {
   float scroll_x;
   float scroll_y;
 
-  float master_volume;
-  Array<float> audio_buffer;
-  AudioSources audio_sources;
+  ma_engine audio_engine;
 
   HashMap<Asset> assets;
 };
