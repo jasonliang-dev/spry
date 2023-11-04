@@ -4,11 +4,15 @@
 #include "deps/miniaudio.h"
 
 struct Audio {
-  String buf;
+  float *buf;
+  ma_format format;
+  u64 frames;
+  u32 channels;
+  u32 sample_rate;
 };
 
 struct Sound {
-  ma_decoder decoder;
+  ma_audio_buffer buffer;
   ma_sound ma;
 };
 

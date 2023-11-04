@@ -1507,6 +1507,7 @@ static int spry_font_load(lua_State *L) {
   FontFamily *font = (FontFamily *)mem_alloc(sizeof(FontFamily));
   bool ok = font_load(font, g_app->archive, str);
   if (!ok) {
+    mem_free(font);
     return 0;
   }
 
@@ -1521,6 +1522,7 @@ static int spry_audio_load(lua_State *L) {
   Audio *audio = (Audio *)mem_alloc(sizeof(Audio));
   bool ok = audio_load(audio, g_app->archive, str);
   if (!ok) {
+    mem_free(audio);
     return 0;
   }
 
