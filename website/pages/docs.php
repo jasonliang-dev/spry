@@ -504,8 +504,14 @@ $api_reference = [
       "return" => "Sound",
     ],
     "Sound:frames" => [
-      "desc" => "Returns the number of PCM frames for this sound.",
+      "desc" => "Returns the length of the sound in PCM frames.",
       "example" => "local frames = sound:frames()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "Sound:secs" => [
+      "desc" => "Returns the length of the sound in seconds.",
+      "example" => "local len = sound:secs()",
       "args" => [],
       "return" => "number",
     ],
@@ -637,6 +643,16 @@ $api_reference = [
       "args" => [
         "x" => ["number", "The x velocity of the sound."],
         "y" => ["number", "The y velocity of the sound."],
+      ],
+      "return" => false,
+    ],
+    "Sound:set_fade" => [
+      "desc" => "Fade a sound in/out.",
+      "example" => "wind:set_fade(-1, 0, 1000)",
+      "args" => [
+        "from" => ["number", "Starting volume. Set to -1 to use the current volume."],
+        "to" => ["number", "Ending volume."],
+        "ms" => ["number", "Number of milliseconds to fade."],
       ],
       "return" => false,
     ],

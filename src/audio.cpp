@@ -105,7 +105,7 @@ Sound *sound_load(Audio *audio) {
 }
 
 void sound_trash(Sound *sound) {
-  audio_unref(sound->audio);
   ma_sound_uninit(&sound->ma);
   ma_audio_buffer_uninit(&sound->buffer);
+  audio_unref(sound->audio);
 }

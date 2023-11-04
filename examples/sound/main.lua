@@ -47,8 +47,8 @@ function spry.frame(dt)
 
   font:draw(("music volume: %.2f"):format(vol), 100, 100, 24)
 
-  if spry.mouse_click(0) then engine:set_vol(0.8) end
-  if spry.mouse_release(0) then engine:set_vol(0.1) end
+  if spry.mouse_click(0) then engine:set_fade(-1, 0.8, 500) end
+  if spry.mouse_release(0) then engine:set_fade(-1, 0.1, 500) end
 
   local x, y = spry.mouse_pos()
   x = lerp(-0.5, 0.5, x / spry.window_width())

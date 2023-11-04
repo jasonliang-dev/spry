@@ -380,6 +380,17 @@ static int mt_sound_seek(lua_State *L) {
   return 0;
 }
 
+static int mt_sound_secs(lua_State *L) {
+  float len = 0;
+  ma_result res = ma_sound_get_length_in_seconds(sound_ma(L), &len);
+  if (res != MA_SUCCESS) {
+    return 0;
+  }
+
+  lua_pushnumber(L, len);
+  return 1;
+}
+
 static int mt_sound_vol(lua_State *L) {
   lua_pushnumber(L, ma_sound_get_volume(sound_ma(L)));
   return 1;
@@ -462,10 +473,19 @@ static int mt_sound_set_vel(lua_State *L) {
   return 0;
 }
 
+static int mt_sound_set_fade(lua_State *L) {
+  lua_Number from = luaL_optnumber(L, 2, 0);
+  lua_Number to = luaL_optnumber(L, 3, 0);
+  lua_Number ms = luaL_optnumber(L, 4, 0);
+  ma_sound_set_fade_in_milliseconds(sound_ma(L), (float)from, (float)to, (u64)ms);
+  return 0;
+}
+
 static int open_mt_sound(lua_State *L) {
   luaL_Reg reg[] = {
       {"__gc", mt_sound_gc},
       {"frames", mt_sound_frames},
+      {"secs", mt_sound_secs},
       {"start", mt_sound_start},
       {"stop", mt_sound_stop},
       {"seek", mt_sound_seek},
@@ -483,6 +503,7 @@ static int open_mt_sound(lua_State *L) {
       {"set_dir", mt_sound_set_dir},
       {"vel", mt_sound_vel},
       {"set_vel", mt_sound_set_vel},
+      {"set_fade", mt_sound_set_fade},
       {nullptr, nullptr},
   };
 
