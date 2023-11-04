@@ -29,7 +29,7 @@ RectDescription luax_rect_description(lua_State *L, i32 arg_start);
 
 void luax_new_class(lua_State *L, const char *mt_name, const luaL_Reg *l);
 
-#define luax_newuserdata(L, data, tname)                                       \
+#define luax_new_userdata(L, data, tname)                                      \
   do {                                                                         \
     void *udata = lua_newuserdatauv(L, sizeof(data), 0);                       \
     memcpy(udata, &data, sizeof(data));                                        \

@@ -155,8 +155,8 @@ struct PhysicsContactListener : public b2ContactListener {
     Physics b = weak_copy(&physics);
     b.fixture = contact->GetFixtureB();
 
-    luax_newuserdata(L, a, "mt_b2_fixture");
-    luax_newuserdata(L, b, "mt_b2_fixture");
+    luax_new_userdata(L, a, "mt_b2_fixture");
+    luax_new_userdata(L, b, "mt_b2_fixture");
 
     *pud_a = (PhysicsUserData *)a.fixture->GetUserData().pointer;
     *pud_b = (PhysicsUserData *)b.fixture->GetUserData().pointer;
@@ -323,16 +323,13 @@ static int open_mt_font(lua_State *L) {
 // mt_sound
 
 static int mt_sound_gc(lua_State *L) {
-  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
-  Sound *sound = *udata;
+  Sound *sound = (Sound *)luaL_checkudata(L, 1, "mt_sound");
   sound_trash(sound);
-  mem_free(sound);
   return 0;
 }
 
 static int mt_sound_start(lua_State *L) {
-  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
-  Sound *sound = *udata;
+  Sound *sound = (Sound *)luaL_checkudata(L, 1, "mt_sound");
 
   ma_result res = ma_sound_start(&sound->ma);
   if (res != MA_SUCCESS) {
@@ -356,25 +353,21 @@ static int open_mt_sound(lua_State *L) {
 // mt_audio
 
 static int mt_audio_gc(lua_State *L) {
-  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
-  Audio *audio = *udata;
+  Audio *audio = (Audio *)luaL_checkudata(L, 1, "mt_audio");
   audio_trash(audio);
-  mem_free(audio);
   return 0;
 }
 
 static int mt_audio_make_sound(lua_State *L) {
-  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
-  Audio *audio = *udata;
+  Audio *audio = (Audio *)luaL_checkudata(L, 1, "mt_audio");
 
-  Sound *sound = (Sound *)mem_alloc(sizeof(Sound));
+  Sound *sound = (Sound *)lua_newuserdatauv(L, sizeof(Sound), 0);
   bool ok = sound_load(sound, audio);
   if (!ok) {
-    mem_free(sound);
     return 0;
   }
 
-  luax_newuserdata(L, sound, "mt_sound");
+  luaL_setmetatable(L, "mt_sound");
   return 1;
 }
 
@@ -523,7 +516,7 @@ static int mt_atlas_get_image(lua_State *L) {
     return 0;
   }
 
-  luax_newuserdata(L, *atlas_img, "mt_atlas_image");
+  luax_new_userdata(L, *atlas_img, "mt_atlas_image");
   return 1;
 }
 
@@ -698,7 +691,7 @@ static int mt_b2_fixture_body(lua_State *L) {
   Physics p = weak_copy(physics);
   p.body = body;
 
-  luax_newuserdata(L, p, "mt_b2_body");
+  luax_new_userdata(L, p, "mt_b2_body");
   return 1;
 }
 
@@ -802,7 +795,7 @@ static int mt_b2_body_make_box_fixture(lua_State *L) {
   Physics p = weak_copy(physics);
   p.fixture = body->CreateFixture(&fixture_def);
 
-  luax_newuserdata(L, p, "mt_b2_fixture");
+  luax_new_userdata(L, p, "mt_b2_fixture");
   return 0;
 }
 
@@ -823,7 +816,7 @@ static int mt_b2_body_make_circle_fixture(lua_State *L) {
   Physics p = weak_copy(physics);
   p.fixture = body->CreateFixture(&fixture_def);
 
-  luax_newuserdata(L, p, "mt_b2_fixture");
+  luax_new_userdata(L, p, "mt_b2_fixture");
   return 0;
 }
 
@@ -1069,7 +1062,7 @@ static int b2_make_body(lua_State *L, b2BodyType type) {
   Physics p = weak_copy(physics);
   p.body = physics->world->CreateBody(&body_def);
 
-  luax_newuserdata(L, p, "mt_b2_body");
+  luax_new_userdata(L, p, "mt_b2_body");
   return 1;
 }
 
@@ -1459,7 +1452,7 @@ static int spry_default_font(lua_State *L) {
   }
 
   // NOLINTNEXTLINE(bugprone-sizeof-expression)
-  luax_newuserdata(L, g_app->default_font, "mt_font");
+  luax_new_userdata(L, g_app->default_font, "mt_font");
   return 1;
 }
 
@@ -1497,7 +1490,7 @@ static int spry_image_load(lua_State *L) {
     }
   }
 
-  luax_newuserdata(L, asset->hash, "mt_image");
+  luax_new_userdata(L, asset->hash, "mt_image");
   return 1;
 }
 
@@ -1512,21 +1505,20 @@ static int spry_font_load(lua_State *L) {
   }
 
   // NOLINTNEXTLINE(bugprone-sizeof-expression)
-  luax_newuserdata(L, font, "mt_font");
+  luax_new_userdata(L, font, "mt_font");
   return 1;
 }
 
 static int spry_audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Audio *audio = (Audio *)mem_alloc(sizeof(Audio));
+  Audio *audio = (Audio *)lua_newuserdatauv(L, sizeof(Audio), 0);
   bool ok = audio_load(audio, g_app->archive, str);
   if (!ok) {
-    mem_free(audio);
     return 0;
   }
 
-  luax_newuserdata(L, audio, "mt_audio");
+  luaL_setmetatable(L, "mt_audio");
   return 1;
 }
 
@@ -1546,7 +1538,7 @@ static int spry_sprite_load(lua_State *L) {
   SpriteRenderer sr = {};
   sr.sprite = asset->hash;
 
-  luax_newuserdata(L, sr, "mt_sprite_renderer");
+  luax_new_userdata(L, sr, "mt_sprite_renderer");
   return 1;
 }
 
@@ -1559,7 +1551,7 @@ static int spry_atlas_load(lua_State *L) {
     return 0;
   }
 
-  luax_newuserdata(L, atlas, "mt_atlas");
+  luax_new_userdata(L, atlas, "mt_atlas");
   return 1;
 }
 
@@ -1576,7 +1568,7 @@ static int spry_tilemap_load(lua_State *L) {
     }
   }
 
-  luax_newuserdata(L, asset->hash, "mt_tilemap");
+  luax_new_userdata(L, asset->hash, "mt_tilemap");
   return 1;
 }
 
@@ -1596,7 +1588,7 @@ static int spry_b2_world(lua_State *L) {
 
   physics.world->SetContactListener(physics.contact_listener);
 
-  luax_newuserdata(L, physics, "mt_b2_world");
+  luax_new_userdata(L, physics, "mt_b2_world");
   return 1;
 }
 
