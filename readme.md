@@ -32,7 +32,7 @@ non-exhaustive list of differences between the two:
 - Spry has hot reload support for images, sprites, and tilemaps.
 - Spry can load Aseprite and LDtk files without needing to convert/export
   assets to `.json`. LÖVE cannot load these files directly.
-- Spry is a single executable, weighting in at about 1.4mb (610kb zipped).
+- Spry is a single executable, weighting in at about 1.6mb (0.8mb zipped).
   LÖVE is 10mb.
 - LÖVE uses LuaJIT 2.1. Spry uses PUC Lua 5.4.
 - LÖVE has lots of documentation and community support.
