@@ -5,18 +5,23 @@
 
 struct Audio {
   float *buf;
-  ma_format format;
   u64 frames;
   u32 channels;
   u32 sample_rate;
+  i32 ref_count;
+  ma_format format;
 };
+
+bool audio_load(Audio *audio, Archive *ar, String filepath);
+void audio_unref(Audio *audio);
 
 struct Sound {
   ma_audio_buffer buffer;
   ma_sound ma;
+  Audio *audio;
+  bool zombie;
+  bool dead_end;
 };
 
-bool audio_load(Audio *audio, Archive *ar, String filepath);
-void audio_trash(Audio *audio);
-bool sound_load(Sound *sound, Audio *audio);
+Sound *sound_load(Audio *audio);
 void sound_trash(Sound *sound);

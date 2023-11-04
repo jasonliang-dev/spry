@@ -322,16 +322,35 @@ static int open_mt_font(lua_State *L) {
 
 // mt_sound
 
+static ma_sound *sound_ma(lua_State *L) {
+  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
+  Sound *sound = *udata;
+  return &sound->ma;
+}
+
 static int mt_sound_gc(lua_State *L) {
-  Sound *sound = (Sound *)luaL_checkudata(L, 1, "mt_sound");
-  sound_trash(sound);
+  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
+  Sound *sound = *udata;
+
+  sound->zombie = true;
+  array_push(&g_app->garbage_sounds, sound);
+  if (ma_sound_at_end(&sound->ma)) {
+    sound->dead_end = true;
+  }
+
   return 0;
 }
 
-static int mt_sound_start(lua_State *L) {
-  Sound *sound = (Sound *)luaL_checkudata(L, 1, "mt_sound");
+static int mt_sound_frames(lua_State *L) {
+  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
+  Sound *sound = *udata;
 
-  ma_result res = ma_sound_start(&sound->ma);
+  lua_pushnumber(L, (lua_Number)sound->audio->frames);
+  return 1;
+}
+
+static int mt_sound_start(lua_State *L) {
+  ma_result res = ma_sound_start(sound_ma(L));
   if (res != MA_SUCCESS) {
     luaL_error(L, "failed to start sound");
   }
@@ -339,10 +358,129 @@ static int mt_sound_start(lua_State *L) {
   return 0;
 }
 
+static int mt_sound_stop(lua_State *L) {
+  ma_result res = ma_sound_stop(sound_ma(L));
+  if (res != MA_SUCCESS) {
+    luaL_error(L, "failed to stop sound");
+  }
+
+  return 0;
+}
+
+static int mt_sound_seek(lua_State *L) {
+  lua_Number f = luaL_optnumber(L, 2, 0);
+
+  ma_result res = ma_sound_seek_to_pcm_frame(sound_ma(L), f);
+  if (res != MA_SUCCESS) {
+    luaL_error(L, "failed to seek to frame");
+  }
+
+  return 0;
+}
+
+static int mt_sound_vol(lua_State *L) {
+  lua_pushnumber(L, ma_sound_get_volume(sound_ma(L)));
+  return 1;
+}
+
+static int mt_sound_set_vol(lua_State *L) {
+  ma_sound_set_volume(sound_ma(L), (float)luaL_optnumber(L, 2, 0));
+  return 0;
+}
+
+static int mt_sound_pan(lua_State *L) {
+  lua_pushnumber(L, ma_sound_get_pan(sound_ma(L)));
+  return 1;
+}
+
+static int mt_sound_set_pan(lua_State *L) {
+  ma_sound_set_pan(sound_ma(L), (float)luaL_optnumber(L, 2, 0));
+  return 0;
+}
+
+static int mt_sound_pitch(lua_State *L) {
+  lua_pushnumber(L, ma_sound_get_pitch(sound_ma(L)));
+  return 1;
+}
+
+static int mt_sound_set_pitch(lua_State *L) {
+  ma_sound_set_pitch(sound_ma(L), (float)luaL_optnumber(L, 2, 0));
+  return 0;
+}
+
+static int mt_sound_loop(lua_State *L) {
+  lua_pushboolean(L, ma_sound_is_looping(sound_ma(L)));
+  return 1;
+}
+
+static int mt_sound_set_loop(lua_State *L) {
+  ma_sound_set_looping(sound_ma(L), lua_toboolean(L, 2));
+  return 0;
+}
+
+static int mt_sound_pos(lua_State *L) {
+  ma_vec3f pos = ma_sound_get_position(sound_ma(L));
+  lua_pushnumber(L, pos.x);
+  lua_pushnumber(L, pos.y);
+  return 2;
+}
+
+static int mt_sound_set_pos(lua_State *L) {
+  lua_Number x = luaL_optnumber(L, 2, 0);
+  lua_Number y = luaL_optnumber(L, 3, 0);
+  ma_sound_set_position(sound_ma(L), (float)x, (float)y, 0.0f);
+  return 0;
+}
+
+static int mt_sound_dir(lua_State *L) {
+  ma_vec3f dir = ma_sound_get_direction(sound_ma(L));
+  lua_pushnumber(L, dir.x);
+  lua_pushnumber(L, dir.y);
+  return 2;
+}
+
+static int mt_sound_set_dir(lua_State *L) {
+  lua_Number x = luaL_optnumber(L, 2, 0);
+  lua_Number y = luaL_optnumber(L, 3, 0);
+  ma_sound_set_direction(sound_ma(L), (float)x, (float)y, 0.0f);
+  return 0;
+}
+
+static int mt_sound_vel(lua_State *L) {
+  ma_vec3f vel = ma_sound_get_velocity(sound_ma(L));
+  lua_pushnumber(L, vel.x);
+  lua_pushnumber(L, vel.y);
+  return 2;
+}
+
+static int mt_sound_set_vel(lua_State *L) {
+  lua_Number x = luaL_optnumber(L, 2, 0);
+  lua_Number y = luaL_optnumber(L, 3, 0);
+  ma_sound_set_velocity(sound_ma(L), (float)x, (float)y, 0.0f);
+  return 0;
+}
+
 static int open_mt_sound(lua_State *L) {
   luaL_Reg reg[] = {
       {"__gc", mt_sound_gc},
+      {"frames", mt_sound_frames},
       {"start", mt_sound_start},
+      {"stop", mt_sound_stop},
+      {"seek", mt_sound_seek},
+      {"vol", mt_sound_vol},
+      {"set_vol", mt_sound_set_vol},
+      {"pan", mt_sound_pan},
+      {"set_pan", mt_sound_set_pan},
+      {"pitch", mt_sound_pitch},
+      {"set_pitch", mt_sound_set_pitch},
+      {"loop", mt_sound_loop},
+      {"set_loop", mt_sound_set_loop},
+      {"pos", mt_sound_pos},
+      {"set_pos", mt_sound_set_pos},
+      {"dir", mt_sound_dir},
+      {"set_dir", mt_sound_set_dir},
+      {"vel", mt_sound_vel},
+      {"set_vel", mt_sound_set_vel},
       {nullptr, nullptr},
   };
 
@@ -353,21 +491,23 @@ static int open_mt_sound(lua_State *L) {
 // mt_audio
 
 static int mt_audio_gc(lua_State *L) {
-  Audio *audio = (Audio *)luaL_checkudata(L, 1, "mt_audio");
-  audio_trash(audio);
+  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
+  Audio *audio = *udata;
+  audio_unref(audio);
   return 0;
 }
 
 static int mt_audio_make_sound(lua_State *L) {
-  Audio *audio = (Audio *)luaL_checkudata(L, 1, "mt_audio");
+  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
+  Audio *audio = *udata;
 
-  Sound *sound = (Sound *)lua_newuserdatauv(L, sizeof(Sound), 0);
-  bool ok = sound_load(sound, audio);
-  if (!ok) {
+  Sound *sound = sound_load(audio);
+  if (sound == nullptr) {
     return 0;
   }
 
-  luaL_setmetatable(L, "mt_sound");
+  // NOLINTNEXTLINE(bugprone-sizeof-expression)
+  luax_new_userdata(L, sound, "mt_sound");
   return 1;
 }
 
@@ -1477,6 +1617,12 @@ static int spry_draw_line_circle(lua_State *L) {
   return 0;
 }
 
+static int spry_set_master_volume(lua_State *L) {
+  lua_Number vol = luaL_checknumber(L, 1);
+  ma_engine_set_volume(&g_app->audio_engine, (float)vol);
+  return 0;
+}
+
 static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
@@ -1512,13 +1658,14 @@ static int spry_font_load(lua_State *L) {
 static int spry_audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Audio *audio = (Audio *)lua_newuserdatauv(L, sizeof(Audio), 0);
+  Audio *audio = (Audio *)mem_alloc(sizeof(Audio));
   bool ok = audio_load(audio, g_app->archive, str);
   if (!ok) {
     return 0;
   }
 
-  luaL_setmetatable(L, "mt_audio");
+  // NOLINTNEXTLINE(bugprone-sizeof-expression)
+  luax_new_userdata(L, audio, "mt_audio");
   return 1;
 }
 
@@ -1621,6 +1768,7 @@ static int open_spry(lua_State *L) {
       {"draw_filled_rect", spry_draw_filled_rect},
       {"draw_line_rect", spry_draw_line_rect},
       {"draw_line_circle", spry_draw_line_circle},
+      {"set_master_volume", spry_set_master_volume},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
       {"audio_load", spry_audio_load},

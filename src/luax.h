@@ -1,5 +1,6 @@
 #pragma once
 
+#include "audio.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "draw.h"

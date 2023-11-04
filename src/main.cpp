@@ -324,6 +324,23 @@ static void frame() {
   g_app->scroll_x = 0;
   g_app->scroll_y = 0;
 
+  for (u64 i = 0; i < g_app->garbage_sounds.len;) {
+    Sound *sound = g_app->garbage_sounds[i];
+
+    if (sound->dead_end) {
+      assert(sound->zombie);
+      sound_trash(sound);
+      mem_free(sound);
+
+      g_app->garbage_sounds[i] =
+          g_app->garbage_sounds[g_app->garbage_sounds.len - 1];
+
+      g_app->garbage_sounds.len--;
+    } else {
+      i++;
+    }
+  }
+
   g_app->reload_time_elapsed += g_app->time.delta;
   if (g_app->hot_reload_enabled &&
       g_app->reload_time_elapsed > g_app->reload_interval) {
@@ -381,6 +398,12 @@ static void cleanup() {
     font_trash(g_app->default_font);
     mem_free(g_app->default_font);
   }
+
+  for (Sound *sound : g_app->garbage_sounds) {
+    sound_trash(sound);
+    mem_free(sound);
+  }
+  array_trash(&g_app->garbage_sounds);
 
   for (auto [k, v] : g_app->assets) {
     mem_free(v->name);

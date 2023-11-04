@@ -35,7 +35,8 @@ bool audio_load(Audio *audio, Archive *ar, String filepath) {
 
   float *buf = (float *)mem_alloc(sizeof(float) * frames * channels);
   res = ma_data_source_read_pcm_frames(&decoder, buf, frames, nullptr);
-  if (res != MA_SUCCESS && res != MA_AT_END) {
+  if (res != MA_SUCCESS) {
+    mem_free(buf);
     return false;
   }
 
@@ -44,13 +45,29 @@ bool audio_load(Audio *audio, Archive *ar, String filepath) {
   audio->format = format;
   audio->channels = channels;
   audio->sample_rate = sample_rate;
+  audio->ref_count = 1;
   return true;
 }
 
-void audio_trash(Audio *audio) { mem_free(audio->buf); }
+void audio_unref(Audio *audio) {
+  audio->ref_count--;
+  if (audio->ref_count == 0) {
+    mem_free(audio->buf);
+    mem_free(audio);
+  }
+}
 
-bool sound_load(Sound *sound, Audio *audio) {
+static void on_sound_end(void *udata, ma_sound *ma) {
+  Sound *sound = (Sound *)udata;
+  if (sound->zombie) {
+    sound->dead_end = true;
+  }
+}
+
+Sound *sound_load(Audio *audio) {
   ma_result res = MA_SUCCESS;
+
+  Sound *sound = (Sound *)mem_alloc(sizeof(Sound));
 
   ma_audio_buffer_config config = {};
   config.format = audio->format;
@@ -60,19 +77,29 @@ bool sound_load(Sound *sound, Audio *audio) {
   config.pData = audio->buf;
   res = ma_audio_buffer_init(&config, &sound->buffer);
   if (res != MA_SUCCESS) {
-    return false;
+    mem_free(sound);
+    return nullptr;
   }
 
   res = ma_sound_init_from_data_source(&g_app->audio_engine, &sound->buffer, 0,
                                        nullptr, &sound->ma);
   if (res != MA_SUCCESS) {
-    return false;
+    mem_free(sound);
+    return nullptr;
   }
 
-  return true;
+  res = ma_sound_set_end_callback(&sound->ma, on_sound_end, sound);
+  if (res != MA_SUCCESS) {
+    mem_free(sound);
+    return nullptr;
+  }
+
+  sound->audio = audio;
+  return sound;
 }
 
 void sound_trash(Sound *sound) {
+  audio_unref(sound->audio);
   ma_sound_uninit(&sound->ma);
   ma_audio_buffer_uninit(&sound->buffer);
 }

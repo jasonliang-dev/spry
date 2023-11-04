@@ -125,6 +125,7 @@ App *g_app;
 #define STB_VORBIS_HEADER_ONLY
 #include "deps/stb_vorbis.c"
 
+#define MA_NO_GENERATION
 #define MA_NO_RESOURCE_MANAGER
 #define MINIAUDIO_IMPLEMENTATION
 #include "deps/miniaudio.h"
