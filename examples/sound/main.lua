@@ -57,7 +57,6 @@ function spry.frame(dt)
   local dx, dy = spry.mouse_delta()
 
   engine:set_pos(x, y)
-  engine:set_dir(dx, dy)
   engine:set_vel(dx, dy)
 
   font:draw(("engine pos: %.2f, %.2f"):format(x, y), 100, 120, 24)

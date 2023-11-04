@@ -490,25 +490,153 @@ $api_reference = [
       "return" => false,
     ],
     "spry.audio_load" => [
-      "desc" => "Create an audio object from an `.ogg` file.",
+      "desc" => "Create an audio object from a file.",
       "example" => "local click_sound = spry.audio_load 'click.ogg'",
       "args" => [
         "file" => ["string", "The audio file to open."],
       ],
       "return" => "Audio",
     ],
-    "Audio:destroy" => [
-      "desc" => "Immediately stop playing a sound.",
-      "example" => "click_sound:destroy()",
+    "Audio:make_sound" => [
+      "desc" => "Create a sound source.",
+      "example" => "local sound = click_audio:make_sound()",
+      "args" => [],
+      "return" => "Sound",
+    ],
+    "Sound:frames" => [
+      "desc" => "Returns the number of PCM frames for this sound.",
+      "example" => "local frames = sound:frames()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "Sound:start" => [
+      "desc" => "Start audio playback for this sound.",
+      "example" => "
+        if enemy:hurt() then
+          grunt_sound:start()
+        end
+      ",
       "args" => [],
       "return" => false,
     ],
-    "Audio:play" => [
-      "desc" => "Play a sound.",
-      "example" => "click_sound:play()",
+    "Sound:stop" => [
+      "desc" => "Stop audio playback for this sound.",
+      "example" => "
+        if enter_door then
+          bgm:stop()
+        end
+      ",
+      "args" => [],
+      "return" => false,
+    ],
+    "Sound:seek" => [
+      "desc" => "Seek to the given PCM frame.",
+      "example" => "
+        if music_restart then
+          music:seek(0)
+          music:start()
+        end
+      ",
       "args" => [
-        "volume" => ["number", "The playback volume of the sound.", 1],
-        "loop" => ["boolean", "If true, loop the playback of the sound, usually for background music.", "false"],
+        "f" => ["number", "The PCM frame."],
+      ],
+      "return" => false,
+    ],
+    "Sound:vol" => [
+      "desc" => "Get the sound's volume in the range [0, 1].",
+      "example" => "local v = sound:vol()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "Sound:set_vol" => [
+      "desc" => "Set the sound's volume.",
+      "example" => "local v = sound:vol()",
+      "args" => [
+        "vol" => ["number", "The volume in the range [0, 1]."],
+      ],
+      "return" => false,
+    ],
+    "Sound:pan" => [
+      "desc" => "Get the sound's panning value in the range [-1, 1].",
+      "example" => "local v = sound:pan()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "Sound:set_pan" => [
+      "desc" => "Set the sound's panning value.",
+      "example" => "local v = sound:pan()",
+      "args" => [
+        "pan" => ["number", "The panning in the range [-1, 1]."],
+      ],
+      "return" => false,
+    ],
+    "Sound:pitch" => [
+      "desc" => "Get the sound's pitch.",
+      "example" => "local v = sound:pitch()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "Sound:set_pitch" => [
+      "desc" => "Set the sound's pitch. A pitch of 1 does not affect the sound.",
+      "example" => "
+        if slow_mo then
+          sound:set_pitch(0.5)
+        end
+      ",
+      "args" => [
+        "pitch" => ["number", "The pitch value. Should be greater than 0."],
+      ],
+      "return" => false,
+    ],
+    "Sound:loop" => [
+      "desc" => "Returns true if the sound is looping.",
+      "example" => "local is_loop = sound:loop()",
+      "args" => [],
+      "return" => "boolean",
+    ],
+    "Sound:set_loop" => [
+      "desc" => "Set sound looping.",
+      "example" => "
+        local bgm = music_audio:make_sound()
+        bgm:set_loop()
+        bgm:start()
+      ",
+      "args" => [
+        "loop" => ["boolean", "True if the sound should loop."],
+      ],
+      "return" => false,
+    ],
+    "Sound:pos" => [
+      "desc" => "Get the sound's position.",
+      "example" => "local x, y = sound:pos()",
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "Sound:set_pos" => [
+      "desc" => "Set the sound's position.",
+      "example" => "
+        function Car:update()
+          self.engine_sound:set_pos(self.x, self.y)
+        end
+      ",
+      "args" => [
+        "x" => ["number", "The x position of the sound in the range [-1, 1]."],
+        "y" => ["number", "The y position of the sound in the range [-1, 1]."],
+      ],
+      "return" => false,
+    ],
+    "Sound:vel" => [
+      "desc" => "Get the sound's velocity.",
+      "example" => "local x, y = sound:vel()",
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "Sound:set_vel" => [
+      "desc" => "Set the sound's velocity used for doppler effect.",
+      "example" => "whoosh:set_vel(self.x, self.y)",
+      "args" => [
+        "x" => ["number", "The x velocity of the sound."],
+        "y" => ["number", "The y velocity of the sound."],
       ],
       "return" => false,
     ],
