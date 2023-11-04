@@ -332,10 +332,12 @@ static int mt_sound_gc(lua_State *L) {
   Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
   Sound *sound = *udata;
 
-  sound->zombie = true;
-  array_push(&g_app->garbage_sounds, sound);
   if (ma_sound_at_end(&sound->ma)) {
-    sound->dead_end = true;
+    sound_trash(sound);
+    mem_free(sound);
+  } else {
+    sound->zombie = true;
+    array_push(&g_app->garbage_sounds, sound);
   }
 
   return 0;
@@ -1661,6 +1663,7 @@ static int spry_audio_load(lua_State *L) {
   Audio *audio = (Audio *)mem_alloc(sizeof(Audio));
   bool ok = audio_load(audio, g_app->archive, str);
   if (!ok) {
+    mem_free(audio);
     return 0;
   }
 

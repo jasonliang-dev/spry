@@ -324,18 +324,17 @@ static void frame() {
   g_app->scroll_x = 0;
   g_app->scroll_y = 0;
 
-  for (u64 i = 0; i < g_app->garbage_sounds.len;) {
-    Sound *sound = g_app->garbage_sounds[i];
+  Array<Sound *> &sounds = g_app->garbage_sounds;
+  for (u64 i = 0; i < sounds.len;) {
+    Sound *sound = sounds[i];
 
     if (sound->dead_end) {
       assert(sound->zombie);
       sound_trash(sound);
       mem_free(sound);
 
-      g_app->garbage_sounds[i] =
-          g_app->garbage_sounds[g_app->garbage_sounds.len - 1];
-
-      g_app->garbage_sounds.len--;
+      sounds[i] = sounds[sounds.len - 1];
+      sounds.len--;
     } else {
       i++;
     }

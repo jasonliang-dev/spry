@@ -46,6 +46,9 @@ bool audio_load(Audio *audio, Archive *ar, String filepath) {
   audio->channels = channels;
   audio->sample_rate = sample_rate;
   audio->ref_count = 1;
+
+  printf("created audio with %llu frames, %d channels, %d sample rate\n",
+         (unsigned long long)frames, channels, sample_rate);
   return true;
 }
 
@@ -94,7 +97,10 @@ Sound *sound_load(Audio *audio) {
     return nullptr;
   }
 
+  audio->ref_count++;
   sound->audio = audio;
+  sound->zombie = false;
+  sound->dead_end = false;
   return sound;
 }
 
