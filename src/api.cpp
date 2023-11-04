@@ -1520,8 +1520,8 @@ static int spry_mouse_pos(lua_State *L) {
 }
 
 static int spry_mouse_delta(lua_State *L) {
-  lua_pushnumber(L, g_app->mouse_dx);
-  lua_pushnumber(L, g_app->mouse_dy);
+  lua_pushnumber(L, g_app->mouse_x - g_app->prev_mouse_x);
+  lua_pushnumber(L, g_app->mouse_y - g_app->prev_mouse_y);
   return 2;
 }
 

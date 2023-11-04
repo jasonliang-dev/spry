@@ -69,75 +69,75 @@ bool renderer_pop_matrix(Renderer2D *ren) {
   return true;
 }
 
-Matrix4 *renderer_peek_matrix(Renderer2D *ren) {
-  return &ren->matrices[ren->matrices_len - 1];
+Matrix4 renderer_peek_matrix(Renderer2D *ren) {
+  return ren->matrices[ren->matrices_len - 1];
+}
+
+void renderer_set_top_matrix(Renderer2D *ren, Matrix4 mat) {
+  ren->matrices[ren->matrices_len - 1] = mat;
 }
 
 void renderer_translate(Renderer2D *ren, float x, float y) {
-  Matrix4 *top = renderer_peek_matrix(ren);
+  Matrix4 top = renderer_peek_matrix(ren);
 
 #ifdef SSE_AVAILABLE
-  __m128 v0 = top->sse[0];
-  __m128 v1 = top->sse[1];
-  __m128 v2 = top->sse[2];
-  __m128 v3 = top->sse[3];
-
-  __m128 xx = _mm_mul_ps(_mm_set1_ps(x), v0);
-  __m128 yy = _mm_mul_ps(_mm_set1_ps(y), v1);
-
-  top->sse[3] = _mm_add_ps(_mm_add_ps(xx, yy), _mm_add_ps(v2, v3));
+  __m128 xx = _mm_mul_ps(_mm_set1_ps(x), top.sse[0]);
+  __m128 yy = _mm_mul_ps(_mm_set1_ps(y), top.sse[1]);
+  top.sse[3] = _mm_add_ps(_mm_add_ps(xx, yy), _mm_add_ps(top.sse[2], top.sse[3]));
 #else
   for (i32 i = 0; i < 4; i++) {
-    top->cols[3][i] = x * top->cols[0][i] + y * top->cols[1][i] +
-                      top->cols[2][i] + top->cols[3][i];
+    top.cols[3][i] = x * top.cols[0][i] + y * top.cols[1][i] +
+                      top.cols[2][i] + top.cols[3][i];
   }
 #endif
+
+  renderer_set_top_matrix(ren, top);
 }
 
 void renderer_rotate(Renderer2D *ren, float angle) {
-  Matrix4 *top = renderer_peek_matrix(ren);
+  Matrix4 top = renderer_peek_matrix(ren);
 
 #ifdef SSE_AVAILABLE
-  __m128 v0 = top->sse[0];
-  __m128 v1 = top->sse[1];
-
+  __m128 v0 = top.sse[0];
+  __m128 v1 = top.sse[1];
   __m128 c = _mm_set1_ps(cos(-angle));
   __m128 s = _mm_set1_ps(sin(-angle));
 
-  top->sse[0] = _mm_sub_ps(_mm_mul_ps(c, v0), _mm_mul_ps(s, v1));
-  top->sse[1] = _mm_add_ps(_mm_mul_ps(s, v0), _mm_mul_ps(c, v1));
+  top.sse[0] = _mm_sub_ps(_mm_mul_ps(c, v0), _mm_mul_ps(s, v1));
+  top.sse[1] = _mm_add_ps(_mm_mul_ps(s, v0), _mm_mul_ps(c, v1));
 #else
   float c = cos(-angle);
   float s = sin(-angle);
 
   for (i32 i = 0; i < 4; i++) {
-    float x = c * top->cols[0][i] - s * top->cols[1][i];
-    float y = s * top->cols[0][i] + c * top->cols[1][i];
-    top->cols[0][i] = x;
-    top->cols[1][i] = y;
+    float x = c * top.cols[0][i] - s * top.cols[1][i];
+    float y = s * top.cols[0][i] + c * top.cols[1][i];
+    top.cols[0][i] = x;
+    top.cols[1][i] = y;
   }
 #endif
+
+  renderer_set_top_matrix(ren, top);
 }
 
 void renderer_scale(Renderer2D *ren, float x, float y) {
-  Matrix4 *top = renderer_peek_matrix(ren);
+  Matrix4 top = renderer_peek_matrix(ren);
 
 #ifdef SSE_AVAILABLE
-  __m128 v0 = top->sse[0];
-  __m128 v1 = top->sse[1];
-
-  top->sse[0] = _mm_mul_ps(v0, _mm_set1_ps(x));
-  top->sse[1] = _mm_mul_ps(v1, _mm_set1_ps(y));
+  top.sse[0] = _mm_mul_ps(top.sse[0], _mm_set1_ps(x));
+  top.sse[1] = _mm_mul_ps(top.sse[1], _mm_set1_ps(y));
 #else
   for (i32 i = 0; i < 4; i++) {
-    top->cols[0][i] *= x;
-    top->cols[1][i] *= y;
+    top.cols[0][i] *= x;
+    top.cols[1][i] *= y;
   }
 #endif
+
+  renderer_set_top_matrix(ren, top);
 }
 
 void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex) {
-  Matrix4 top = *renderer_peek_matrix(ren);
+  Matrix4 top = renderer_peek_matrix(ren);
   Vector4 a = vec4_mul_mat4(vec4_xy(pos.x, pos.y), top);
   Vector4 b = vec4_mul_mat4(vec4_xy(pos.x, pos.w), top);
   Vector4 c = vec4_mul_mat4(vec4_xy(pos.z, pos.w), top);
@@ -150,7 +150,7 @@ void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex) {
 }
 
 void renderer_push_xy(Renderer2D *ren, float x, float y) {
-  Matrix4 top = *renderer_peek_matrix(ren);
+  Matrix4 top = renderer_peek_matrix(ren);
   Vector4 v = vec4_mul_mat4(vec4_xy(x, y), top);
   sgl_v2f(v.x, v.y);
 }
@@ -323,7 +323,7 @@ void draw_line_rect(Renderer2D *ren, RectDescription *desc) {
   float x1 = desc->w - desc->ox;
   float y1 = desc->h - desc->oy;
 
-  Matrix4 top = *renderer_peek_matrix(ren);
+  Matrix4 top = renderer_peek_matrix(ren);
   Vector4 a = vec4_mul_mat4(vec4_xy(x0, y0), top);
   Vector4 b = vec4_mul_mat4(vec4_xy(x0, y1), top);
   Vector4 c = vec4_mul_mat4(vec4_xy(x1, y1), top);

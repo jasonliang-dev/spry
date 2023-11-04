@@ -113,8 +113,6 @@ static void event(const sapp_event *e) {
     g_app->mouse_state[e->mouse_button] = false;
     break;
   case SAPP_EVENTTYPE_MOUSE_MOVE:
-    g_app->mouse_dx = e->mouse_dx;
-    g_app->mouse_dy = e->mouse_dy;
     g_app->mouse_x = e->mouse_x;
     g_app->mouse_y = e->mouse_y;
     break;
@@ -319,8 +317,8 @@ static void frame() {
   memcpy(g_app->prev_key_state, g_app->key_state, sizeof(g_app->key_state));
   memcpy(g_app->prev_mouse_state, g_app->mouse_state,
          sizeof(g_app->mouse_state));
-  g_app->mouse_dx = 0;
-  g_app->mouse_dy = 0;
+  g_app->prev_mouse_x = g_app->mouse_x;
+  g_app->prev_mouse_y = g_app->mouse_y;
   g_app->scroll_x = 0;
   g_app->scroll_y = 0;
 

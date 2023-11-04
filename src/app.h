@@ -58,8 +58,8 @@ struct App {
 
   bool mouse_state[3];
   bool prev_mouse_state[3];
-  float mouse_dx;
-  float mouse_dy;
+  float prev_mouse_x;
+  float prev_mouse_y;
   float mouse_x;
   float mouse_y;
   float scroll_x;

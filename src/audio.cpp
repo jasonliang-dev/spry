@@ -18,7 +18,7 @@ bool audio_load(Audio *audio, Archive *ar, String filepath) {
   }
   defer(ma_decoder_uninit(&decoder));
 
-  u64 frames = 0;
+  ma_uint64 frames = 0;
   res = ma_data_source_get_length_in_pcm_frames(&decoder, &frames);
   if (res != MA_SUCCESS) {
     return false;
@@ -41,7 +41,7 @@ bool audio_load(Audio *audio, Archive *ar, String filepath) {
   }
 
   audio->buf = buf;
-  audio->frames = frames;
+  audio->frames = (u64)frames;
   audio->format = format;
   audio->channels = channels;
   audio->sample_rate = sample_rate;

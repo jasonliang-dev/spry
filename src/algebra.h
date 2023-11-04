@@ -51,15 +51,10 @@ union Matrix4 {
 
 inline Vector4 vec4_mul_mat4(Vector4 v, Matrix4 m) {
 #ifdef SSE_AVAILABLE
-  __m128 v0 = m.sse[0];
-  __m128 v1 = m.sse[1];
-  __m128 v2 = m.sse[2];
-  __m128 v3 = m.sse[3];
-
-  __m128 mul0 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0x00), v0);
-  __m128 mul1 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0x55), v1);
-  __m128 mul2 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0xaa), v2);
-  __m128 mul3 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0xff), v3);
+  __m128 mul0 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0x00), m.sse[0]);
+  __m128 mul1 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0x55), m.sse[1]);
+  __m128 mul2 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0xaa), m.sse[2]);
+  __m128 mul3 = _mm_mul_ps(_mm_shuffle_ps(v.sse, v.sse, 0xff), m.sse[3]);
 
   Vector4 out = {};
   out.sse = _mm_add_ps(_mm_add_ps(mul0, mul1), _mm_add_ps(mul2, mul3));
