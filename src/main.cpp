@@ -78,7 +78,10 @@ static void init() {
       SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
   g_pipeline = sgl_make_pipeline(sg_pipline);
 
-  ma_result res = ma_engine_init(nullptr, &g_app->audio_engine);
+  ma_engine_config ma_config = {};
+  ma_config.channels = 2;
+  ma_config.sampleRate = 44100;
+  ma_result res = ma_engine_init(&ma_config, &g_app->audio_engine);
   if (res != MA_SUCCESS) {
     fatal_error("failed to initialize audio engine");
   }

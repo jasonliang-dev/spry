@@ -390,6 +390,8 @@ if (php_sapi_name() === "cli") {
       header("Content-Type: text/css");
     } else if (str_ends_with($uri, ".js")) {
       header("Content-Type: text/javascript");
+    } else if (str_ends_with($uri, ".wasm")) {
+      header("Content-Type: application/wasm");
     }
     echo $data;
   } else {
