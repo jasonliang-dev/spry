@@ -34,6 +34,7 @@ App *g_app;
 #include "sprite.cpp"
 #include "strings.cpp"
 #include "tilemap.cpp"
+#include "my_json.cpp"
 
 #include "main.cpp"
 

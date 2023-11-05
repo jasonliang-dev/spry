@@ -2,7 +2,7 @@
 
 #include "prelude.h"
 
-String substr(String str, u64 i, i64 count);
+String substr(String str, u64 i, u64 j);
 bool starts_with(String hay, String match);
 bool ends_with(String hay, String match);
 u64 first_of(String hay, char c);
@@ -67,12 +67,10 @@ void string_builder_clear(StringBuilder *sb);
 void string_builder_swap_filename(StringBuilder *sb, String filepath,
                                   String file);
 
-FORMAT_ARGS(1)
-StringBuilder str_format(const char *fmt, ...);
-
 inline String string_builder_as_string(StringBuilder *sb) {
   return {sb->data, sb->len};
 }
-inline void string_builder_concat(StringBuilder *sb, char *cstr) {
-  string_builder_concat(sb, {cstr, strlen(cstr)});
-}
+
+FORMAT_ARGS(1) String str_format(const char *fmt, ...);
+
+double string_to_double(String str);

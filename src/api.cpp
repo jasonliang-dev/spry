@@ -1,6 +1,5 @@
 #include "api.h"
 #include "app.h"
-#include "archive.h"
 #include "atlas.h"
 #include "audio.h"
 #include "box2d/b2_body.h"
@@ -477,34 +476,24 @@ static int mt_sound_set_fade(lua_State *L) {
   lua_Number from = luaL_optnumber(L, 2, 0);
   lua_Number to = luaL_optnumber(L, 3, 0);
   lua_Number ms = luaL_optnumber(L, 4, 0);
-  ma_sound_set_fade_in_milliseconds(sound_ma(L), (float)from, (float)to, (u64)ms);
+  ma_sound_set_fade_in_milliseconds(sound_ma(L), (float)from, (float)to,
+                                    (u64)ms);
   return 0;
 }
 
 static int open_mt_sound(lua_State *L) {
   luaL_Reg reg[] = {
-      {"__gc", mt_sound_gc},
-      {"frames", mt_sound_frames},
-      {"secs", mt_sound_secs},
-      {"start", mt_sound_start},
-      {"stop", mt_sound_stop},
-      {"seek", mt_sound_seek},
-      {"vol", mt_sound_vol},
-      {"set_vol", mt_sound_set_vol},
-      {"pan", mt_sound_pan},
-      {"set_pan", mt_sound_set_pan},
-      {"pitch", mt_sound_pitch},
-      {"set_pitch", mt_sound_set_pitch},
-      {"loop", mt_sound_loop},
-      {"set_loop", mt_sound_set_loop},
-      {"pos", mt_sound_pos},
-      {"set_pos", mt_sound_set_pos},
-      {"dir", mt_sound_dir},
-      {"set_dir", mt_sound_set_dir},
-      {"vel", mt_sound_vel},
-      {"set_vel", mt_sound_set_vel},
-      {"set_fade", mt_sound_set_fade},
-      {nullptr, nullptr},
+      {"__gc", mt_sound_gc},           {"frames", mt_sound_frames},
+      {"secs", mt_sound_secs},         {"start", mt_sound_start},
+      {"stop", mt_sound_stop},         {"seek", mt_sound_seek},
+      {"vol", mt_sound_vol},           {"set_vol", mt_sound_set_vol},
+      {"pan", mt_sound_pan},           {"set_pan", mt_sound_set_pan},
+      {"pitch", mt_sound_pitch},       {"set_pitch", mt_sound_set_pitch},
+      {"loop", mt_sound_loop},         {"set_loop", mt_sound_set_loop},
+      {"pos", mt_sound_pos},           {"set_pos", mt_sound_set_pos},
+      {"dir", mt_sound_dir},           {"set_dir", mt_sound_set_dir},
+      {"vel", mt_sound_vel},           {"set_vel", mt_sound_set_vel},
+      {"set_fade", mt_sound_set_fade}, {nullptr, nullptr},
   };
 
   luax_new_class(L, "mt_sound", reg);

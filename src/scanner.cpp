@@ -20,18 +20,6 @@ static char peek(Scanner *s) {
   }
 }
 
-static bool is_whitespace(char c) {
-  switch (c) {
-  case '\n':
-  case '\r':
-  case '\t':
-  case ' ': return true;
-  }
-  return false;
-}
-
-static bool is_digit(char c) { return c >= '0' && c <= '9'; }
-
 static void skip_whitespace(Scanner *s) {
   while (is_whitespace(peek(s)) && peek(s) != 0) {
     advance(s);

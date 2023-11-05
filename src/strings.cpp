@@ -2,15 +2,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-String substr(String str, u64 i, i64 count) {
-  if (count <= 0) {
-    i64 len = (i64)str.len - (i64)i + count;
-    assert(len >= 0);
-    return {&str.data[i], (u64)len};
-  } else {
-    assert((i64)i + count <= (i64)str.len);
-    return {&str.data[i], (u64)count};
-  }
+String substr(String str, u64 i, u64 j) {
+  assert(i <= j);
+  assert(j <= (i64)str.len);
+  return {&str.data[i], j - i};
 }
 
 bool starts_with(String hay, String match) {
@@ -24,7 +19,7 @@ bool ends_with(String hay, String match) {
   if (hay.len < match.len) {
     return false;
   }
-  return substr(hay, hay.len - match.len, match.len) == match;
+  return substr(hay, hay.len - match.len, hay.len) == match;
 }
 
 u64 first_of(String hay, char c) {
@@ -247,25 +242,59 @@ void string_builder_swap_filename(StringBuilder *sb, String filepath,
   string_builder_concat(sb, file);
 }
 
-StringBuilder str_format(const char *fmt, ...) {
-  StringBuilder sb = string_builder_make();
-
+String str_format(const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
   i32 len = vsnprintf(nullptr, 0, fmt, args);
   va_end(args);
 
   if (len > 0) {
-    if (len + 1 >= sb.capacity) {
-      string_builder_reserve(&sb, len + 1);
-    }
-
+    char *data = (char *)mem_alloc(len + 1);
     va_start(args, fmt);
-    vsnprintf(sb.data, sb.capacity, fmt, args);
+    vsnprintf(data, len + 1, fmt, args);
     va_end(args);
-
-    sb.len = len;
+    return {data, (u64)len};
   }
 
-  return sb;
+  return {};
+}
+
+double string_to_double(String str) {
+  double n = 0;
+  double sign = 1;
+
+  if (str.len == 0) {
+    return n;
+  }
+
+  u64 i = 0;
+  if (str.data[0] == '-' && str.len > 1 && is_digit(str.data[1])) {
+    i++;
+    sign = -1;
+  }
+
+  while (i < str.len) {
+    if (!is_digit(str.data[i])) {
+      break;
+    }
+
+    n = n * 10 + (str.data[i] - '0');
+    i++;
+  }
+
+  if (i < str.len && str.data[i] == '.') {
+    i++;
+    double place = 10;
+    while (i < str.len) {
+      if (!is_digit(str.data[i])) {
+        break;
+      }
+
+      n += (str.data[i] - '0') / place;
+      place *= 10;
+      i++;
+    }
+  }
+
+  return n * sign;
 }

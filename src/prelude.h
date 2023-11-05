@@ -116,6 +116,22 @@ extern Allocator g_allocator;
   g_allocator.alloc(&g_allocator, bytes, __FILE__, __LINE__)
 #define mem_free(ptr) g_allocator.free(&g_allocator, ptr)
 
+inline bool is_whitespace(char c) {
+  switch (c) {
+  case '\n':
+  case '\r':
+  case '\t':
+  case ' ': return true;
+  }
+  return false;
+}
+
+inline bool is_alpha(char c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+inline bool is_digit(char c) { return c >= '0' && c <= '9'; }
+
 struct String {
   char *data = nullptr;
   u64 len = 0;

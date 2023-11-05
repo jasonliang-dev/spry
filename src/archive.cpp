@@ -49,13 +49,11 @@ static bool list_all_files_help(Array<String> *files, String path) {
 
     if (strcmp(file.name, ".") != 0 && strcmp(file.name, "..") != 0) {
       if (file.is_dir) {
-        StringBuilder sb = str_format("%s%s/", path.data, file.name);
-        defer(string_builder_trash(&sb));
-
-        list_all_files_help(files, string_builder_as_string(&sb));
+        String s = str_format("%s%s/", path.data, file.name);
+        defer(mem_free(s.data));
+        list_all_files_help(files, s);
       } else {
-        StringBuilder sb = str_format("%s%s", path.data, file.name);
-        array_push(files, string_builder_as_string(&sb));
+        array_push(files, str_format("%s%s", path.data, file.name));
       }
     }
 
