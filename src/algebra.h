@@ -11,6 +11,7 @@ union Vector4 {
   struct {
     float x, y, z, w;
   };
+  float arr[4];
 #ifdef SSE_AVAILABLE
   __m128 sse;
 #endif
@@ -61,25 +62,12 @@ inline Vector4 vec4_mul_mat4(Vector4 v, Matrix4 m) {
   return out;
 #else
   Vector4 out = {};
-  out.x = v.x * m.cols[0][0];
-  out.y = v.x * m.cols[0][1];
-  out.z = v.x * m.cols[0][2];
-  out.w = v.x * m.cols[0][3];
-
-  out.x += v.y * m.cols[1][0];
-  out.y += v.y * m.cols[1][1];
-  out.z += v.y * m.cols[1][2];
-  out.w += v.y * m.cols[1][3];
-
-  out.x += v.z * m.cols[2][0];
-  out.y += v.z * m.cols[2][1];
-  out.z += v.z * m.cols[2][2];
-  out.w += v.z * m.cols[2][3];
-
-  out.x += v.w * m.cols[3][0];
-  out.y += v.w * m.cols[3][1];
-  out.z += v.w * m.cols[3][2];
-  out.w += v.w * m.cols[3][3];
+  for (i32 i = 0; i < 4; i++) {
+    out.x += v.arr[i] * m.cols[i][0];
+    out.y += v.arr[i] * m.cols[i][1];
+    out.z += v.arr[i] * m.cols[i][2];
+    out.w += v.arr[i] * m.cols[i][3];
+  }
   return out;
 #endif
 }
