@@ -28,13 +28,13 @@ App *g_app;
 #include "draw.cpp"
 #include "font.cpp"
 #include "image.cpp"
+#include "json.cpp"
 #include "luax.cpp"
 #include "os.cpp"
 #include "scanner.cpp"
 #include "sprite.cpp"
 #include "strings.cpp"
 #include "tilemap.cpp"
-#include "my_json.cpp"
 
 #include "main.cpp"
 

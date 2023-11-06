@@ -1,4 +1,4 @@
-#include "my_json.h"
+#include "json.h"
 
 enum JSONTok : i32 {
   JSONTok_Invalid,
@@ -39,12 +39,12 @@ const char *json_tok_string(JSONTok tok) {
 
 const char *json_kind_string(JSONKind kind) {
   switch (kind) {
-  case JsonKind_Null: return "Null";
-  case JsonKind_Object: return "Object";
-  case JsonKind_Array: return "Array";
-  case JsonKind_String: return "String";
-  case JsonKind_Number: return "Number";
-  case JsonKind_Boolean: return "Boolean";
+  case JSONKind_Null: return "Null";
+  case JSONKind_Object: return "Object";
+  case JSONKind_Array: return "Array";
+  case JSONKind_String: return "String";
+  case JSONKind_Number: return "Number";
+  case JSONKind_Boolean: return "Boolean";
   default: return "?";
   }
 };
@@ -237,11 +237,11 @@ static String json_parse_object(JSONScanner *scan, HashMap<JSON> *out) {
 
     JSON key = {};
     err = json_parse_next(scan, &key);
-    if (err.len != 0) {
+    if (err.data != nullptr) {
       return err;
     }
 
-    if (key.kind != JsonKind_String) {
+    if (key.kind != JSONKind_String) {
       String s =
           str_format("expected string as object key on line: %d. got: %s",
                      (i32)scan->token.line, json_kind_string(key.kind));
@@ -261,7 +261,7 @@ static String json_parse_object(JSONScanner *scan, HashMap<JSON> *out) {
 
     JSON value = {};
     err = json_parse_next(scan, &value);
-    if (err.len != 0) {
+    if (err.data != nullptr) {
       return err;
     }
 
@@ -287,7 +287,7 @@ static String json_parse_array(JSONScanner *scan, Array<JSON> *out) {
 
     JSON value = {};
     String err = json_parse_next(scan, &value);
-    if (err.len != 0) {
+    if (err.data != nullptr) {
       return err;
     }
 
@@ -302,39 +302,39 @@ static String json_parse_array(JSONScanner *scan, Array<JSON> *out) {
 static String json_parse_next(JSONScanner *scan, JSON *out) {
   switch (scan->token.kind) {
   case JSONTok_LBrace: {
-    out->kind = JsonKind_Object;
+    out->kind = JSONKind_Object;
     return json_parse_object(scan, &out->object);
   }
   case JSONTok_LBracket: {
-    out->kind = JsonKind_Array;
+    out->kind = JSONKind_Array;
     return json_parse_array(scan, &out->array);
   }
   case JSONTok_String: {
-    out->kind = JsonKind_String;
+    out->kind = JSONKind_String;
     out->string = substr(scan->token.str, 1, scan->token.str.len - 1);
     json_scan_next(scan);
     return {};
   }
   case JSONTok_Number: {
-    out->kind = JsonKind_Number;
+    out->kind = JSONKind_Number;
     out->number = string_to_double(scan->token.str);
     json_scan_next(scan);
     return {};
   }
   case JSONTok_True: {
-    out->kind = JsonKind_Boolean;
+    out->kind = JSONKind_Boolean;
     out->boolean = true;
     json_scan_next(scan);
     return {};
   }
   case JSONTok_False: {
-    out->kind = JsonKind_Boolean;
+    out->kind = JSONKind_Boolean;
     out->boolean = false;
     json_scan_next(scan);
     return {};
   }
   case JSONTok_Null: {
-    out->kind = JsonKind_Null;
+    out->kind = JSONKind_Null;
     json_scan_next(scan);
     return {};
   }
@@ -362,12 +362,12 @@ String json_parse(JSON *json, String contents) {
   json_scan_next(&scan);
 
   String err = json_parse_next(&scan, json);
-  if (err.len != 0) {
-    return err;
+  if (err.data != nullptr) {
+    return to_cstr(err);
   }
 
   if (scan.token.kind != JSONTok_EOF) {
-    return "expected EOF";
+    return to_cstr("expected EOF");
   }
 
   return {};
@@ -375,13 +375,13 @@ String json_parse(JSON *json, String contents) {
 
 void json_trash(JSON *json) {
   switch (json->kind) {
-  case JsonKind_Object:
+  case JSONKind_Object:
     for (auto [k, v] : json->object) {
       json_trash(v);
     }
     hashmap_trash(&json->object);
     break;
-  case JsonKind_Array:
+  case JSONKind_Array:
     for (JSON &value : json->array) {
       json_trash(&value);
     }
@@ -391,62 +391,106 @@ void json_trash(JSON *json) {
   }
 }
 
-JSON json_lookup(JSON obj, String key) {
-  if (obj.kind == JsonKind_Object) {
-    JSON *value = hashmap_get(&obj.object, fnv1a(key));
+static void json_read_error(JSON *json) {
+  json->had_error = true;
+  if (json->parent) {
+    json_read_error(json->parent);
+  }
+}
+
+static bool json_is_bad(JSON *json) {
+  return json == nullptr || json->had_error;
+}
+
+JSON *json_lookup(JSON *obj, String key) {
+  if (json_is_bad(obj)) {
+    return nullptr;
+  }
+
+  if (obj->kind == JSONKind_Object) {
+    JSON *value = hashmap_get(&obj->object, fnv1a(key));
     if (value != nullptr) {
-      return *value;
+      value->parent = obj;
+      return value;
     }
   }
 
-  return {};
+  json_read_error(obj);
+  return nullptr;
 }
 
-JSON json_index(JSON arr, i32 index) {
-  if (arr.kind == JsonKind_Array) {
-    return arr.array[index];
-  } else {
+JSON *json_index(JSON *arr, i32 index) {
+  if (json_is_bad(arr)) {
+    return nullptr;
+  }
+
+  if (arr->kind == JSONKind_Array) {
+    if (index >= 0 && index < arr->array.len) {
+      JSON *value = &arr->array[index];
+      value->parent = arr;
+      return value;
+    }
+  }
+
+  json_read_error(arr);
+  return nullptr;
+}
+
+HashMap<JSON> json_object(JSON *json) {
+  if (json_is_bad(json)) {
     return {};
+  } else if (json->kind != JSONKind_Object) {
+    json_read_error(json);
+    return {};
+  } else {
+    for (auto [k, v] : json->object) {
+      v->parent = json;
+    }
+    return json->object;
   }
 }
 
-HashMap<JSON> json_object(JSON json) {
-  if (json.kind == JsonKind_Object) {
-    return json.object;
-  } else {
+Array<JSON> json_array(JSON *json) {
+  if (json_is_bad(json)) {
     return {};
+  } else if (json->kind != JSONKind_Array) {
+    json_read_error(json);
+    return {};
+  } else {
+    for (JSON &v : json->array) {
+      v.parent = json;
+    }
+    return json->array;
   }
 }
 
-Array<JSON> json_array(JSON json) {
-  if (json.kind == JsonKind_Array) {
-    return json.array;
-  } else {
+String json_string(JSON *json) {
+  if (json_is_bad(json)) {
     return {};
+  } else if (json->kind != JSONKind_String) {
+    json_read_error(json);
+    return {};
+  } else {
+    return json->string;
   }
 }
 
-String json_string(JSON json) {
-  if (json.kind == JsonKind_String) {
-    return json.string;
-  } else {
-    return {};
-  }
-}
-
-double json_number(JSON json) {
-  if (json.kind == JsonKind_Number) {
-    return json.number;
-  } else {
+double json_number(JSON *json) {
+  if (json_is_bad(json)) {
     return 0;
+  } else if (json->kind != JSONKind_Number) {
+    json_read_error(json);
+    return 0;
+  } else {
+    return json->number;
   }
 }
 
-static void json_write_string(StringBuilder *sb, JSON json, i32 level) {
-  switch (json.kind) {
-  case JsonKind_Object: {
+static void json_write_string(StringBuilder *sb, JSON *json, i32 level) {
+  switch (json->kind) {
+  case JSONKind_Object: {
     string_builder_concat(sb, "{\n");
-    for (auto [k, v] : json.object) {
+    for (auto [k, v] : json->object) {
       for (i32 i = 0; i <= level; i++) {
         string_builder_concat(sb, "  ");
       }
@@ -454,7 +498,7 @@ static void json_write_string(StringBuilder *sb, JSON json, i32 level) {
       defer(mem_free(s.data));
       string_builder_concat(sb, s);
 
-      json_write_string(sb, *v, level + 1);
+      json_write_string(sb, v, level + 1);
       string_builder_concat(sb, ",\n");
     }
     for (i32 i = 0; i < level; i++) {
@@ -463,13 +507,13 @@ static void json_write_string(StringBuilder *sb, JSON json, i32 level) {
     string_builder_concat(sb, "}");
     break;
   }
-  case JsonKind_Array: {
+  case JSONKind_Array: {
     string_builder_concat(sb, "[\n");
-    for (JSON &value : json.array) {
+    for (JSON &value : json->array) {
       for (i32 i = 0; i <= level; i++) {
         string_builder_concat(sb, "  ");
       }
-      json_write_string(sb, value, level + 1);
+      json_write_string(sb, &value, level + 1);
       string_builder_concat(sb, ",\n");
     }
     for (i32 i = 0; i < level; i++) {
@@ -478,23 +522,23 @@ static void json_write_string(StringBuilder *sb, JSON json, i32 level) {
     string_builder_concat(sb, "]");
     break;
   }
-  case JsonKind_String: {
+  case JSONKind_String: {
     string_builder_concat(sb, "\"");
-    string_builder_concat(sb, json.string);
+    string_builder_concat(sb, json->string);
     string_builder_concat(sb, "\"");
     break;
   }
-  case JsonKind_Number: {
-    String s = str_format("%d", (i32)json.number);
+  case JSONKind_Number: {
+    String s = str_format("%d", (i32)json->number);
     defer(mem_free(s.data));
     string_builder_concat(sb, s);
     break;
   }
-  case JsonKind_Boolean: {
-    string_builder_concat(sb, json.boolean ? "true" : "false");
+  case JSONKind_Boolean: {
+    string_builder_concat(sb, json->boolean ? "true" : "false");
     break;
   }
-  case JsonKind_Null: {
+  case JSONKind_Null: {
     string_builder_concat(sb, "null");
     break;
   }
@@ -502,11 +546,11 @@ static void json_write_string(StringBuilder *sb, JSON json, i32 level) {
   }
 }
 
-void json_write_string(StringBuilder *sb, JSON json) {
+void json_write_string(StringBuilder *sb, JSON *json) {
   json_write_string(sb, json, 0);
 }
 
-void json_print(JSON json) {
+void json_print(JSON *json) {
   StringBuilder sb = string_builder_make();
   defer(string_builder_trash(&sb));
   json_write_string(&sb, json);

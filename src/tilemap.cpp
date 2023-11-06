@@ -3,169 +3,93 @@
 #include "box2d/b2_fixture.h"
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_world.h"
-#include "deps/json.h"
 #include "hash_map.h"
 #include "json.h"
 #include "prelude.h"
-#include "strings.h"
 
-static void read_f32_pair(float *x, float *y, json_array_t *arr) {
-  json_array_element_t *el = arr->start;
+static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
+                            String filepath, HashMap<Image> *images) {
+  layer->identifier = to_cstr(json_lookup_string(json, "__identifier"));
+  layer->c_width = (i32)json_lookup_number(json, "__cWid");
+  layer->c_height = (i32)json_lookup_number(json, "__cHei");
+  layer->grid_size = json_lookup_number(json, "__gridSize");
 
-  *x = (float)as_int(el->value);
-  el = el->next;
+  JSON *tileset_rel_path = json_lookup(json, "__tilesetRelPath");
+  if (tileset_rel_path == nullptr) {
+    return false;
+  }
 
-  *y = (float)as_int(el->value);
-  el = el->next;
-}
+  Array<JSON> int_grid_csv = json_array(json_lookup(json, "intGridCsv"));
 
-static bool tile_from_json(TilemapTile *tile, json_object_t *value) {
-  for (ObjectEl *el : value) {
-    switch (hash(el->name)) {
-    case "px"_hash: {
-      read_f32_pair(&tile->x, &tile->y, as_array(el->value));
-      break;
-    }
-    case "src"_hash: {
-      read_f32_pair(&tile->u, &tile->v, as_array(el->value));
-      break;
-    }
-    case "f"_hash: {
-      tile->flip_bits = as_int(el->value);
-      break;
-    }
-    default: break;
+  Array<JSON> grid_tiles = json_array(json_lookup(json, "gridTiles"));
+  Array<JSON> auto_layer_tiles = json_array(json_lookup(json, "autoLayerTiles"));
+  Array<JSON> arr_tiles = grid_tiles.len != 0 ? grid_tiles : auto_layer_tiles;
+
+  Array<JSON> entity_instances =
+      json_array(json_lookup(json, "entityInstances"));
+
+  if (tileset_rel_path->kind == JSONKind_String) {
+    StringBuilder sb = string_builder_make();
+    defer(string_builder_trash(&sb));
+
+    string_builder_swap_filename(&sb, filepath, json_string(tileset_rel_path));
+
+    String fullpath = string_builder_as_string(&sb);
+    u64 key = fnv1a(fullpath);
+
+    Image *img = hashmap_get(images, key);
+    if (img != nullptr) {
+      layer->image = *img;
+    } else {
+      Image create_img = {};
+      bool ok = image_load(&create_img, ar, fullpath);
+      if (!ok) {
+        return false;
+      }
+
+      layer->image = create_img;
+      (*images)[key] = create_img;
     }
   }
 
-  return true;
-}
-
-static bool entity_from_json(TilemapEntity *entity, json_object_t *value) {
-  for (ObjectEl *el : value) {
-    switch (hash(el->name)) {
-    case "__identifier"_hash: {
-      entity->identifier = to_cstr(as_string(el->value));
-      break;
-    }
-    case "px"_hash: {
-      read_f32_pair(&entity->x, &entity->y, as_array(el->value));
-      break;
-    }
-    default: break;
-    }
+  Array<TilemapInt> grid = {};
+  array_reserve(&grid, int_grid_csv.len);
+  for (JSON &v : int_grid_csv) {
+    array_push(&grid, (TilemapInt)json_number(&v));
   }
+  layer->int_grid = grid;
 
-  return true;
-}
+  Array<TilemapTile> tiles = {};
+  array_reserve(&tiles, arr_tiles.len);
+  for (JSON &v : arr_tiles) {
+    JSON *px = json_lookup(&v, "px");
+    JSON *src = json_lookup(&v, "src");
 
-static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
-                            Archive *ar, String filepath,
-                            HashMap<Image> *images) {
-  for (ObjectEl *el : value) {
-    switch (hash(el->name)) {
-    case "__identifier"_hash: {
-      layer->identifier = to_cstr(as_string(el->value));
-      break;
-    }
-    case "__cWid"_hash: {
-      layer->c_width = as_int(el->value);
-      break;
-    }
-    case "__cHei"_hash: {
-      layer->c_height = as_int(el->value);
-      break;
-    }
-    case "__gridSize"_hash: {
-      layer->grid_size = (float)as_int(el->value);
-      break;
-    }
-    case "__tilesetRelPath"_hash: {
-      if (json_value_is_null(el->value)) {
-        break;
-      }
+    TilemapTile tile = {};
+    tile.x = json_number(json_index(px, 0));
+    tile.y = json_number(json_index(px, 1));
 
-      StringBuilder sb = string_builder_make();
-      defer(string_builder_trash(&sb));
+    tile.u = json_number(json_index(src, 0));
+    tile.v = json_number(json_index(src, 1));
 
-      string_builder_swap_filename(&sb, filepath, as_string(el->value));
-
-      String fullpath = string_builder_as_string(&sb);
-      u64 key = fnv1a(fullpath);
-
-      Image *img = hashmap_get(images, key);
-      if (img != nullptr) {
-        layer->image = *img;
-      } else {
-        Image create_img = {};
-        bool ok = image_load(&create_img, ar, fullpath);
-        if (!ok) {
-          return false;
-        }
-
-        layer->image = create_img;
-        (*images)[key] = create_img;
-      }
-
-      break;
-    }
-    case "intGridCsv"_hash: {
-      json_array_t *arr = as_array(el->value);
-
-      Array<TilemapInt> grid = {};
-      array_reserve(&grid, arr->length);
-
-      for (ArrayEl *el : arr) {
-        array_push(&grid, (TilemapInt)as_int(el->value));
-      }
-
-      layer->int_grid = grid;
-      break;
-    }
-    case "gridTiles"_hash:
-    case "autoLayerTiles"_hash: {
-      if (layer->tiles.len != 0) {
-        break;
-      }
-
-      json_array_t *arr = as_array(el->value);
-
-      Array<TilemapTile> tiles = {};
-      array_reserve(&tiles, arr->length);
-
-      for (ArrayEl *el : arr) {
-        TilemapTile tile = {};
-        bool ok = tile_from_json(&tile, as_object(el->value));
-        if (!ok) {
-          return false;
-        }
-        array_push(&tiles, tile);
-      }
-
-      layer->tiles = tiles;
-      break;
-    }
-    case "entityInstances"_hash: {
-      json_array_t *arr = as_array(el->value);
-
-      Array<TilemapEntity> entities = {};
-      array_reserve(&entities, arr->length);
-
-      for (ArrayEl *el : arr) {
-        TilemapEntity entity = {};
-        bool ok = entity_from_json(&entity, as_object(el->value));
-        if (!ok) {
-          return false;
-        }
-        array_push(&entities, entity);
-      }
-
-      layer->entities = entities;
-      break;
-    }
-    default: break;
-    }
+    tile.flip_bits = (i32)json_lookup_number(&v, "f");
+    array_push(&tiles, tile);
   }
+  layer->tiles = tiles;
+
+  Array<TilemapEntity> entities = {};
+  array_reserve(&entities, entity_instances.len);
+  for (JSON &v : entity_instances) {
+    JSON *px = json_lookup(&v, "px");
+
+    TilemapEntity entity = {};
+    entity.x = json_number(json_index(px, 0));
+    entity.y = json_number(json_index(px, 1));
+    entity.identifier = to_cstr(json_lookup_string(&v, "__identifier"));
+
+    array_push(&entities, entity);
+  }
+  layer->entities = entities;
 
   for (TilemapTile &tile : layer->tiles) {
     tile.u0 = tile.u / layer->image.width;
@@ -177,62 +101,31 @@ static bool layer_from_json(TilemapLayer *layer, json_object_t *value,
   return true;
 }
 
-static bool level_from_json(TilemapLevel *level, json_object_t *value,
-                            Archive *ar, String filepath,
-                            HashMap<Image> *images) {
-  for (ObjectEl *el : value) {
-    switch (hash(el->name)) {
-    case "identifier"_hash: {
-      level->identifier = to_cstr(as_string(el->value));
-      break;
-    }
-    case "iid"_hash: {
-      level->iid = to_cstr(as_string(el->value));
-      break;
-    }
-    case "worldX"_hash: {
-      level->world_x = as_int(el->value);
-      break;
-    }
-    case "worldY"_hash: {
-      level->world_y = as_int(el->value);
-      break;
-    }
-    case "pxWid"_hash: {
-      level->px_width = as_int(el->value);
-      break;
-    }
-    case "pxHei"_hash: {
-      level->px_height = as_int(el->value);
-      break;
-    }
-    case "layerInstances"_hash: {
-      json_array_t *arr = as_array(el->value);
+static bool level_from_json(TilemapLevel *level, JSON *json, Archive *ar,
+                            String filepath, HashMap<Image> *images) {
+  level->identifier = to_cstr(json_lookup_string(json, "identifier"));
+  level->iid = to_cstr(json_lookup_string(json, "iid"));
+  level->world_x = json_lookup_number(json, "worldX");
+  level->world_y = json_lookup_number(json, "worldY");
+  level->px_width = json_lookup_number(json, "pxWid");
+  level->px_height = json_lookup_number(json, "pxHei");
 
-      Array<TilemapLayer> layers = {};
-      array_reserve(&layers, arr->length);
+  Array<JSON> layer_instances = json_array(json_lookup(json, "layerInstances"));
 
-      for (ArrayEl *el : arr) {
-        TilemapLayer layer = {};
-        bool ok =
-            layer_from_json(&layer, as_object(el->value), ar, filepath, images);
-        if (!ok) {
-          return false;
-        }
-        array_push(&layers, layer);
-      }
-
-      level->layers = layers;
-      break;
+  Array<TilemapLayer> layers = {};
+  array_reserve(&layers, layer_instances.len);
+  for (JSON &v : layer_instances) {
+    TilemapLayer layer = {};
+    bool ok = layer_from_json(&layer, &v, ar, filepath, images);
+    if (!ok) {
+      return false;
     }
-    default: break;
-    }
+    array_push(&layers, layer);
   }
+  level->layers = layers;
 
   return true;
 }
-
-static void *json_parse_alloc(void *, size_t bytes) { return mem_alloc(bytes); }
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   String contents = {};
@@ -242,41 +135,37 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   }
   defer(mem_free(contents.data));
 
-  json_value_t *json =
-      json_parse_ex(contents.data, contents.len, json_parse_flags_default,
-                    json_parse_alloc, nullptr, nullptr);
-  defer(mem_free(json));
+  JSON json = {};
+  String err = json_parse(&json, contents);
+  if (err.data != nullptr) {
+    mem_free(err.data);
+    return false;
+  }
+  defer(json_trash(&json));
 
   HashMap<Image> images = {};
-
   Tilemap tilemap = {};
 
-  for (ObjectEl *el : as_object(json)) {
-    switch (hash(el->name)) {
-    case "levels"_hash: {
-      json_array_t *arr = as_array(el->value);
+  Array<JSON> arr_levels = json_array(json_lookup(&json, "levels"));
 
-      Array<TilemapLevel> levels = {};
-      array_reserve(&levels, arr->length);
+  Array<TilemapLevel> levels = {};
+  array_reserve(&levels, arr_levels.len);
 
-      for (ArrayEl *el : arr) {
-        TilemapLevel level = {};
-        bool ok = level_from_json(&level, as_object(el->value), ar, filepath,
-                                  &images);
-        if (!ok) {
-          return false;
-        }
-        array_push(&levels, level);
-      }
-
-      tilemap.levels = levels;
-      break;
+  for (JSON &v : arr_levels) {
+    TilemapLevel level = {};
+    bool ok = level_from_json(&level, &v, ar, filepath, &images);
+    if (!ok) {
+      return false;
     }
-    default: break;
-    }
+    array_push(&levels, level);
   }
 
+  tilemap.levels = levels;
   tilemap.images = images;
+
+  if (json.had_error) {
+    return false;
+  }
 
   printf("loaded tilemap with %llu levels\n",
          (unsigned long long)tilemap.levels.len);
