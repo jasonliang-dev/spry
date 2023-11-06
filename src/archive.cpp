@@ -2,12 +2,15 @@
 #include "deps/tinydir.h"
 #include "os.h"
 #include "prelude.h"
+#include "profile.h"
 #include "strings.h"
 #include <new>
 #include <stdio.h>
 #include <stdlib.h>
 
 static bool read_entire_file_raw(String *out, String filepath) {
+  PROFILE_FUNC();
+
   String path = to_cstr(filepath);
   defer(mem_free(path.data));
 
@@ -35,6 +38,8 @@ static bool read_entire_file_raw(String *out, String filepath) {
 }
 
 static bool list_all_files_help(Array<String> *files, String path) {
+  PROFILE_FUNC();
+
   tinydir_dir dir;
   if (path.len == 0) {
     tinydir_open(&dir, ".");
@@ -67,6 +72,8 @@ struct FileSystemArchive : Archive {
   void trash() {}
 
   bool file_exists(String filepath) {
+    PROFILE_FUNC();
+
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
 
@@ -100,6 +107,8 @@ struct ZipArchive : Archive {
   }
 
   bool file_exists(String filepath) {
+    PROFILE_FUNC();
+
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
 
@@ -118,6 +127,8 @@ struct ZipArchive : Archive {
   }
 
   bool read_entire_file(String *out, String filepath) {
+    PROFILE_FUNC();
+
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
 
@@ -150,6 +161,8 @@ struct ZipArchive : Archive {
   }
 
   bool list_all_files(Array<String> *files) {
+    PROFILE_FUNC();
+
     for (u32 i = 0; i < mz_zip_reader_get_num_files(&zip); i++) {
       mz_zip_archive_file_stat file_stat;
       mz_bool ok = mz_zip_reader_file_stat(&zip, i, &file_stat);
@@ -166,6 +179,8 @@ struct ZipArchive : Archive {
 };
 
 Archive *load_filesystem_archive(String mount) {
+  PROFILE_FUNC();
+
   String path = to_cstr(mount);
   defer(mem_free(path.data));
 
@@ -186,6 +201,8 @@ static u32 read4(char *bytes) {
 }
 
 Archive *load_zip_archive(String mount) {
+  PROFILE_FUNC();
+
   String contents;
   bool contents_ok = read_entire_file_raw(&contents, mount);
   if (!contents_ok) {

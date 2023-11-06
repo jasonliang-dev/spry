@@ -1,4 +1,5 @@
 #include "json.h"
+#include "profile.h"
 
 enum JSONTok : i32 {
   JSONTok_Invalid,
@@ -222,13 +223,12 @@ static JSONToken json_scan_next(JSONScanner *scan) {
 static String json_parse_next(JSONScanner *scan, JSON *out);
 
 static String json_parse_object(JSONScanner *scan, HashMap<JSON> *out) {
-  HashMap<JSON> obj = {};
+  PROFILE_FUNC();
 
   json_scan_next(scan); // eat brace
 
   while (true) {
     if (scan->token.kind == JSONTok_RBrace) {
-      *out = obj;
       json_scan_next(scan);
       return {};
     }
@@ -265,7 +265,7 @@ static String json_parse_object(JSONScanner *scan, HashMap<JSON> *out) {
       return err;
     }
 
-    obj[fnv1a(key.string)] = value;
+    (*out)[fnv1a(key.string)] = value;
 
     if (scan->token.kind == JSONTok_Comma) {
       json_scan_next(scan);
@@ -274,13 +274,12 @@ static String json_parse_object(JSONScanner *scan, HashMap<JSON> *out) {
 }
 
 static String json_parse_array(JSONScanner *scan, Array<JSON> *out) {
-  Array<JSON> arr = {};
+  PROFILE_FUNC();
 
   json_scan_next(scan); // eat bracket
 
   while (true) {
     if (scan->token.kind == JSONTok_RBracket) {
-      *out = arr;
       json_scan_next(scan);
       return {};
     }
@@ -291,7 +290,7 @@ static String json_parse_array(JSONScanner *scan, Array<JSON> *out) {
       return err;
     }
 
-    array_push(&arr, value);
+    array_push(out, value);
 
     if (scan->token.kind == JSONTok_Comma) {
       json_scan_next(scan);
@@ -300,6 +299,8 @@ static String json_parse_array(JSONScanner *scan, Array<JSON> *out) {
 }
 
 static String json_parse_next(JSONScanner *scan, JSON *out) {
+  PROFILE_FUNC();
+
   switch (scan->token.kind) {
   case JSONTok_LBrace: {
     out->kind = JSONKind_Object;
@@ -348,6 +349,8 @@ static String json_parse_next(JSONScanner *scan, JSON *out) {
 }
 
 String json_parse(JSON *json, String contents) {
+  PROFILE_FUNC();
+
   JSONScanner scan = {};
   scan.contents = contents;
   scan.line = 1;
@@ -494,9 +497,9 @@ static void json_write_string(StringBuilder *sb, JSON *json, i32 level) {
       for (i32 i = 0; i <= level; i++) {
         string_builder_concat(sb, "  ");
       }
-      String s = str_format("%d: ", (i32)k);
-      defer(mem_free(s.data));
-      string_builder_concat(sb, s);
+      char buf[64];
+      snprintf(buf, sizeof(buf), "%llu", (unsigned long long)k);
+      string_builder_concat(sb, buf);
 
       json_write_string(sb, v, level + 1);
       string_builder_concat(sb, ",\n");
@@ -529,9 +532,9 @@ static void json_write_string(StringBuilder *sb, JSON *json, i32 level) {
     break;
   }
   case JSONKind_Number: {
-    String s = str_format("%d", (i32)json->number);
-    defer(mem_free(s.data));
-    string_builder_concat(sb, s);
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%f", json->number);
+    string_builder_concat(sb, buf);
     break;
   }
   case JSONKind_Boolean: {

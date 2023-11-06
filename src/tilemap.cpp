@@ -6,9 +6,12 @@
 #include "hash_map.h"
 #include "json.h"
 #include "prelude.h"
+#include "profile.h"
 
 static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
                             String filepath, HashMap<Image> *images) {
+  PROFILE_FUNC();
+
   layer->identifier = to_cstr(json_lookup_string(json, "__identifier"));
   layer->c_width = (i32)json_lookup_number(json, "__cWid");
   layer->c_height = (i32)json_lookup_number(json, "__cHei");
@@ -22,7 +25,8 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
   Array<JSON> int_grid_csv = json_array(json_lookup(json, "intGridCsv"));
 
   Array<JSON> grid_tiles = json_array(json_lookup(json, "gridTiles"));
-  Array<JSON> auto_layer_tiles = json_array(json_lookup(json, "autoLayerTiles"));
+  Array<JSON> auto_layer_tiles =
+      json_array(json_lookup(json, "autoLayerTiles"));
   Array<JSON> arr_tiles = grid_tiles.len != 0 ? grid_tiles : auto_layer_tiles;
 
   Array<JSON> entity_instances =
@@ -103,6 +107,8 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
 
 static bool level_from_json(TilemapLevel *level, JSON *json, Archive *ar,
                             String filepath, HashMap<Image> *images) {
+  PROFILE_FUNC();
+
   level->identifier = to_cstr(json_lookup_string(json, "identifier"));
   level->iid = to_cstr(json_lookup_string(json, "iid"));
   level->world_x = json_lookup_number(json, "worldX");
@@ -128,6 +134,8 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Archive *ar,
 }
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
+  PROFILE_FUNC();
+
   String contents = {};
   bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
@@ -203,6 +211,8 @@ void tilemap_trash(Tilemap *tm) {
 static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
                                      float world_x, float world_y, float meter,
                                      Array<TilemapInt> *walls) {
+  PROFILE_FUNC();
+
   auto is_wall = [layer, walls](i32 y, i32 x) {
     if (x >= layer->c_width || y >= layer->c_height) {
       return false;
@@ -283,6 +293,8 @@ static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
 
 void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
                             String layer_name, Array<TilemapInt> *walls) {
+  PROFILE_FUNC();
+
   b2Body *body = nullptr;
   {
     b2BodyDef def = {};

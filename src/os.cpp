@@ -1,12 +1,13 @@
 #include "os.h"
 
-#if defined(_WIN32)
+#if defined(IS_WIN32)
 #include <direct.h>
 #include <windows.h>
-#elif defined(__EMSCRIPTEN__)
+#elif defined(IS_HTML5)
 #include <unistd.h>
-#elif defined(__linux__) || defined(__unix__)
+#elif defined(IS_LINUX)
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #endif
 
@@ -29,7 +30,7 @@ String os_program_dir() {
 String os_program_path() {
   static char s_buf[2048];
 
-#ifdef _WIN32
+#ifdef IS_WIN32
   DWORD len = GetModuleFileNameA(NULL, s_buf, array_size(s_buf));
 
   for (i32 i = 0; s_buf[i]; i++) {
@@ -39,11 +40,11 @@ String os_program_path() {
   }
 #endif
 
-#ifdef __linux__
+#ifdef IS_LINUX
   i32 len = (i32)readlink("/proc/self/exe", s_buf, array_size(s_buf));
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef IS_HTML5
   i32 len = 0;
 #endif
 
@@ -51,7 +52,7 @@ String os_program_path() {
 }
 
 u64 os_file_modtime(const char *filename) {
-#ifdef _WIN32
+#ifdef IS_WIN32
   HANDLE handle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
                              OPEN_EXISTING, 0, NULL);
 
@@ -75,7 +76,7 @@ u64 os_file_modtime(const char *filename) {
   return time.QuadPart;
 #endif
 
-#if defined(__linux__) || defined(__unix__)
+#ifdef IS_LINUX
   struct stat attrib = {};
   i32 err = stat(filename, &attrib);
   if (err == 0) {
@@ -91,14 +92,34 @@ u64 os_file_modtime(const char *filename) {
 }
 
 void os_sleep(u32 ms) {
-#ifdef _WIN32
+#ifdef IS_WIN32
   Sleep(ms);
 #endif
 
-#if defined(__linux__) || defined(__unix__)
+#ifdef IS_LINUX
   struct timespec ts;
   ts.tv_sec = ms / 1000;
   ts.tv_nsec = (ms % 1000) * 1000000;
   nanosleep(&ts, &ts);
+#endif
+}
+
+i32 os_process_id() {
+#ifdef IS_WIN32
+  return (i32)GetCurrentProcessId();
+#endif
+
+#ifdef IS_LINUX
+  return (i32)getpid();
+#endif
+}
+
+i32 os_thread_id() {
+#ifdef IS_WIN32
+  return (i32)GetCurrentThreadId();
+#endif
+
+#ifdef IS_LINUX
+  return (i32)syscall(SYS_gettid);
 #endif
 }

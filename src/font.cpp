@@ -6,6 +6,8 @@
 #include <stdio.h>
 
 bool font_load(FontFamily *font, Archive *ar, String filepath) {
+  PROFILE_FUNC();
+
   String contents = {};
   bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
@@ -165,6 +167,8 @@ static stb_uint stb_decompress(stb_uchar *output, stb_uchar *i,
 // end stb.h
 
 void font_load_default(FontFamily *font) {
+  PROFILE_FUNC();
+
   u32 size = stb_decompress_length((u8 *)cousine_compressed_data);
   char *data = (char *)mem_alloc(size);
   stb_decompress((u8 *)data, (u8 *)cousine_compressed_data,
@@ -201,6 +205,8 @@ static FontKey font_key(float size, i32 charcode) {
 }
 
 static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
+  PROFILE_FUNC();
+
   i32 width = 128;
   i32 height = 128;
 

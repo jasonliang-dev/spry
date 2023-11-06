@@ -4,6 +4,7 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "prelude.h"
+#include "profile.h"
 #include "strings.h"
 #include <math.h>
 
@@ -83,11 +84,12 @@ void renderer_translate(Renderer2D *ren, float x, float y) {
 #ifdef SSE_AVAILABLE
   __m128 xx = _mm_mul_ps(_mm_set1_ps(x), top.sse[0]);
   __m128 yy = _mm_mul_ps(_mm_set1_ps(y), top.sse[1]);
-  top.sse[3] = _mm_add_ps(_mm_add_ps(xx, yy), _mm_add_ps(top.sse[2], top.sse[3]));
+  top.sse[3] =
+      _mm_add_ps(_mm_add_ps(xx, yy), _mm_add_ps(top.sse[2], top.sse[3]));
 #else
   for (i32 i = 0; i < 4; i++) {
-    top.cols[3][i] = x * top.cols[0][i] + y * top.cols[1][i] +
-                      top.cols[2][i] + top.cols[3][i];
+    top.cols[3][i] = x * top.cols[0][i] + y * top.cols[1][i] + top.cols[2][i] +
+                     top.cols[3][i];
   }
 #endif
 
@@ -156,6 +158,8 @@ void renderer_push_xy(Renderer2D *ren, float x, float y) {
 }
 
 void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
+  PROFILE_FUNC();
+
   bool ok = renderer_push_matrix(ren);
   if (!ok) {
     return;
@@ -183,6 +187,8 @@ void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
 }
 
 void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
+  PROFILE_FUNC();
+
   Sprite *spr = &g_app->assets[sr->sprite].sprite;
   SpriteLoop *loop = hashmap_get(&spr->by_tag, sr->loop);
 
@@ -222,6 +228,8 @@ void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
 
 void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
                String text) {
+  PROFILE_FUNC();
+
   float start_x = x;
   y += size;
   sgl_enable_texture();
@@ -252,6 +260,8 @@ void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
 }
 
 void draw_tilemap(Renderer2D *ren, Tilemap *tm) {
+  PROFILE_FUNC();
+
   sgl_enable_texture();
   renderer_apply_color(ren);
   for (TilemapLevel &level : tm->levels) {
@@ -281,6 +291,8 @@ void draw_tilemap(Renderer2D *ren, Tilemap *tm) {
 }
 
 void draw_filled_rect(Renderer2D *ren, RectDescription *desc) {
+  PROFILE_FUNC();
+
   bool ok = renderer_push_matrix(ren);
   if (!ok) {
     return;
@@ -306,6 +318,8 @@ void draw_filled_rect(Renderer2D *ren, RectDescription *desc) {
 }
 
 void draw_line_rect(Renderer2D *ren, RectDescription *desc) {
+  PROFILE_FUNC();
+
   bool ok = renderer_push_matrix(ren);
   if (!ok) {
     return;
@@ -341,6 +355,8 @@ void draw_line_rect(Renderer2D *ren, RectDescription *desc) {
 }
 
 void draw_line_circle(Renderer2D *ren, float x, float y, float radius) {
+  PROFILE_FUNC();
+
   sgl_disable_texture();
   sgl_begin_line_strip();
 
@@ -356,6 +372,8 @@ void draw_line_circle(Renderer2D *ren, float x, float y, float radius) {
 }
 
 void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1) {
+  PROFILE_FUNC();
+
   sgl_disable_texture();
   sgl_begin_lines();
 

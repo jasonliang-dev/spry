@@ -9,15 +9,6 @@
 
 #include "app.h"
 
-// extern(prelude.h)
-#ifdef DEBUG
-Allocator g_allocator = debug_allocator();
-#endif
-
-#ifdef RELEASE
-Allocator g_allocator = heap_allocator();
-#endif
-
 // extern(app.h)
 App *g_app;
 

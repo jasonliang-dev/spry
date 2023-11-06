@@ -1,6 +1,7 @@
 #include "api.h"
 #include "app.h"
 #include "archive.h"
+#include "array.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/lua/lualib.h"
@@ -17,6 +18,7 @@
 #include "luax.h"
 #include "os.h"
 #include "prelude.h"
+#include "profile.h"
 #include "sprite.h"
 #include "strings.h"
 #include "tilemap.h"
@@ -57,46 +59,59 @@ static void sokol_free(void *ptr, void *) {
 }
 
 static void init() {
-  sg_desc sg = {};
-  sg.logger.func = slog_func;
-  sg.context = sapp_sgcontext();
-  sg.allocator.alloc = sokol_alloc;
-  sg.allocator.free = sokol_free;
-  sg_setup(sg);
+  PROFILE_FUNC();
 
-  sgl_desc_t sgl = {};
-  sgl.logger.func = slog_func;
-  sgl.allocator.alloc = sokol_alloc;
-  sgl.allocator.free = sokol_free;
-  sgl_setup(sgl);
+  {
+    PROFILE_BLOCK("sokol");
 
-  sg_pipeline_desc sg_pipline = {};
-  sg_pipline.depth.write_enabled = true;
-  sg_pipline.colors[0].blend.enabled = true;
-  sg_pipline.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
-  sg_pipline.colors[0].blend.dst_factor_rgb =
-      SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-  g_pipeline = sgl_make_pipeline(sg_pipline);
+    sg_desc sg = {};
+    sg.logger.func = slog_func;
+    sg.context = sapp_sgcontext();
+    sg.allocator.alloc = sokol_alloc;
+    sg.allocator.free = sokol_free;
+    sg_setup(sg);
 
-  ma_engine_config ma_config = {};
-  ma_config.channels = 2;
-  ma_config.sampleRate = 44100;
-  ma_result res = ma_engine_init(&ma_config, &g_app->audio_engine);
-  if (res != MA_SUCCESS) {
-    fatal_error("failed to initialize audio engine");
+    sgl_desc_t sgl = {};
+    sgl.logger.func = slog_func;
+    sgl.allocator.alloc = sokol_alloc;
+    sgl.allocator.free = sokol_free;
+    sgl_setup(sgl);
+
+    sg_pipeline_desc sg_pipline = {};
+    sg_pipline.depth.write_enabled = true;
+    sg_pipline.colors[0].blend.enabled = true;
+    sg_pipline.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
+    sg_pipline.colors[0].blend.dst_factor_rgb =
+        SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    g_pipeline = sgl_make_pipeline(sg_pipline);
+  }
+
+  {
+    PROFILE_BLOCK("miniaudio");
+
+    ma_engine_config ma_config = {};
+    ma_config.channels = 2;
+    ma_config.sampleRate = 44100;
+    ma_result res = ma_engine_init(&ma_config, &g_app->audio_engine);
+    if (res != MA_SUCCESS) {
+      fatal_error("failed to initialize audio engine");
+    }
   }
 
   renderer_setup(&g_app->renderer);
 
-  stm_setup();
   g_app->time.last = stm_now();
 
-  if (!g_app->error_mode) {
-    lua_getglobal(L, "spry");
-    lua_getfield(L, -1, "start");
-    lua_remove(L, -2);
-    if (lua_pcall(L, 0, 0, 1) != LUA_OK) {
-      lua_pop(L, 1);
+  {
+    PROFILE_BLOCK("spry.start");
+
+    if (!g_app->error_mode) {
+      lua_getglobal(L, "spry");
+      lua_getfield(L, -1, "start");
+      lua_remove(L, -2);
+      if (lua_pcall(L, 0, 0, 1) != LUA_OK) {
+        lua_pop(L, 1);
+      }
     }
   }
 
@@ -128,6 +143,8 @@ static void event(const sapp_event *e) {
 }
 
 static i32 require_lua_script(Archive *ar, String filepath) {
+  PROFILE_FUNC();
+
   if (g_app->error_mode) {
     return LUA_REFNIL;
   }
@@ -204,6 +221,8 @@ static i32 require_lua_script(Archive *ar, String filepath) {
 }
 
 static void frame() {
+  PROFILE_FUNC();
+
   {
     AppTime *time = &g_app->time;
     u64 time_now = stm_now();
@@ -237,23 +256,31 @@ static void frame() {
 #endif
   }
 
-  sg_pass_action pass = {};
-  pass.colors[0].action = SG_ACTION_CLEAR;
-  if (g_app->error_mode) {
-    pass.colors[0].value = {0.0f, 0.0f, 0.0f, 1.0f};
-  } else {
-    pass.colors[0].value.r = g_app->renderer.clear_color[0];
-    pass.colors[0].value.g = g_app->renderer.clear_color[1];
-    pass.colors[0].value.b = g_app->renderer.clear_color[2];
-    pass.colors[0].value.a = g_app->renderer.clear_color[3];
+  {
+    PROFILE_BLOCK("begin render pass");
+
+    sg_pass_action pass = {};
+    pass.colors[0].action = SG_ACTION_CLEAR;
+    if (g_app->error_mode) {
+      pass.colors[0].value = {0.0f, 0.0f, 0.0f, 1.0f};
+    } else {
+      pass.colors[0].value.r = g_app->renderer.clear_color[0];
+      pass.colors[0].value.g = g_app->renderer.clear_color[1];
+      pass.colors[0].value.b = g_app->renderer.clear_color[2];
+      pass.colors[0].value.a = g_app->renderer.clear_color[3];
+    }
+    sg_begin_default_pass(pass, sapp_width(), sapp_height());
+
+    {
+      PROFILE_BLOCK("setup sgl");
+
+      sgl_defaults();
+      sgl_load_pipeline(g_pipeline);
+
+      sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
+      sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
+    }
   }
-  sg_begin_default_pass(pass, sapp_width(), sapp_height());
-
-  sgl_defaults();
-  sgl_load_pipeline(g_pipeline);
-
-  sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
-  sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
 
   if (g_app->error_mode) {
     if (!g_app->default_font_loaded) {
@@ -293,11 +320,15 @@ static void frame() {
     }
   }
 
-  if (!g_app->error_mode) {
-    lua_getfield(L, -1, "frame");
-    lua_pushnumber(L, g_app->time.delta);
-    if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
-      lua_pop(L, 1);
+  {
+    PROFILE_BLOCK("spry.frame");
+
+    if (!g_app->error_mode) {
+      lua_getfield(L, -1, "frame");
+      lua_pushnumber(L, g_app->time.delta);
+      if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
+        lua_pop(L, 1);
+      }
     }
   }
 
@@ -307,15 +338,19 @@ static void frame() {
     assert(lua_gettop(L) == 1);
   }
 
-  sgl_draw();
+  {
+    PROFILE_BLOCK("end render pass");
 
-  sgl_error_t sgl_err = sgl_error();
-  if (sgl_err != SGL_NO_ERROR) {
-    panic("a draw error occurred: %d", sgl_err);
+    sgl_draw();
+
+    sgl_error_t sgl_err = sgl_error();
+    if (sgl_err != SGL_NO_ERROR) {
+      panic("a draw error occurred: %d", sgl_err);
+    }
+
+    sg_end_pass();
+    sg_commit();
   }
-
-  sg_end_pass();
-  sg_commit();
 
   memcpy(g_app->prev_key_state, g_app->key_state, sizeof(g_app->key_state));
   memcpy(g_app->prev_mouse_state, g_app->mouse_state,
@@ -341,52 +376,64 @@ static void frame() {
     }
   }
 
-  g_app->reload_time_elapsed += g_app->time.delta;
-  if (g_app->hot_reload_enabled &&
-      g_app->reload_time_elapsed > g_app->reload_interval) {
-    g_app->reload_time_elapsed -= g_app->reload_interval;
+  {
+    PROFILE_BLOCK("hot reload");
 
-    for (auto [k, v] : g_app->modules) {
-      require_lua_script(g_app->archive, v->name);
-    }
+    g_app->reload_time_elapsed += g_app->time.delta;
+    if (g_app->hot_reload_enabled &&
+        g_app->reload_time_elapsed > g_app->reload_interval) {
+      g_app->reload_time_elapsed -= g_app->reload_interval;
 
-    for (auto [k, v] : g_app->assets) {
-      u64 modtime = os_file_modtime(v->name);
-      if (modtime <= v->modtime) {
-        continue;
-      }
-      v->modtime = modtime;
+      {
+        PROFILE_BLOCK("reload lua scripts");
 
-      bool ok = false;
-      switch (v->kind) {
-      case AssetKind_Image:
-        image_trash(&v->image);
-        ok = image_load(&v->image, g_app->archive, v->name);
-        break;
-      case AssetKind_Sprite:
-        sprite_trash(&v->sprite);
-        ok = sprite_load(&v->sprite, g_app->archive, v->name);
-        break;
-      case AssetKind_Tilemap:
-        tilemap_trash(&v->tilemap);
-        ok = tilemap_load(&v->tilemap, g_app->archive, v->name);
-        break;
-      case AssetKind_None:
-      default: ok = true; break;
+        for (auto [k, v] : g_app->modules) {
+          require_lua_script(g_app->archive, v->name);
+        }
       }
 
-      if (!ok) {
-        String msg = str_format("failed to hot reload: %s", v->name);
-        defer(mem_free(msg.data));
-        fatal_error(msg);
-      } else {
-        printf("reloaded: %s\n", v->name);
+      for (auto [k, v] : g_app->assets) {
+        PROFILE_BLOCK("reload file asset");
+
+        u64 modtime = os_file_modtime(v->name);
+        if (modtime <= v->modtime) {
+          continue;
+        }
+        v->modtime = modtime;
+
+        bool ok = false;
+        switch (v->kind) {
+        case AssetKind_Image:
+          image_trash(&v->image);
+          ok = image_load(&v->image, g_app->archive, v->name);
+          break;
+        case AssetKind_Sprite:
+          sprite_trash(&v->sprite);
+          ok = sprite_load(&v->sprite, g_app->archive, v->name);
+          break;
+        case AssetKind_Tilemap:
+          tilemap_trash(&v->tilemap);
+          ok = tilemap_load(&v->tilemap, g_app->archive, v->name);
+          break;
+        case AssetKind_None:
+        default: ok = true; break;
+        }
+
+        if (!ok) {
+          String msg = str_format("failed to hot reload: %s", v->name);
+          defer(mem_free(msg.data));
+          fatal_error(msg);
+        } else {
+          printf("reloaded: %s\n", v->name);
+        }
       }
     }
   }
 }
 
-static void cleanup() {
+static void actually_cleanup() {
+  PROFILE_FUNC();
+
   for (auto [k, v] : g_app->modules) {
     mem_free(v->name);
   }
@@ -438,24 +485,61 @@ static void cleanup() {
   }
 
   mem_free(g_app);
+}
+
+static void cleanup() {
+  actually_cleanup();
 
 #ifdef DEBUG
-  i32 allocs = 0;
-  for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
-       info = info->next) {
-    allocs++;
+  {
+    StringBuilder sb = string_builder_make();
+    defer(string_builder_trash(&sb));
+
+    string_builder_swap_filename(&sb, os_program_path(), "profile.json");
+
+    FILE *f = fopen(sb.data, "w");
+    defer(fclose(f));
+
+    fputs("[", f);
+
+    char buf[1024];
+    for (TraceEvent &event : g_profile.events) {
+      i32 len = snprintf(
+          buf, sizeof(buf),
+          R"({"name":"%s","cat":"function","ph":"X","ts":%.3f,"dur":%.3f,"pid":%d,"tid":%d},)"
+          "\n",
+          event.name, stm_us(event.start),
+          stm_us(stm_diff(event.end, event.start)), g_profile.process_id,
+          g_profile.thread_id);
+
+      fwrite(buf, 1, len, f);
+    }
+
+    printf("  --- measured %llu event(s) ---\n",
+           (unsigned long long)g_profile.events.len);
+    array_trash(&g_profile.events);
   }
 
-  printf("  --- allocations (%d) ---\n", allocs);
-  for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
-       info = info->next) {
-    printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
-           info->file, info->line);
+  {
+    i32 allocs = 0;
+    for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
+         info = info->next) {
+      allocs++;
+    }
+
+    printf("  --- %d allocation(s) ---\n", allocs);
+    for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
+         info = info->next) {
+      printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
+             info->file, info->line);
+    }
   }
 #endif
 }
 
 static int spry_require_lua_script(lua_State *L) {
+  PROFILE_FUNC();
+
   String path = luax_check_string(L, 1);
   i32 ref = require_lua_script(g_app->archive, path);
 
@@ -527,6 +611,8 @@ EM_ASYNC_JS(void, web_load_files, (), {
 #endif
 
 static void setup_lua() {
+  PROFILE_FUNC();
+
   L = luaL_newstate();
 
   luaL_openlibs(L);
@@ -556,6 +642,8 @@ static void setup_lua() {
 }
 
 static void mount_files(int argc, char **argv, bool *can_hot_reload) {
+  PROFILE_FUNC();
+
 #ifdef __EMSCRIPTEN__
   String mount_dir = web_mount_dir();
   defer(free(mount_dir.data));
@@ -588,6 +676,8 @@ static void mount_files(int argc, char **argv, bool *can_hot_reload) {
 }
 
 static void load_all_lua_scripts() {
+  PROFILE_FUNC();
+
   Array<String> files = {};
   defer({
     for (String str : files) {
@@ -614,7 +704,28 @@ static void load_all_lua_scripts() {
   }
 }
 
+/* extern(prelude.h) */ Allocator g_allocator;
+
+#ifdef DEBUG
+/* extern(profile.h) */ Profile g_profile;
+#endif
+
 sapp_desc sokol_main(int argc, char **argv) {
+#ifdef DEBUG
+  g_allocator = debug_allocator();
+
+  g_profile.process_id = os_process_id();
+  g_profile.thread_id = os_thread_id();
+  array_reserve(&g_profile.events, 8192);
+#endif
+
+#ifdef RELEASE
+  g_allocator = heap_allocator();
+#endif
+
+  stm_setup();
+  PROFILE_FUNC();
+
   g_app = (App *)mem_alloc(sizeof(App));
   *g_app = {};
 
@@ -647,6 +758,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   bool hot_reload = luax_boolean_field(L, "hot_reload", true);
   bool startup_load_scripts =
       luax_boolean_field(L, "startup_load_scripts", true);
+  bool fullscreen = luax_boolean_field(L, "fullscreen", false);
   lua_Number reload_interval = luax_number_field(L, "reload_interval", 0.1);
   lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
   lua_Number target_fps = luax_number_field(L, "target_fps", 240);
@@ -675,6 +787,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   sapp.logger.func = slog_func;
   sapp.win32_console_attach = console_attach;
   sapp.swap_interval = (i32)swap_interval;
+  sapp.fullscreen = fullscreen;
   sapp.allocator.alloc = sokol_alloc;
   sapp.allocator.free = sokol_free;
 

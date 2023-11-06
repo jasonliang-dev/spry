@@ -2,9 +2,12 @@
 #include "archive.h"
 #include "deps/sokol_gfx.h"
 #include "deps/stb_image.h"
+#include "profile.h"
 #include <stdio.h>
 
 bool image_load(Image *image, Archive *ar, String filepath) {
+  PROFILE_FUNC();
+
   String contents = {};
   bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {

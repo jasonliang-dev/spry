@@ -1,8 +1,11 @@
 #include "atlas.h"
+#include "profile.h"
 #include "scanner.h"
 #include "strings.h"
 
 bool atlas_load(Atlas *atlas, Archive *ar, String filepath) {
+  PROFILE_FUNC();
+
   String contents = {};
   bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {

@@ -2,8 +2,11 @@
 #include "app.h"
 #include "deps/cute_aseprite.h"
 #include "deps/sokol_gfx.h"
+#include "profile.h"
 
 bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
+  PROFILE_FUNC();
+
   String contents;
   bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
