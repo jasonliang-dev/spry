@@ -517,9 +517,9 @@ static void cleanup() {
     for (TraceEvent &event : g_profile.events) {
       i32 len = snprintf(
           buf, sizeof(buf),
-          R"({"name":"%s","cat":"function","ph":"X","ts":%.3f,"dur":%.3f,"pid":%d,"tid":%d},)"
+          R"({"name":"%s","cat":"%s","ph":"X","ts":%.3f,"dur":%.3f,"pid":%d,"tid":%d},)"
           "\n",
-          event.name, stm_us(event.start),
+          event.name, event.cat, stm_us(event.start),
           stm_us(stm_diff(event.end, event.start)), g_profile.process_id,
           g_profile.thread_id);
 
@@ -715,6 +715,7 @@ static void load_all_lua_scripts() {
   }
 }
 
+/* extern(app.h) */ App *g_app;
 /* extern(prelude.h) */ Allocator g_allocator;
 
 #ifdef DEBUG
@@ -727,7 +728,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   g_profile.process_id = os_process_id();
   g_profile.thread_id = os_thread_id();
-  array_reserve(&g_profile.events, 8192);
+  array_reserve(&g_profile.events, 16384);
 #endif
 
 #ifdef RELEASE
@@ -786,7 +787,10 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   g_app->hot_reload_enabled = can_hot_reload && hot_reload;
   g_app->reload_interval = reload_interval;
-  g_app->time.target_ticks = 1000000000 / target_fps;
+
+  if (target_fps != 0) {
+    g_app->time.target_ticks = 1000000000 / target_fps;
+  }
 
   sapp_desc sapp = {};
   sapp.init_cb = init;

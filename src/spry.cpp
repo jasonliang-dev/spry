@@ -9,9 +9,6 @@
 
 #include "app.h"
 
-// extern(app.h)
-App *g_app;
-
 #include "api.cpp"
 #include "archive.cpp"
 #include "atlas.cpp"
