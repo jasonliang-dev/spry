@@ -377,6 +377,8 @@ String json_parse(JSON *json, String contents) {
 }
 
 void json_trash(JSON *json) {
+  PROFILE_FUNC();
+
   switch (json->kind) {
   case JSONKind_Object:
     for (auto [k, v] : json->object) {

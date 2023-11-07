@@ -16,8 +16,12 @@ bool image_load(Image *image, Archive *ar, String filepath) {
   defer(mem_free(contents.data));
 
   i32 width = 0, height = 0, channels = 0;
-  stbi_uc *data = stbi_load_from_memory((u8 *)contents.data, (i32)contents.len,
-                                        &width, &height, &channels, 4);
+  stbi_uc *data = nullptr;
+  {
+    PROFILE_BLOCK("stb_image load");
+    data = stbi_load_from_memory((u8 *)contents.data, (i32)contents.len, &width,
+                                 &height, &channels, 4);
+  }
   if (!data) {
     return false;
   }
@@ -40,16 +44,21 @@ bool image_load(Image *image, Archive *ar, String filepath) {
     }
   });
 
-  sg_image_desc desc = {};
-  desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-  desc.width = width;
-  desc.height = height;
-  desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
-  desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-  desc.wrap_w = SG_WRAP_CLAMP_TO_EDGE;
-  desc.data.subimage[0][0].ptr = data;
-  desc.data.subimage[0][0].size = width * height * 4;
-  u32 id = sg_make_image(desc).id;
+  u32 id = 0;
+  {
+    PROFILE_BLOCK("make image");
+
+    sg_image_desc desc = {};
+    desc.pixel_format = SG_PIXELFORMAT_RGBA8;
+    desc.width = width;
+    desc.height = height;
+    desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+    desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+    desc.wrap_w = SG_WRAP_CLAMP_TO_EDGE;
+    desc.data.subimage[0][0].ptr = data;
+    desc.data.subimage[0][0].size = width * height * 4;
+    id = sg_make_image(desc).id;
+  }
 
   printf("created image (%dx%d) with id %d\n", width, height, id);
 

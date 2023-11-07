@@ -231,7 +231,7 @@ static void frame() {
 
 #ifndef __EMSCRIPTEN__
     if (time->target_ticks > 0) {
-      enum { TICK_SEC = 1000000000, TICK_MS = 1000000, TICK_US = 1000 };
+      enum { TICK_MS = 1000000, TICK_US = 1000 };
 
       u64 target = time->target_ticks;
 

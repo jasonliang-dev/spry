@@ -56,50 +56,62 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
     }
   }
 
-  Array<TilemapInt> grid = {};
-  array_reserve(&grid, int_grid_csv.len);
-  for (JSON &v : int_grid_csv) {
-    array_push(&grid, (TilemapInt)json_number(&v));
+  {
+    PROFILE_BLOCK("int grid");
+
+    Array<TilemapInt> grid = {};
+    array_reserve(&grid, int_grid_csv.len);
+    for (JSON &v : int_grid_csv) {
+      array_push(&grid, (TilemapInt)json_number(&v));
+    }
+    layer->int_grid = grid;
   }
-  layer->int_grid = grid;
 
-  Array<TilemapTile> tiles = {};
-  array_reserve(&tiles, arr_tiles.len);
-  for (JSON &v : arr_tiles) {
-    JSON *px = json_lookup(&v, "px");
-    JSON *src = json_lookup(&v, "src");
+  {
+    PROFILE_BLOCK("tiles");
 
-    TilemapTile tile = {};
-    tile.x = json_number(json_index(px, 0));
-    tile.y = json_number(json_index(px, 1));
+    Array<TilemapTile> tiles = {};
+    array_reserve(&tiles, arr_tiles.len);
+    for (JSON &v : arr_tiles) {
+      JSON *px = json_lookup(&v, "px");
+      JSON *src = json_lookup(&v, "src");
 
-    tile.u = json_number(json_index(src, 0));
-    tile.v = json_number(json_index(src, 1));
+      TilemapTile tile = {};
+      tile.x = json_number(json_index(px, 0));
+      tile.y = json_number(json_index(px, 1));
 
-    tile.flip_bits = (i32)json_lookup_number(&v, "f");
-    array_push(&tiles, tile);
+      tile.u = json_number(json_index(src, 0));
+      tile.v = json_number(json_index(src, 1));
+
+      tile.flip_bits = (i32)json_lookup_number(&v, "f");
+      array_push(&tiles, tile);
+    }
+    layer->tiles = tiles;
+
+    for (TilemapTile &tile : layer->tiles) {
+      tile.u0 = tile.u / layer->image.width;
+      tile.v0 = tile.v / layer->image.height;
+      tile.u1 = (tile.u + layer->grid_size) / layer->image.width;
+      tile.v1 = (tile.v + layer->grid_size) / layer->image.height;
+    }
   }
-  layer->tiles = tiles;
 
-  Array<TilemapEntity> entities = {};
-  array_reserve(&entities, entity_instances.len);
-  for (JSON &v : entity_instances) {
-    JSON *px = json_lookup(&v, "px");
+  {
+    PROFILE_BLOCK("entities");
 
-    TilemapEntity entity = {};
-    entity.x = json_number(json_index(px, 0));
-    entity.y = json_number(json_index(px, 1));
-    entity.identifier = to_cstr(json_lookup_string(&v, "__identifier"));
+    Array<TilemapEntity> entities = {};
+    array_reserve(&entities, entity_instances.len);
+    for (JSON &v : entity_instances) {
+      JSON *px = json_lookup(&v, "px");
 
-    array_push(&entities, entity);
-  }
-  layer->entities = entities;
+      TilemapEntity entity = {};
+      entity.x = json_number(json_index(px, 0));
+      entity.y = json_number(json_index(px, 1));
+      entity.identifier = to_cstr(json_lookup_string(&v, "__identifier"));
 
-  for (TilemapTile &tile : layer->tiles) {
-    tile.u0 = tile.u / layer->image.width;
-    tile.v0 = tile.v / layer->image.height;
-    tile.u1 = (tile.u + layer->grid_size) / layer->image.width;
-    tile.v1 = (tile.v + layer->grid_size) / layer->image.height;
+      array_push(&entities, entity);
+    }
+    layer->entities = entities;
   }
 
   return true;

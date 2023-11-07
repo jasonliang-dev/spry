@@ -50,7 +50,12 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   desc.wrap_w = SG_WRAP_CLAMP_TO_EDGE;
   desc.data.subimage[0][0].ptr = pixels.data;
   desc.data.subimage[0][0].size = ase->frame_count * rect;
-  u32 id = sg_make_image(desc).id;
+
+  u32 id = 0;
+  {
+    PROFILE_BLOCK("make image");
+    id = sg_make_image(desc).id;
+  }
 
   Image img = {};
   img.id = id;
