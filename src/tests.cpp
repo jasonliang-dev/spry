@@ -1,10 +1,8 @@
 #include "array.h"
 #include "deps/utest.h"
 #include "hash_map.h"
+#include "priority_queue.h"
 #include "strings.cpp"
-
-// extern(prelude.h)
-Allocator g_allocator = debug_allocator();
 
 // prelude
 
@@ -118,15 +116,15 @@ UTEST(hash_map, lookup) {
 
   String *ten = hashmap_get(&map, 10);
   ASSERT_NE(ten, nullptr);
-  ASSERT_STREQ(ten->data, "ten");
+  ASSERT_STREQ("ten", ten->data);
 
   String *twenty = hashmap_get(&map, 20);
   ASSERT_NE(twenty, nullptr);
-  ASSERT_STREQ(twenty->data, "twenty");
+  ASSERT_STREQ("twenty", twenty->data);
 
   String *thirty = hashmap_get(&map, 30);
   ASSERT_NE(thirty, nullptr);
-  ASSERT_STREQ(thirty->data, "thirty");
+  ASSERT_STREQ("thirty", thirty->data);
 }
 
 UTEST(hash_map, unset) {
@@ -185,24 +183,116 @@ UTEST(hash_map, drop_arrays) {
   }
 }
 
+UTEST(priority_queue, empty) {
+  PriorityQueue<String> pq;
+  defer(priority_queue_trash(&pq));
+}
+
+UTEST(priority_queue, push_pop) {
+  PriorityQueue<i32> pq;
+  pq.cmp = [](i32 lhs, i32 rhs) { return lhs < rhs; };
+  defer(priority_queue_trash(&pq));
+
+  priority_queue_push(&pq, 3);
+  priority_queue_push(&pq, 1);
+  priority_queue_push(&pq, 2);
+
+  i32 n = 0;
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &n));
+  ASSERT_EQ(1, n);
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &n));
+  ASSERT_EQ(2, n);
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &n));
+  ASSERT_EQ(3, n);
+}
+
+UTEST(priority_queue, same_costs) {
+  PriorityQueue<i32> pq;
+  pq.cmp = [](i32 lhs, i32 rhs) { return lhs < rhs; };
+  defer(priority_queue_trash(&pq));
+
+  priority_queue_push(&pq, 3);
+  priority_queue_push(&pq, 3);
+  priority_queue_push(&pq, 3);
+  priority_queue_push(&pq, 1);
+
+  i32 n = 0;
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &n));
+  ASSERT_EQ(1, n);
+
+  for (i32 i = 0; i < 3; i++) {
+    ASSERT_TRUE(priority_queue_pop(&pq, &n));
+    ASSERT_EQ(3, n);
+  }
+}
+
+UTEST(priority_queue, max_heap) {
+  PriorityQueue<i32> pq;
+  pq.cmp = [](i32 lhs, i32 rhs) { return lhs > rhs; };
+  defer(priority_queue_trash(&pq));
+
+  priority_queue_push(&pq, 3);
+  priority_queue_push(&pq, 1);
+
+  i32 n = 0;
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &n));
+  ASSERT_EQ(3, n);
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &n));
+  ASSERT_EQ(1, n);
+}
+
+UTEST(priority_queue, strcmp) {
+  PriorityQueue<String> pq;
+  pq.cmp = [](String lhs, String rhs) {
+    return strcmp(lhs.data, rhs.data) < 0;
+  };
+  defer(priority_queue_trash(&pq));
+
+  priority_queue_push(&pq, String("a"));
+  priority_queue_push(&pq, String("d"));
+  priority_queue_push(&pq, String("b"));
+  priority_queue_push(&pq, String("c"));
+
+  String s = {};
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
+  ASSERT_STREQ("a", s.data);
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
+  ASSERT_STREQ("b", s.data);
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
+  ASSERT_STREQ("c", s.data);
+
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
+  ASSERT_STREQ("d", s.data);
+}
+
 // main
 
 UTEST_STATE();
 
-static void dump_allocs(Allocator *a) {
-  i32 allocs = 0;
-  for (DebugAllocInfo *info = a->head; info != nullptr; info = info->next) {
-    allocs++;
-  }
-
-  printf("  --- allocations (%d) ---\n", allocs);
-  for (DebugAllocInfo *info = a->head; info != nullptr; info = info->next) {
-    printf("  %10llu bytes: %s:%d\n", info->size, info->file, info->line);
-  }
-}
+/* extern(prelude.h) */ Allocator *g_allocator;
 
 int main(int argc, char **argv) {
+  g_allocator = new DebugAllocator();
   int exit_code = utest_main(argc, argv);
-  dump_allocs(&g_allocator);
+
+  DebugAllocator *allocator = (DebugAllocator *)g_allocator;
+  i32 allocs = 0;
+  for (DebugAllocInfo *info = allocator->head; info != nullptr;
+       info = info->next) {
+    printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
+           info->file, info->line);
+    allocs++;
+  }
+  printf("  --- %d allocation(s) ---\n", allocs);
+
   return exit_code;
 }
