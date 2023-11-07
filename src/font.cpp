@@ -2,6 +2,7 @@
 #include "deps/sokol_gfx.h"
 #include "fonts/cousine_compressed.h"
 #include "prelude.h"
+#include "profile.h"
 #include "strings.h"
 #include <stdio.h>
 

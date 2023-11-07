@@ -225,25 +225,23 @@ static void frame() {
 
   {
     AppTime *time = &g_app->time;
-    u64 time_now = stm_now();
-    time->delta = stm_sec(time_now - time->last);
-    time->last = time_now;
-
-#ifndef __EMSCRIPTEN__
+    time->delta = stm_sec(stm_laptime(&time->last));
     time->accumulator += time->delta;
 
+#ifndef __EMSCRIPTEN__
     if (time->target_fps > 0) {
-      float target_step = 1.0f / (float)time->target_fps;
+      double target_step = 1.0 / (double)time->target_fps;
 
-      while (time->accumulator < target_step) {
-        u32 ms = (u32)(target_step - time->accumulator);
-        os_sleep(ms);
+      {
+        PROFILE_BLOCK("sleep");
 
-        u64 time_now = stm_now();
-        float delta = stm_sec(time_now - time->last);
-        time->delta += delta;
-        time->last = time_now;
-        time->accumulator += delta;
+        while (time->accumulator < target_step) {
+          os_yield();
+
+          double lap = stm_sec(stm_laptime(&time->last));
+          time->delta += lap;
+          time->accumulator += lap;
+        }
       }
 
       while (time->accumulator >= 1.0f / (time->target_fps + 1)) {
@@ -271,15 +269,11 @@ static void frame() {
     }
     sg_begin_default_pass(pass, sapp_width(), sapp_height());
 
-    {
-      PROFILE_BLOCK("setup sgl");
+    sgl_defaults();
+    sgl_load_pipeline(g_pipeline);
 
-      sgl_defaults();
-      sgl_load_pipeline(g_pipeline);
-
-      sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
-      sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
-    }
+    sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
+    sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
   }
 
   if (g_app->error_mode) {

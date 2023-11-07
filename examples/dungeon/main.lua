@@ -1,5 +1,7 @@
 function spry.conf(t)
-  t.swap_interval = 1
+  t.swap_interval = 0
+  t.target_fps = 60
+  t.reload_interval = 0
   t.window_width = 800
   t.window_height = 600
 end
@@ -68,5 +70,5 @@ function spry.frame(dt)
     end
   camera:end_draw()
 
-  -- font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
+  font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))
 end

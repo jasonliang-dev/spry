@@ -91,16 +91,9 @@ u64 os_file_modtime(const char *filename) {
 #endif
 }
 
-void os_sleep(u32 ms) {
+void os_yield() {
 #ifdef IS_WIN32
-  Sleep(ms);
-#endif
-
-#ifdef IS_LINUX
-  struct timespec ts;
-  ts.tv_sec = ms / 1000;
-  ts.tv_nsec = (ms % 1000) * 1000000;
-  nanosleep(&ts, &ts);
+  YieldProcessor();
 #endif
 }
 
