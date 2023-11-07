@@ -5,6 +5,7 @@
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/lua/lualib.h"
+#include "deps/luaalloc.h"
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
@@ -27,6 +28,7 @@
 #include <emscripten.h>
 #endif
 
+static LuaAlloc *LA = nullptr;
 static lua_State *L = nullptr;
 static sgl_pipeline g_pipeline;
 
@@ -450,6 +452,7 @@ static void actually_cleanup() {
   hashmap_trash(&g_app->modules);
 
   lua_close(L);
+  luaalloc_delete(LA);
 
   if (g_app->default_font_loaded) {
     font_trash(g_app->default_font);
@@ -623,7 +626,8 @@ EM_ASYNC_JS(void, web_load_files, (), {
 static void setup_lua() {
   PROFILE_FUNC();
 
-  L = luaL_newstate();
+  LA = luaalloc_create(nullptr, nullptr);
+  L = lua_newstate(luaalloc, LA);
 
   luaL_openlibs(L);
   open_spry_api(L);

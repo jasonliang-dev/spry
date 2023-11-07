@@ -84,6 +84,7 @@
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "deps/cute_aseprite.h"
 
+#include "deps/luaalloc.c"
 #include "deps/miniz.c"
 
 #define SOKOL_IMPL
