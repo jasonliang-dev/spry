@@ -225,29 +225,46 @@ static void frame() {
 
   {
     AppTime *time = &g_app->time;
-    time->delta = stm_sec(stm_laptime(&time->last));
-    time->accumulator += time->delta;
+    u64 lap = stm_laptime(&time->last);
+    time->delta = stm_sec(lap);
+    time->accumulator += lap;
 
 #ifndef __EMSCRIPTEN__
-    if (time->target_fps > 0) {
-      double target_step = 1.0 / (double)time->target_fps;
+    if (time->target_ticks > 0) {
+      enum { TICK_SEC = 1000000000, TICK_MS = 1000000, TICK_US = 1000 };
 
-      {
-        PROFILE_BLOCK("sleep");
+      u64 target = time->target_ticks;
 
-        while (time->accumulator < target_step) {
-          os_yield();
+      if (time->accumulator < target) {
+        u64 ms = (target - time->accumulator) / TICK_MS;
+        if (ms > 0) {
+          PROFILE_BLOCK("sleep");
+          os_sleep(ms - 1);
+        }
 
-          double lap = stm_sec(stm_laptime(&time->last));
-          time->delta += lap;
+        {
+          PROFILE_BLOCK("spin loop");
+
+          u64 lap = stm_laptime(&time->last);
+          time->delta += stm_sec(lap);
           time->accumulator += lap;
+
+          while (time->accumulator < target) {
+            os_yield();
+
+            u64 lap = stm_laptime(&time->last);
+            time->delta += stm_sec(lap);
+            time->accumulator += lap;
+          }
         }
       }
 
-      while (time->accumulator >= 1.0f / (time->target_fps + 1)) {
-        time->accumulator -= 1.0f / (time->target_fps - 1);
-        if (time->accumulator < 0) {
+      u64 fuzz = TICK_US * 100;
+      while (time->accumulator >= target - fuzz) {
+        if (time->accumulator < target + fuzz) {
           time->accumulator = 0;
+        } else {
+          time->accumulator -= target + fuzz;
         }
       }
     }
@@ -717,6 +734,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   g_allocator = heap_allocator();
 #endif
 
+  os_high_timer_resolution();
   stm_setup();
   PROFILE_FUNC();
 
@@ -755,7 +773,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   bool fullscreen = luax_boolean_field(L, "fullscreen", false);
   lua_Number reload_interval = luax_number_field(L, "reload_interval", 0.1);
   lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
-  lua_Number target_fps = luax_number_field(L, "target_fps", 240);
+  lua_Number target_fps = luax_number_field(L, "target_fps", 0);
   lua_Number width = luax_number_field(L, "window_width", 800);
   lua_Number height = luax_number_field(L, "window_height", 600);
   String title = luax_string_field(L, "window_title", "Spry");
@@ -768,7 +786,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   g_app->hot_reload_enabled = can_hot_reload && hot_reload;
   g_app->reload_interval = reload_interval;
-  g_app->time.target_fps = target_fps;
+  g_app->time.target_ticks = 1000000000 / target_fps;
 
   sapp_desc sapp = {};
   sapp.init_cb = init;

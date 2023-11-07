@@ -30,9 +30,9 @@ struct Asset {
 
 struct AppTime {
   u64 last;
+  u64 accumulator;
+  u64 target_ticks;
   double delta;
-  double accumulator;
-  double target_fps;
 };
 
 struct App {

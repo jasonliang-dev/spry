@@ -3,12 +3,16 @@
 #if defined(IS_WIN32)
 #include <direct.h>
 #include <windows.h>
+#pragma comment(lib, "winmm.lib")
+
 #elif defined(IS_HTML5)
 #include <unistd.h>
+
 #elif defined(IS_LINUX)
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+
 #endif
 
 i32 os_change_dir(const char *path) { return chdir(path); }
@@ -88,6 +92,25 @@ u64 os_file_modtime(const char *filename) {
 
 #ifdef __EMSCRIPTEN__
   return 0;
+#endif
+}
+
+void os_high_timer_resolution() {
+#ifdef IS_WIN32
+  timeBeginPeriod(8);
+#endif
+}
+
+void os_sleep(u32 ms) {
+#ifdef IS_WIN32
+  Sleep(ms);
+#endif
+
+#ifdef IS_LINUX
+  struct timespec ts;
+  ts.tv_sec = ms / 1000;
+  ts.tv_nsec = (ms % 1000) * 1000000;
+  nanosleep(&ts, &ts);
 #endif
 }
 

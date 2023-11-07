@@ -213,6 +213,8 @@ static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
 
   u8 *bitmap = nullptr;
   while (bitmap == nullptr) {
+    PROFILE_BLOCK("try bake");
+
     bitmap = (u8 *)mem_alloc(width * height);
     i32 res = stbtt_BakeFontBitmap((u8 *)font->ttf.data, 0, key.size, bitmap,
                                    width, height, key.ch,
@@ -229,21 +231,31 @@ static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
   u8 *image = (u8 *)mem_alloc(width * height * 4);
   defer(mem_free(image));
 
-  for (i32 i = 0; i < width * height * 4; i += 4) {
-    image[i + 0] = 255;
-    image[i + 1] = 255;
-    image[i + 2] = 255;
-    image[i + 3] = bitmap[i / 4];
+  {
+    PROFILE_BLOCK("convert rgba");
+
+    for (i32 i = 0; i < width * height * 4; i += 4) {
+      image[i + 0] = 255;
+      image[i + 1] = 255;
+      image[i + 2] = 255;
+      image[i + 3] = bitmap[i / 4];
+    }
   }
 
-  sg_image_desc sg_image = {};
-  sg_image.width = width;
-  sg_image.height = height;
-  sg_image.min_filter = SG_FILTER_LINEAR;
-  sg_image.mag_filter = SG_FILTER_LINEAR;
-  sg_image.data.subimage[0][0].ptr = image;
-  sg_image.data.subimage[0][0].size = width * height * 4;
-  u32 id = sg_make_image(sg_image).id;
+  u32 id = 0;
+  {
+    PROFILE_BLOCK("make image");
+
+    sg_image_desc sg_image = {};
+    sg_image.width = width;
+    sg_image.height = height;
+    sg_image.min_filter = SG_FILTER_LINEAR;
+    sg_image.mag_filter = SG_FILTER_LINEAR;
+    sg_image.data.subimage[0][0].ptr = image;
+    sg_image.data.subimage[0][0].size = width * height * 4;
+
+    id = sg_make_image(sg_image).id;
+  }
 
   out->image.id = id;
   out->image.width = width;
