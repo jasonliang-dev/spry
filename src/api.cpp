@@ -1315,17 +1315,6 @@ static int spry_toggle_fullscreen(lua_State *L) {
   return 0;
 }
 
-static int spry_set_fullscreen(lua_State *L) {
-  bool want = lua_toboolean(L, 1);
-  bool current = sapp_is_fullscreen();
-
-  if (want != current) {
-    sapp_toggle_fullscreen();
-  }
-
-  return 0;
-}
-
 static int spry_window_width(lua_State *L) {
   float width = sapp_widthf();
   lua_pushnumber(L, width);
@@ -1780,7 +1769,6 @@ static int open_spry(lua_State *L) {
       {"dt", spry_dt},
       {"fullscreen", spry_fullscreen},
       {"toggle_fullscreen", spry_toggle_fullscreen},
-      {"set_fullscreen", spry_set_fullscreen},
       {"window_width", spry_window_width},
       {"window_height", spry_window_height},
       {"key_down", spry_key_down},
