@@ -38,7 +38,7 @@ static void arena_trash(Arena *a) {
 }
 
 static void *arena_bump(Arena *arena, u64 size) {
-  ArenaBlock *a = arena->head;
+    ArenaBlock *a = arena->head;
   assert(a != nullptr);
 
   u64 next = 0;
@@ -391,8 +391,6 @@ static JSONArray *reverse_list(JSONArray *head) {
 }
 
 static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
-  PROFILE_FUNC();
-
   switch (scan->token.kind) {
   case JSONTok_LBrace: {
     out->kind = JSONKind_Object;

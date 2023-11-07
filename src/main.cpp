@@ -499,7 +499,7 @@ static void actually_cleanup() {
 static void cleanup() {
   actually_cleanup();
 
-#ifdef DEBUG
+#ifdef USE_PROFILER
   {
     StringBuilder sb = string_builder_make();
     defer(string_builder_trash(&sb));
@@ -528,19 +528,19 @@ static void cleanup() {
            (unsigned long long)g_profile.events.len);
     array_trash(&g_profile.events);
   }
+#endif
 
-  {
-    DebugAllocator *allocator = (DebugAllocator *)g_allocator;
+#ifdef DEBUG
+  DebugAllocator *allocator = (DebugAllocator *)g_allocator;
 
-    i32 allocs = 0;
-    for (DebugAllocInfo *info = allocator->head; info != nullptr;
-         info = info->next) {
-      printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
-             info->file, info->line);
-      allocs++;
-    }
-    printf("  --- %d allocation(s) ---\n", allocs);
+  i32 allocs = 0;
+  for (DebugAllocInfo *info = allocator->head; info != nullptr;
+       info = info->next) {
+    printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
+           info->file, info->line);
+    allocs++;
   }
+  printf("  --- %d allocation(s) ---\n", allocs);
 #endif
 
   operator delete(g_allocator);
@@ -723,14 +723,16 @@ static void load_all_lua_scripts() {
 sapp_desc sokol_main(int argc, char **argv) {
 #ifdef DEBUG
   g_allocator = new DebugAllocator();
-
-  g_profile.process_id = os_process_id();
-  g_profile.thread_id = os_thread_id();
-  array_reserve(&g_profile.events, 16384);
 #endif
 
 #ifdef RELEASE
   g_allocator = new HeapAllocator();
+#endif
+
+#ifdef USE_PROFILER
+  g_profile.process_id = os_process_id();
+  g_profile.thread_id = os_thread_id();
+  array_reserve(&g_profile.events, 16384);
 #endif
 
   os_high_timer_resolution();

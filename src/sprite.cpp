@@ -14,8 +14,12 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   }
   defer(mem_free(contents.data));
 
-  ase_t *ase =
-      cute_aseprite_load_from_memory(contents.data, (i32)contents.len, nullptr);
+  ase_t *ase = nullptr;
+  {
+    PROFILE_BLOCK("aseprite load");
+    ase = cute_aseprite_load_from_memory(contents.data, (i32)contents.len,
+                                         nullptr);
+  }
   defer(cute_aseprite_free(ase));
 
   i32 rect = ase->w * ase->h * 4;

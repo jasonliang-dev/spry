@@ -1,11 +1,17 @@
 #pragma once
 
-#ifdef RELEASE
+#ifdef DEBUG
+#ifndef USE_PROFILER
+#define USE_PROFILER
+#endif
+#endif
+
+#ifndef USE_PROFILER
 #define PROFILE_FUNC()
 #define PROFILE_BLOCK(name)
 #endif
 
-#ifdef DEBUG
+#ifdef USE_PROFILER
 #include "array.h"
 #include "deps/sokol_time.h"
 
