@@ -231,7 +231,8 @@ static void frame() {
 
 #ifndef __EMSCRIPTEN__
     if (time->target_ticks > 0) {
-      enum { TICK_MS = 1000000, TICK_US = 1000 };
+      u64 TICK_MS = 1000000;
+      u64 TICK_US = 1000;
 
       u64 target = time->target_ticks;
 
@@ -716,7 +717,7 @@ static void load_all_lua_scripts() {
 /* extern(app.h) */ App *g_app;
 /* extern(prelude.h) */ Allocator *g_allocator;
 
-#ifdef DEBUG
+#ifdef USE_PROFILER
 /* extern(profile.h) */ Profile g_profile;
 #endif
 

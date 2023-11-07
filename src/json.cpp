@@ -17,46 +17,45 @@ static u64 align_forward(u64 p, u32 align) {
 }
 
 static ArenaBlock *arena_block_make(u64 capacity) {
-  if (capacity < 4096) {
-    capacity = 4096;
+  u64 page = 4096 - offsetof(ArenaBlock, buf);
+  if (capacity < page) {
+    capacity = page;
   }
 
   ArenaBlock *a = (ArenaBlock *)mem_alloc(offsetof(ArenaBlock, buf[capacity]));
-  a->capacity = capacity;
+  a->next = nullptr;
   a->allocd = 0;
+  a->capacity = capacity;
   return a;
 }
 
-static void arena_trash(Arena *a) {
-  ArenaBlock *b = a->head;
-  ArenaBlock *next = nullptr;
-  while (b != nullptr) {
-    next = b->next;
-    mem_free(b);
-    b = next;
+static void arena_trash(Arena *arena) {
+  ArenaBlock *a = arena->head;
+  while (a != nullptr) {
+    ArenaBlock *rm = a;
+    a = a->next;
+    mem_free(rm);
   }
 }
 
 static void *arena_bump(Arena *arena, u64 size) {
-    ArenaBlock *a = arena->head;
-  assert(a != nullptr);
+  assert(arena->head != nullptr);
 
   u64 next = 0;
   do {
-    next = align_forward(a->allocd, 16);
-    if (next + size <= a->capacity) {
+    next = align_forward(arena->head->allocd, 16);
+    if (next + size <= arena->head->capacity) {
       break;
     }
 
     ArenaBlock *block = arena_block_make(size);
-    block->next = a;
+    block->next = arena->head;
 
-    a = block;
     arena->head = block;
   } while (true);
 
-  void *ptr = &a->buf[next];
-  a->allocd = next + size;
+  void *ptr = &arena->head->buf[next];
+  arena->head->allocd = next + size;
   return ptr;
 }
 

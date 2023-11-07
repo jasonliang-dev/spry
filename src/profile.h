@@ -38,7 +38,7 @@ struct Instrument {
   Instrument(const char *cat, const char *name)
       : cat(cat), name(name), start(stm_now()) {}
 
-  ~Instrument() {
+  ~Instrument() noexcept {
     u64 end = stm_now();
 
     TraceEvent e = {};
