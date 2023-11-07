@@ -13,3 +13,4 @@ dist
 *.data
 /spry.wasm
 /spry.js
+/profile.json
