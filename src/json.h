@@ -1,11 +1,6 @@
 #pragma once
 
-#include "prelude.h"
-
-struct ArenaBlock;
-struct Arena {
-  ArenaBlock *head;
-};
+#include "arena.h"
 
 enum JSONKind : i32 {
   JSONKind_Null,

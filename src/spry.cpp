@@ -11,6 +11,7 @@
 
 #include "api.cpp"
 #include "archive.cpp"
+#include "arena.cpp"
 #include "atlas.cpp"
 #include "audio.cpp"
 #include "draw.cpp"
