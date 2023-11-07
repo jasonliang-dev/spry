@@ -431,9 +431,7 @@ static void frame() {
         }
 
         if (!ok) {
-          String msg = str_format("failed to hot reload: %s", v->name);
-          defer(mem_free(msg.data));
-          fatal_error(msg);
+          fatal_error(tmp_fmt("failed to hot reload: %s", v->name));
         } else {
           printf("reloaded: %s\n", v->name);
         }
@@ -748,9 +746,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   mount_files(argc, argv, &can_hot_reload);
 
   if (argc == 2 && g_app->archive == nullptr) {
-    String msg = str_format("failed to load: %s", argv[1]);
-    defer(mem_free(msg.data));
-    fatal_error(msg);
+    fatal_error(tmp_fmt("failed to load: %s", argv[1]));
   } else if (g_app->archive != nullptr) {
     require_lua_script(g_app->archive, "main.lua");
   }

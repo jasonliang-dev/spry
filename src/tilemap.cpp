@@ -7,6 +7,7 @@
 #include "json.h"
 #include "prelude.h"
 #include "profile.h"
+#include "strings.h"
 
 static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
                             String filepath, HashMap<Image> *images) {
@@ -22,14 +23,16 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
     return false;
   }
 
-  Array<JSON> int_grid_csv = json_array(json_lookup(json, "intGridCsv"));
+  JSONArray *int_grid_csv = json_array(json_lookup(json, "intGridCsv"));
 
-  Array<JSON> grid_tiles = json_array(json_lookup(json, "gridTiles"));
-  Array<JSON> auto_layer_tiles =
-      json_array(json_lookup(json, "autoLayerTiles"));
-  Array<JSON> arr_tiles = grid_tiles.len != 0 ? grid_tiles : auto_layer_tiles;
+  JSONArray *grid_tiles = json_array(json_lookup(json, "gridTiles"));
+  JSONArray *auto_layer_tiles = json_array(json_lookup(json, "autoLayerTiles"));
 
-  Array<JSON> entity_instances =
+  JSONArray *arr_tiles = (grid_tiles != nullptr && grid_tiles->count != 0)
+                             ? grid_tiles
+                             : auto_layer_tiles;
+
+  JSONArray *entity_instances =
       json_array(json_lookup(json, "entityInstances"));
 
   if (tileset_rel_path->kind == JSONKind_String) {
@@ -56,25 +59,25 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
     }
   }
 
-  {
+  Array<TilemapInt> grid = {};
+  if (int_grid_csv != nullptr) {
     PROFILE_BLOCK("int grid");
 
-    Array<TilemapInt> grid = {};
-    array_reserve(&grid, int_grid_csv.len);
-    for (JSON &v : int_grid_csv) {
-      array_push(&grid, (TilemapInt)json_number(&v));
+    array_reserve(&grid, int_grid_csv->count);
+    for (JSONArray *a = int_grid_csv; a != nullptr; a = a->next) {
+      array_push(&grid, (TilemapInt)json_number(&a->value));
     }
-    layer->int_grid = grid;
   }
+  layer->int_grid = grid;
 
-  {
+  Array<TilemapTile> tiles = {};
+  if (arr_tiles != nullptr) {
     PROFILE_BLOCK("tiles");
 
-    Array<TilemapTile> tiles = {};
-    array_reserve(&tiles, arr_tiles.len);
-    for (JSON &v : arr_tiles) {
-      JSON *px = json_lookup(&v, "px");
-      JSON *src = json_lookup(&v, "src");
+    array_reserve(&tiles, arr_tiles->count);
+    for (JSONArray *a = arr_tiles; a != nullptr; a = a->next) {
+      JSON *px = json_lookup(&a->value, "px");
+      JSON *src = json_lookup(&a->value, "src");
 
       TilemapTile tile = {};
       tile.x = json_number(json_index(px, 0));
@@ -83,36 +86,37 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
       tile.u = json_number(json_index(src, 0));
       tile.v = json_number(json_index(src, 1));
 
-      tile.flip_bits = (i32)json_lookup_number(&v, "f");
+      tile.flip_bits = (i32)json_lookup_number(&a->value, "f");
       array_push(&tiles, tile);
     }
-    layer->tiles = tiles;
+  }
+  layer->tiles = tiles;
 
-    for (TilemapTile &tile : layer->tiles) {
-      tile.u0 = tile.u / layer->image.width;
-      tile.v0 = tile.v / layer->image.height;
-      tile.u1 = (tile.u + layer->grid_size) / layer->image.width;
-      tile.v1 = (tile.v + layer->grid_size) / layer->image.height;
-    }
+  for (TilemapTile &tile : layer->tiles) {
+    tile.u0 = tile.u / layer->image.width;
+    tile.v0 = tile.v / layer->image.height;
+    tile.u1 = (tile.u + layer->grid_size) / layer->image.width;
+    tile.v1 = (tile.v + layer->grid_size) / layer->image.height;
   }
 
-  {
+  Array<TilemapEntity> entities = {};
+  if (entity_instances != nullptr) {
     PROFILE_BLOCK("entities");
 
-    Array<TilemapEntity> entities = {};
-    array_reserve(&entities, entity_instances.len);
-    for (JSON &v : entity_instances) {
-      JSON *px = json_lookup(&v, "px");
+    array_reserve(&entities, entity_instances->count);
+    for (JSONArray *a = entity_instances; a != nullptr; a = a->next) {
+      JSON *px = json_lookup(&a->value, "px");
 
       TilemapEntity entity = {};
       entity.x = json_number(json_index(px, 0));
       entity.y = json_number(json_index(px, 1));
-      entity.identifier = to_cstr(json_lookup_string(&v, "__identifier"));
+      entity.identifier =
+          to_cstr(json_lookup_string(&a->value, "__identifier"));
 
       array_push(&entities, entity);
     }
-    layer->entities = entities;
   }
+  layer->entities = entities;
 
   return true;
 }
@@ -128,17 +132,19 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Archive *ar,
   level->px_width = json_lookup_number(json, "pxWid");
   level->px_height = json_lookup_number(json, "pxHei");
 
-  Array<JSON> layer_instances = json_array(json_lookup(json, "layerInstances"));
+  JSONArray *layer_instances = json_array(json_lookup(json, "layerInstances"));
 
   Array<TilemapLayer> layers = {};
-  array_reserve(&layers, layer_instances.len);
-  for (JSON &v : layer_instances) {
-    TilemapLayer layer = {};
-    bool ok = layer_from_json(&layer, &v, ar, filepath, images);
-    if (!ok) {
-      return false;
+  if (layer_instances != nullptr) {
+    array_reserve(&layers, layer_instances->count);
+    for (JSONArray *a = layer_instances; a != nullptr; a = a->next) {
+      TilemapLayer layer = {};
+      bool ok = layer_from_json(&layer, &a->value, ar, filepath, images);
+      if (!ok) {
+        return false;
+      }
+      array_push(&layers, layer);
     }
-    array_push(&layers, layer);
   }
   level->layers = layers;
 
@@ -155,35 +161,36 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   }
   defer(mem_free(contents.data));
 
-  JSON json = {};
-  String err = json_parse(&json, contents);
-  if (err.data != nullptr) {
-    mem_free(err.data);
+  JSONDocument doc = {};
+  json_parse(&doc, contents);
+  defer(json_trash(&doc));
+
+  if (doc.error.len != 0) {
     return false;
   }
-  defer(json_trash(&json));
 
   HashMap<Image> images = {};
   Tilemap tilemap = {};
 
-  Array<JSON> arr_levels = json_array(json_lookup(&json, "levels"));
+  JSONArray *arr_levels = json_array(json_lookup(&doc.root, "levels"));
 
   Array<TilemapLevel> levels = {};
-  array_reserve(&levels, arr_levels.len);
-
-  for (JSON &v : arr_levels) {
-    TilemapLevel level = {};
-    bool ok = level_from_json(&level, &v, ar, filepath, &images);
-    if (!ok) {
-      return false;
+  if (arr_levels != nullptr) {
+    array_reserve(&levels, arr_levels->count);
+    for (JSONArray *a = arr_levels; a != nullptr; a = a->next) {
+      TilemapLevel level = {};
+      bool ok = level_from_json(&level, &a->value, ar, filepath, &images);
+      if (!ok) {
+        return false;
+      }
+      array_push(&levels, level);
     }
-    array_push(&levels, level);
   }
 
   tilemap.levels = levels;
   tilemap.images = images;
 
-  if (json.had_error) {
+  if (doc.root.had_error) {
     return false;
   }
 

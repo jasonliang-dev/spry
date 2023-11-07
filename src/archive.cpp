@@ -54,11 +54,11 @@ static bool list_all_files_help(Array<String> *files, String path) {
 
     if (strcmp(file.name, ".") != 0 && strcmp(file.name, "..") != 0) {
       if (file.is_dir) {
-        String s = str_format("%s%s/", path.data, file.name);
+        String s = str_fmt("%s%s/", path.data, file.name);
         defer(mem_free(s.data));
         list_all_files_help(files, s);
       } else {
-        array_push(files, str_format("%s%s", path.data, file.name));
+        array_push(files, str_fmt("%s%s", path.data, file.name));
       }
     }
 

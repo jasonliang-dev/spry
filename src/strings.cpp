@@ -242,7 +242,7 @@ void string_builder_swap_filename(StringBuilder *sb, String filepath,
   string_builder_concat(sb, file);
 }
 
-String str_format(const char *fmt, ...) {
+String str_fmt(const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
   i32 len = vsnprintf(nullptr, 0, fmt, args);
@@ -257,6 +257,16 @@ String str_format(const char *fmt, ...) {
   }
 
   return {};
+}
+
+String tmp_fmt(const char *fmt, ...) {
+  static char s_buf[1024] = {};
+
+  va_list args;
+  va_start(args, fmt);
+  i32 len = vsnprintf(s_buf, sizeof(s_buf), fmt, args);
+  va_end(args);
+  return {s_buf, (u64)len};
 }
 
 double string_to_double(String str) {

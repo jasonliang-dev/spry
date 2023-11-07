@@ -1,5 +1,70 @@
 #include "json.h"
 #include "profile.h"
+#include "strings.h"
+
+struct ArenaBlock {
+  ArenaBlock *next;
+  u64 capacity;
+  u64 allocd;
+  u8 buf[1];
+};
+
+static u64 align_forward(u64 p, u32 align) {
+  if ((p & (align - 1)) != 0) {
+    p += align - (p & (align - 1));
+  }
+  return p;
+}
+
+static ArenaBlock *arena_block_make(u64 capacity) {
+  if (capacity < 4096) {
+    capacity = 4096;
+  }
+
+  ArenaBlock *a = (ArenaBlock *)mem_alloc(offsetof(ArenaBlock, buf[capacity]));
+  a->capacity = capacity;
+  a->allocd = 0;
+  return a;
+}
+
+static void arena_trash(Arena *a) {
+  ArenaBlock *b = a->head;
+  ArenaBlock *next = nullptr;
+  while (b != nullptr) {
+    next = b->next;
+    mem_free(b);
+    b = next;
+  }
+}
+
+static void *arena_bump(Arena *arena, u64 size) {
+  ArenaBlock *a = arena->head;
+  assert(a != nullptr);
+
+  u64 next = 0;
+  do {
+    next = align_forward(a->allocd, 16);
+    if (next + size <= a->capacity) {
+      break;
+    }
+
+    ArenaBlock *block = arena_block_make(size);
+    block->next = a;
+
+    a = block;
+    arena->head = block;
+  } while (true);
+
+  void *ptr = &a->buf[next];
+  a->allocd = next + size;
+  return ptr;
+}
+
+static String arena_bump_string(Arena *arena, String s) {
+  char *cstr = (char *)arena_bump(arena, s.len + 1);
+  memcpy(cstr, s.data, s.len + 1);
+  return {cstr, s.len};
+}
 
 enum JSONTok : i32 {
   JSONTok_Invalid,
@@ -50,22 +115,21 @@ const char *json_kind_string(JSONKind kind) {
   }
 };
 
-typedef struct {
+struct JSONToken {
   JSONTok kind;
   String str;
   u32 line;
   u32 column;
-} JSONToken;
+};
 
-typedef struct {
-  Array<String> strings;
+struct JSONScanner {
   String contents;
   JSONToken token;
   u64 begin;
   u64 end;
   u32 line;
   u32 column;
-} JSONScanner;
+};
 
 static char json_peek(JSONScanner *scan, u64 offset) {
   return scan->contents.data[scan->end + offset];
@@ -120,7 +184,7 @@ static JSONToken json_err_tok(JSONScanner *scan, String msg) {
   return t;
 }
 
-static JSONToken json_scan_ident(JSONScanner *scan) {
+static JSONToken json_scan_ident(Arena *a, JSONScanner *scan) {
   while (is_alpha(json_peek(scan, 0))) {
     json_next_char(scan);
   }
@@ -140,8 +204,7 @@ static JSONToken json_scan_ident(JSONScanner *scan) {
     string_builder_concat(&sb, t.str);
     string_builder_concat(&sb, "'");
 
-    String s = string_builder_as_string(&sb);
-    array_push(&scan->strings, s);
+    String s = arena_bump_string(a, string_builder_as_string(&sb));
     return json_err_tok(scan, s);
   }
 
@@ -182,7 +245,7 @@ static JSONToken json_scan_string(JSONScanner *scan) {
   return json_make_tok(scan, JSONTok_String);
 }
 
-static JSONToken json_scan_next(JSONScanner *scan) {
+static JSONToken json_scan_next(Arena *a, JSONScanner *scan) {
   json_skip_whitespace(scan);
 
   scan->begin = scan->end;
@@ -195,7 +258,7 @@ static JSONToken json_scan_next(JSONScanner *scan) {
   json_next_char(scan);
 
   if (is_alpha(c)) {
-    return json_scan_ident(scan);
+    return json_scan_ident(a, scan);
   }
 
   if (is_digit(c) || (c == '-' && is_digit(json_peek(scan, 0)))) {
@@ -215,185 +278,202 @@ static JSONToken json_scan_next(JSONScanner *scan) {
   case ',': return json_make_tok(scan, JSONTok_Comma);
   }
 
-  String s = str_format("unexpected character: '%c' (%d)", c, (int)c);
-  array_push(&scan->strings, s);
+  String msg = tmp_fmt("unexpected character: '%c' (%d)", c, (int)c);
+  String s = arena_bump_string(a, msg);
   return json_err_tok(scan, s);
 }
 
-static String json_parse_next(JSONScanner *scan, JSON *out);
+static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out);
 
-static String json_parse_object(JSONScanner *scan, HashMap<JSON> *out) {
+static String json_parse_object(Arena *a, JSONScanner *scan, JSONObject **out) {
   PROFILE_FUNC();
 
-  json_scan_next(scan); // eat brace
+  JSONObject *obj = nullptr;
+
+  json_scan_next(a, scan); // eat brace
 
   while (true) {
     if (scan->token.kind == JSONTok_RBrace) {
-      json_scan_next(scan);
+      *out = obj;
+      json_scan_next(a, scan);
       return {};
     }
 
     String err = {};
 
     JSON key = {};
-    err = json_parse_next(scan, &key);
+    err = json_parse_next(a, scan, &key);
     if (err.data != nullptr) {
       return err;
     }
 
     if (key.kind != JSONKind_String) {
-      String s =
-          str_format("expected string as object key on line: %d. got: %s",
-                     (i32)scan->token.line, json_kind_string(key.kind));
-      array_push(&scan->strings, s);
-      return s;
+      String msg = tmp_fmt("expected string as object key on line: %d. got: %s",
+                           (i32)scan->token.line, json_kind_string(key.kind));
+      return arena_bump_string(a, msg);
     }
 
     if (scan->token.kind != JSONTok_Colon) {
-      String s =
-          str_format("expected colon on line: %d. got %s",
-                     (i32)scan->token.line, json_tok_string(scan->token.kind));
-      array_push(&scan->strings, s);
-      return s;
+      String msg =
+          tmp_fmt("expected colon on line: %d. got %s", (i32)scan->token.line,
+                  json_tok_string(scan->token.kind));
+      return arena_bump_string(a, msg);
     }
 
-    json_scan_next(scan);
+    json_scan_next(a, scan);
 
     JSON value = {};
-    err = json_parse_next(scan, &value);
+    err = json_parse_next(a, scan, &value);
     if (err.data != nullptr) {
       return err;
     }
 
-    (*out)[fnv1a(key.string)] = value;
+    JSONObject *entry = (JSONObject *)arena_bump(a, sizeof(JSONObject));
+    entry->next = obj;
+    entry->key = fnv1a(key.string.data, key.string.len);
+    entry->value = value;
+
+    obj = entry;
 
     if (scan->token.kind == JSONTok_Comma) {
-      json_scan_next(scan);
+      json_scan_next(a, scan);
     }
   }
 }
 
-static String json_parse_array(JSONScanner *scan, Array<JSON> *out) {
+static String json_parse_array(Arena *a, JSONScanner *scan, JSONArray **out) {
   PROFILE_FUNC();
 
-  json_scan_next(scan); // eat bracket
+  JSONArray *arr = nullptr;
+
+  json_scan_next(a, scan); // eat bracket
 
   while (true) {
     if (scan->token.kind == JSONTok_RBracket) {
-      json_scan_next(scan);
+      *out = arr;
+      json_scan_next(a, scan);
       return {};
     }
 
     JSON value = {};
-    String err = json_parse_next(scan, &value);
+    String err = json_parse_next(a, scan, &value);
     if (err.data != nullptr) {
       return err;
     }
 
-    array_push(out, value);
+    JSONArray *el = (JSONArray *)arena_bump(a, sizeof(JSONArray));
+    el->next = arr;
+    el->value = value;
+    el->count = 0;
+
+    if (arr != nullptr) {
+      el->count = arr->count + 1;
+    }
+
+    arr = el;
 
     if (scan->token.kind == JSONTok_Comma) {
-      json_scan_next(scan);
+      json_scan_next(a, scan);
     }
   }
 }
 
-static String json_parse_next(JSONScanner *scan, JSON *out) {
+static JSONArray *reverse_list(JSONArray *head) {
+  JSONArray *prev = nullptr;
+  while (head != nullptr) {
+    JSONArray *next = head->next;
+
+    head->next = prev;
+    prev = head;
+    head = next;
+  }
+  return prev;
+}
+
+static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
   PROFILE_FUNC();
 
   switch (scan->token.kind) {
   case JSONTok_LBrace: {
     out->kind = JSONKind_Object;
-    return json_parse_object(scan, &out->object);
+    return json_parse_object(a, scan, &out->object);
   }
   case JSONTok_LBracket: {
     out->kind = JSONKind_Array;
-    return json_parse_array(scan, &out->array);
+
+    JSONArray *arr = nullptr;
+    String res = json_parse_array(a, scan, &arr);
+    if (res.len != 0) {
+      return res;
+    }
+
+    out->array = reverse_list(arr);
+    return res;
   }
   case JSONTok_String: {
     out->kind = JSONKind_String;
     out->string = substr(scan->token.str, 1, scan->token.str.len - 1);
-    json_scan_next(scan);
+    json_scan_next(a, scan);
     return {};
   }
   case JSONTok_Number: {
     out->kind = JSONKind_Number;
     out->number = string_to_double(scan->token.str);
-    json_scan_next(scan);
+    json_scan_next(a, scan);
     return {};
   }
   case JSONTok_True: {
     out->kind = JSONKind_Boolean;
     out->boolean = true;
-    json_scan_next(scan);
+    json_scan_next(a, scan);
     return {};
   }
   case JSONTok_False: {
     out->kind = JSONKind_Boolean;
     out->boolean = false;
-    json_scan_next(scan);
+    json_scan_next(a, scan);
     return {};
   }
   case JSONTok_Null: {
     out->kind = JSONKind_Null;
-    json_scan_next(scan);
+    json_scan_next(a, scan);
     return {};
   }
   default:
-    String s = str_format("unknown json token: %s on line %d:%d",
-                          json_tok_string(scan->token.kind),
-                          (i32)scan->token.line, (i32)scan->token.column);
-    array_push(&scan->strings, s);
-    return s;
+    String msg = tmp_fmt("unknown json token: %s on line %d:%d",
+                         json_tok_string(scan->token.kind),
+                         (i32)scan->token.line, (i32)scan->token.column);
+    return arena_bump_string(a, msg);
   }
 }
 
-String json_parse(JSON *json, String contents) {
+void json_parse(JSONDocument *out, String contents) {
   PROFILE_FUNC();
+
+  out->arena = {};
+  out->arena.head = arena_block_make(0);
 
   JSONScanner scan = {};
   scan.contents = contents;
   scan.line = 1;
 
-  defer({
-    for (String s : scan.strings) {
-      mem_free(s.data);
-    }
-    array_trash(&scan.strings);
-  });
+  json_scan_next(&out->arena, &scan);
 
-  json_scan_next(&scan);
-
-  String err = json_parse_next(&scan, json);
+  String err = json_parse_next(&out->arena, &scan, &out->root);
   if (err.data != nullptr) {
-    return to_cstr(err);
+    out->error = err;
+    return;
   }
 
   if (scan.token.kind != JSONTok_EOF) {
-    return to_cstr("expected EOF");
+    out->error = "expected EOF";
+    return;
   }
-
-  return {};
 }
 
-void json_trash(JSON *json) {
+void json_trash(JSONDocument *doc) {
   PROFILE_FUNC();
-
-  switch (json->kind) {
-  case JSONKind_Object:
-    for (auto [k, v] : json->object) {
-      json_trash(v);
-    }
-    hashmap_trash(&json->object);
-    break;
-  case JSONKind_Array:
-    for (JSON &value : json->array) {
-      json_trash(&value);
-    }
-    array_trash(&json->array);
-    break;
-  default: break;
-  }
+  arena_trash(&doc->arena);
 }
 
 static void json_read_error(JSON *json) {
@@ -413,10 +493,10 @@ JSON *json_lookup(JSON *obj, String key) {
   }
 
   if (obj->kind == JSONKind_Object) {
-    JSON *value = hashmap_get(&obj->object, fnv1a(key));
-    if (value != nullptr) {
-      value->parent = obj;
-      return value;
+    for (JSONObject *o = obj->object; o != nullptr; o = o->next) {
+      if (o->key == fnv1a(key)) {
+        return &o->value;
+      }
     }
   }
 
@@ -430,10 +510,10 @@ JSON *json_index(JSON *arr, i32 index) {
   }
 
   if (arr->kind == JSONKind_Array) {
-    if (index >= 0 && index < arr->array.len) {
-      JSON *value = &arr->array[index];
-      value->parent = arr;
-      return value;
+    for (JSONArray *a = arr->array; a != nullptr; a = a->next) {
+      if (a->count == index) {
+        return &a->value;
+      }
     }
   }
 
@@ -441,29 +521,29 @@ JSON *json_index(JSON *arr, i32 index) {
   return nullptr;
 }
 
-HashMap<JSON> json_object(JSON *json) {
+JSONObject *json_object(JSON *json) {
   if (json_is_bad(json)) {
     return {};
   } else if (json->kind != JSONKind_Object) {
     json_read_error(json);
     return {};
   } else {
-    for (auto [k, v] : json->object) {
-      v->parent = json;
+    for (JSONObject *o = json->object; o != nullptr; o = o->next) {
+      o->value.parent = json;
     }
     return json->object;
   }
 }
 
-Array<JSON> json_array(JSON *json) {
+JSONArray *json_array(JSON *json) {
   if (json_is_bad(json)) {
     return {};
   } else if (json->kind != JSONKind_Array) {
     json_read_error(json);
     return {};
   } else {
-    for (JSON &v : json->array) {
-      v.parent = json;
+    for (JSONArray *a = json->array; a != nullptr; a = a->next) {
+      a->value.parent = json;
     }
     return json->array;
   }
@@ -495,15 +575,15 @@ static void json_write_string(StringBuilder *sb, JSON *json, i32 level) {
   switch (json->kind) {
   case JSONKind_Object: {
     string_builder_concat(sb, "{\n");
-    for (auto [k, v] : json->object) {
+    for (JSONObject *o = json->object; o != nullptr; o = o->next) {
       for (i32 i = 0; i <= level; i++) {
         string_builder_concat(sb, "  ");
       }
       char buf[64];
-      snprintf(buf, sizeof(buf), "%llu", (unsigned long long)k);
+      snprintf(buf, sizeof(buf), "%llu", (unsigned long long)o->key);
       string_builder_concat(sb, buf);
 
-      json_write_string(sb, v, level + 1);
+      json_write_string(sb, &o->value, level + 1);
       string_builder_concat(sb, ",\n");
     }
     for (i32 i = 0; i < level; i++) {
@@ -514,11 +594,11 @@ static void json_write_string(StringBuilder *sb, JSON *json, i32 level) {
   }
   case JSONKind_Array: {
     string_builder_concat(sb, "[\n");
-    for (JSON &value : json->array) {
+    for (JSONArray *a = json->array; a != nullptr; a = a->next) {
       for (i32 i = 0; i <= level; i++) {
         string_builder_concat(sb, "  ");
       }
-      json_write_string(sb, &value, level + 1);
+      json_write_string(sb, &a->value, level + 1);
       string_builder_concat(sb, ",\n");
     }
     for (i32 i = 0; i < level; i++) {

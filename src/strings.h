@@ -71,6 +71,7 @@ inline String string_builder_as_string(StringBuilder *sb) {
   return {sb->data, sb->len};
 }
 
-FORMAT_ARGS(1) String str_format(const char *fmt, ...);
+FORMAT_ARGS(1) String str_fmt(const char *fmt, ...);
+FORMAT_ARGS(1) String tmp_fmt(const char *fmt, ...);
 
 double string_to_double(String str);

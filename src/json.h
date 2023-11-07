@@ -1,8 +1,11 @@
 #pragma once
 
-#include "array.h"
-#include "hash_map.h"
-#include "strings.h"
+#include "prelude.h"
+
+struct ArenaBlock;
+struct Arena {
+  ArenaBlock *head;
+};
 
 enum JSONKind : i32 {
   JSONKind_Null,
@@ -13,10 +16,12 @@ enum JSONKind : i32 {
   JSONKind_Boolean,
 };
 
+struct JSONObject;
+struct JSONArray;
 struct JSON {
   union {
-    HashMap<JSON> object;
-    Array<JSON> array;
+    JSONObject *object;
+    JSONArray *array;
     String string;
     double number;
     bool boolean;
@@ -26,12 +31,30 @@ struct JSON {
   bool had_error;
 };
 
-String json_parse(JSON *out, String contents);
-void json_trash(JSON *json);
+struct JSONObject {
+  JSON value;
+  JSONObject *next;
+  u64 key;
+};
+
+struct JSONArray {
+  JSON value;
+  JSONArray *next;
+  u64 count;
+};
+
+struct JSONDocument {
+  JSON root;
+  String error;
+  Arena arena;
+};
+
+void json_parse(JSONDocument *out, String contents);
+void json_trash(JSONDocument *doc);
 JSON *json_lookup(JSON *obj, String key);
 JSON *json_index(JSON *arr, i32 index);
-HashMap<JSON> json_object(JSON *json);
-Array<JSON> json_array(JSON *json);
+JSONObject *json_object(JSON *json);
+JSONArray *json_array(JSON *json);
 String json_string(JSON *json);
 double json_number(JSON *json);
 
@@ -43,5 +66,6 @@ inline double json_lookup_number(JSON *json, String key) {
   return json_number(json_lookup(json, key));
 }
 
+struct StringBuilder;
 void json_write_string(StringBuilder *sb, JSON *json);
 void json_print(JSON *json);
