@@ -59,9 +59,10 @@ $api_reference = [
         " .console_attach" => ["boolean", "Windows only. If true, attach a console to the program.", "false"],
         " .hot_reload" => ["boolean", "Enable/disable hot reloading of scripts and assets.", "true"],
         " .startup_load_scripts" => ["boolean", "Enable/disable loading all lua scripts in the project", "true"],
+        " .fullscreen" => ["boolean", "If true, start the program in fullscreen mode.", "false"],
         " .reload_interval" => ["number", "The time in seconds to update files for hot reloading.", 0.1],
         " .swap_interval" => ["number", "Set the swap interval. Typically 1 for VSync, or 0 for no VSync.", 1],
-        " .target_fps" => ["number", "Set the maximum frames to render per second. No FPS limit if target is 0.", 240],
+        " .target_fps" => ["number", "Set the maximum frames to render per second. No FPS limit if target is 0.", 0],
         " .window_width" => ["number", "The window width.", 800],
         " .window_height" => ["number", "The window height.", 600],
         " .window_title" => ["string", "The window title.", "'Spry'"],
@@ -131,6 +132,22 @@ $api_reference = [
       "example" => "self.x = self.x + vel_x * spry.dt()",
       "args" => [],
       "return" => "number",
+    ],
+    "spry.fullscreen" => [
+      "desc" => "Returns true if program is fullscreen.",
+      "example" => "local fs = spry.fullscreen()",
+      "args" => [],
+      "return" => "boolean",
+    ],
+    "spry.toggle_fullscreen" => [
+      "desc" => "Toggle fullscreen.",
+      "example" => "
+        if spry.key_press 'f11' then
+          spry.toggle_fullscreen()
+        end
+      ",
+      "args" => [],
+      "return" => false,
     ],
     "spry.window_width" => [
       "desc" => "Get the width of the application window.",
