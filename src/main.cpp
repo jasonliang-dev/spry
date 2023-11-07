@@ -532,20 +532,20 @@ static void cleanup() {
   }
 
   {
-    i32 allocs = 0;
-    for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
-         info = info->next) {
-      allocs++;
-    }
+    DebugAllocator *allocator = (DebugAllocator *)g_allocator;
 
-    printf("  --- %d allocation(s) ---\n", allocs);
-    for (DebugAllocInfo *info = g_allocator.head; info != nullptr;
+    i32 allocs = 0;
+    for (DebugAllocInfo *info = allocator->head; info != nullptr;
          info = info->next) {
       printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
              info->file, info->line);
+      allocs++;
     }
+    printf("  --- %d allocation(s) ---\n", allocs);
   }
 #endif
+
+  operator delete(g_allocator);
 }
 
 static int spry_require_lua_script(lua_State *L) {
@@ -716,7 +716,7 @@ static void load_all_lua_scripts() {
 }
 
 /* extern(app.h) */ App *g_app;
-/* extern(prelude.h) */ Allocator g_allocator;
+/* extern(prelude.h) */ Allocator *g_allocator;
 
 #ifdef DEBUG
 /* extern(profile.h) */ Profile g_profile;
@@ -724,7 +724,7 @@ static void load_all_lua_scripts() {
 
 sapp_desc sokol_main(int argc, char **argv) {
 #ifdef DEBUG
-  g_allocator = debug_allocator();
+  g_allocator = new DebugAllocator();
 
   g_profile.process_id = os_process_id();
   g_profile.thread_id = os_thread_id();
@@ -732,7 +732,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 #endif
 
 #ifdef RELEASE
-  g_allocator = heap_allocator();
+  g_allocator = new HeapAllocator();
 #endif
 
   os_high_timer_resolution();

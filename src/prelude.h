@@ -25,12 +25,6 @@ using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
-using usize = size_t;
-using isize = ptrdiff_t;
-
-inline i32 min(i32 a, i32 b) { return a < b ? a : b; }
-inline i32 max(i32 a, i32 b) { return a > b ? a : b; }
-
 struct DebugAllocInfo {
   const char *file;
   i32 line;
@@ -40,81 +34,58 @@ struct DebugAllocInfo {
 };
 
 struct Allocator {
-  void *(*alloc)(Allocator *a, size_t bytes, const char *file, i32 line);
-  void (*free)(Allocator *a, void *ptr);
-  DebugAllocInfo *head;
+  virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
+  virtual void free(void *ptr) = 0;
 };
 
-inline void *heap_alloc(Allocator *, size_t bytes, const char *, i32) {
-  return malloc(bytes);
-}
+struct HeapAllocator : Allocator {
+  void *alloc(size_t bytes, const char *, i32) { return malloc(bytes); }
+  void free(void *ptr) { ::free(ptr); }
+};
 
-inline void heap_free(Allocator *, void *ptr) { free(ptr); }
+struct DebugAllocator : Allocator {
+  DebugAllocInfo *head = nullptr;
 
-inline void *debug_alloc(Allocator *a, size_t bytes, const char *file,
-                         i32 line) {
-  DebugAllocInfo *info =
-      (DebugAllocInfo *)malloc(sizeof(DebugAllocInfo) + bytes);
-  info->file = file;
-  info->line = line;
-  info->size = bytes;
-  info->prev = nullptr;
-  info->next = a->head;
-  if (a->head != nullptr) {
-    a->head->prev = info;
-  }
-  a->head = info;
-  return info + 1;
-}
-
-inline void debug_free_nothing(Allocator *, void *) {}
-
-inline void debug_free(Allocator *a, void *ptr) {
-  if (ptr == nullptr) {
-    return;
+  void *alloc(size_t bytes, const char *file, i32 line) {
+    DebugAllocInfo *info =
+        (DebugAllocInfo *)malloc(sizeof(DebugAllocInfo) + bytes);
+    info->file = file;
+    info->line = line;
+    info->size = bytes;
+    info->prev = nullptr;
+    info->next = head;
+    if (head != nullptr) {
+      head->prev = info;
+    }
+    head = info;
+    return info + 1;
   }
 
-  DebugAllocInfo *info = (DebugAllocInfo *)ptr - 1;
+  void free(void *ptr) {
+    if (ptr == nullptr) {
+      return;
+    }
 
-  if (info->prev == nullptr) {
-    a->head = info->next;
-  } else {
-    info->prev->next = info->next;
+    DebugAllocInfo *info = (DebugAllocInfo *)ptr - 1;
+
+    if (info->prev == nullptr) {
+      head = info->next;
+    } else {
+      info->prev->next = info->next;
+    }
+
+    if (info->next) {
+      info->next->prev = info->prev;
+    }
+
+    ::free(info);
   }
+};
 
-  if (info->next) {
-    info->next->prev = info->prev;
-  }
+extern Allocator *g_allocator;
 
-  free(info);
-}
-
-inline Allocator heap_allocator() {
-  Allocator a = {};
-  a.alloc = heap_alloc;
-  a.free = heap_free;
-  return a;
-}
-
-inline Allocator debug_allocator() {
-  Allocator a = {};
-  a.alloc = debug_alloc;
-  a.free = debug_free;
-  return a;
-}
-
-inline Allocator debug_no_free_allocator() {
-  Allocator a = {};
-  a.alloc = debug_alloc;
-  a.free = debug_free_nothing;
-  return a;
-}
-
-extern Allocator g_allocator;
-
-#define mem_alloc(bytes)                                                       \
-  g_allocator.alloc(&g_allocator, bytes, __FILE__, __LINE__)
-#define mem_free(ptr) g_allocator.free(&g_allocator, ptr)
+#define mem_alloc(bytes) g_allocator->alloc(bytes, __FILE__, __LINE__)
+#define mem_free(ptr) g_allocator->free(ptr)
 
 inline bool is_whitespace(char c) {
   switch (c) {

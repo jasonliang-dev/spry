@@ -143,7 +143,7 @@ struct ZipArchive : Archive {
       return false;
     }
 
-    usize size = stat.m_uncomp_size;
+    size_t size = stat.m_uncomp_size;
     char *buf = (char *)mem_alloc(size + 1);
 
     ok = mz_zip_reader_extract_to_mem(&zip, file_index, buf, size, 0);

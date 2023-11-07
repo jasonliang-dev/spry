@@ -77,7 +77,7 @@ lua_Number luax_number_field(lua_State *L, const char *key,
 
 String luax_string_field(lua_State *L, const char *key) {
   lua_getfield(L, -1, key);
-  usize len;
+  size_t len = 0;
   char *str = (char *)luaL_checklstring(L, -1, &len);
   lua_pop(L, 1);
   return {str, len};
@@ -85,7 +85,7 @@ String luax_string_field(lua_State *L, const char *key) {
 
 String luax_string_field(lua_State *L, const char *key, const char *fallback) {
   lua_getfield(L, -1, key);
-  usize len;
+  size_t len = 0;
   char *str = (char *)luaL_optlstring(L, -1, fallback, &len);
   lua_pop(L, 1);
   return {str, len};
@@ -104,7 +104,7 @@ bool luax_boolean_field(lua_State *L, const char *key, bool fallback) {
 }
 
 String luax_check_string(lua_State *L, i32 arg) {
-  usize len;
+  size_t len = 0;
   char *str = (char *)luaL_checklstring(L, arg, &len);
   return {str, len};
 }
