@@ -1,13 +1,15 @@
 #include "sprite.h"
 #include "app.h"
+#include "arena.h"
 #include "deps/cute_aseprite.h"
 #include "deps/sokol_gfx.h"
 #include "profile.h"
+#include "slice.h"
 
 bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   PROFILE_FUNC();
 
-  String contents;
+  String contents = {};
   bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
@@ -22,10 +24,12 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   }
   defer(cute_aseprite_free(ase));
 
+  Arena arena = {};
+
   i32 rect = ase->w * ase->h * 4;
 
-  Array<SpriteFrame> frames = {};
-  array_reserve(&frames, ase->frame_count);
+  Slice<SpriteFrame> frames = {};
+  slice_from_arena(&frames, &arena, ase->frame_count);
 
   Array<char> pixels = {};
   array_reserve(&pixels, ase->frame_count * rect);
@@ -42,7 +46,7 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
     sf.u1 = 1;
     sf.v1 = (float)(i + 1) / ase->frame_count;
 
-    array_push(&frames, sf);
+    frames[i] = sf;
     memcpy(pixels.data + (i * rect), &frame.pixels[0].r, rect);
   }
 
@@ -66,8 +70,8 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   img.width = desc.width;
   img.height = desc.height;
 
-  HashMap<SpriteLoop> by_tag;
-  hashmap_reserve(&by_tag, hash_map_reserve_size((u64)ase->tag_count));
+  HashMap<SpriteLoop> by_tag = {};
+  hashmap_reserve(&by_tag, (u64)ase->tag_count);
 
   for (i32 i = 0; i < ase->tag_count; i++) {
     ase_tag_t &tag = ase->tags[i];
@@ -86,6 +90,7 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
          (unsigned long long)frames.len);
 
   Sprite s = {};
+  s.arena = arena;
   s.img = img;
   s.frames = frames;
   s.by_tag = by_tag;
@@ -96,18 +101,15 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
 }
 
 void sprite_trash(Sprite *spr) {
-  array_trash(&spr->frames);
-
   for (auto [k, v] : spr->by_tag) {
     array_trash(&v->indices);
   }
   hashmap_trash(&spr->by_tag);
+  arena_trash(&spr->arena);
 }
 
 void sprite_renderer_play(SpriteRenderer *sr, String tag) {
   sr->loop = fnv1a(tag);
-  sr->current_frame = 0;
-  sr->elapsed = 0;
 }
 
 void sprite_renderer_update(SpriteRenderer *sr, float dt) {
@@ -128,7 +130,7 @@ void sprite_renderer_update(SpriteRenderer *sr, float dt) {
   SpriteFrame frame = sprite->frames[index];
 
   sr->elapsed += dt * 1000;
-  if (sr->elapsed > frame.duration) {
+  while (sr->elapsed > frame.duration) {
     if (sr->current_frame == len - 1) {
       sr->current_frame = 0;
     } else {

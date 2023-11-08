@@ -10,22 +10,6 @@ enum HashMapKind : u8 {
 
 #define HASH_MAP_LOAD_FACTOR 0.75f
 
-inline u64 hash_map_reserve_size(u64 size) {
-  u64 n = (u64)(size / HASH_MAP_LOAD_FACTOR) + 1;
-
-  // next pow of 2
-  n--;
-  n |= n >> 1;
-  n |= n >> 2;
-  n |= n >> 4;
-  n |= n >> 8;
-  n |= n >> 16;
-  n |= n >> 32;
-  n++;
-
-  return n;
-}
-
 template <typename T> struct HashMap {
   u64 *keys = nullptr;
   T *values = nullptr;
@@ -58,8 +42,24 @@ template <typename T> u64 hashmap_find_entry(HashMap<T> *map, u64 key) {
   }
 }
 
-// capacity must be a power of 2
+inline u64 hash_map_reserve_size(u64 size) {
+  u64 n = (u64)(size / HASH_MAP_LOAD_FACTOR) + 1;
+
+  // next pow of 2
+  n--;
+  n |= n >> 1;
+  n |= n >> 2;
+  n |= n >> 4;
+  n |= n >> 8;
+  n |= n >> 16;
+  n |= n >> 32;
+  n++;
+
+  return n;
+}
+
 template <typename T> void hashmap_reserve(HashMap<T> *old, u64 capacity) {
+  capacity = hash_map_reserve_size(capacity);
   if (capacity <= old->capacity) {
     return;
   }

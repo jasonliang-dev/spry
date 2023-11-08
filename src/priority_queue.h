@@ -59,7 +59,7 @@ void priority_queue_shift_up(PriorityQueue<T> *pq, i32 j) {
 
 template <typename T>
 void priority_queue_shift_down(PriorityQueue<T> *pq, i32 i, i32 n) {
-  if (0 > i || i > n) {
+  if (i < 0 || i > n) {
     return;
   }
 

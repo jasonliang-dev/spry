@@ -1,6 +1,6 @@
 #pragma once
 
-#include "array.h"
+#include "slice.h"
 #include "hash_map.h"
 #include "image.h"
 
@@ -23,7 +23,8 @@ struct SpriteRenderer {
 };
 
 struct Sprite {
-  Array<SpriteFrame> frames;
+  Arena arena;
+  Slice<SpriteFrame> frames;
   HashMap<SpriteLoop> by_tag;
   Image img;
   i32 width;
@@ -34,5 +35,4 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath);
 void sprite_trash(Sprite *spr);
 void sprite_renderer_play(SpriteRenderer *sr, String tag);
 void sprite_renderer_update(SpriteRenderer *sr, float dt);
-SpriteFrame sprite_renderer_frame(SpriteRenderer *sr);
 void sprite_renderer_set_frame(SpriteRenderer *sr, i32 frame);

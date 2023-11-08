@@ -540,8 +540,13 @@ static int mt_sprite_renderer_play(lua_State *L) {
   SpriteRenderer *sr =
       (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
   String tag = luax_check_string(L, 2);
+  bool restart = lua_toboolean(L, 3);
 
   sprite_renderer_play(sr, tag);
+  if (restart) {
+    sr->current_frame = 0;
+    sr->elapsed = 0;
+  }
   return 0;
 }
 
