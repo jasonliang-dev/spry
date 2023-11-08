@@ -7,7 +7,7 @@ function spry.start()
   font = spry.default_font()
 
   map = spry.tilemap_load "map.ldtk"
-  map:make_graph('IntGrid', { [1] = 1 })
+  map:make_graph("IntGrid", { [1] = 1 })
 
   start = { x = 0, y = 0 }
   goal = { x = 0, y = 0 }
@@ -52,26 +52,11 @@ function spry.frame(dt)
     path = map:astar(start.x, start.y, goal.x, goal.y)
   end
 
-  if spry.key_down "space" then
-    local x, y = spry.mouse_pos()
-    x, y = screen_to_tile(x, y)
-    neighbors = map:neighbors_for_tile(x, y)
-  end
-
   world:update(dt)
 
   spry.push_matrix()
   spry.scale(scale, scale)
     map:draw()
-
-    if neighbors ~= nil then
-      for k, v in ipairs(neighbors) do
-        local x = v.x * tile + 4
-        local y = v.y * tile + 4
-        local w = tile / 4
-        spry.draw_line_rect(x, y, w, w)
-      end
-    end
 
     if path ~= nil then
       for k, v in ipairs(path) do
