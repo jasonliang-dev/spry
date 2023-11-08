@@ -36,21 +36,22 @@ struct TilemapLevel {
   Array<TilemapLayer> layers;
 };
 
-enum TileFlags : i32 {
+enum TileFlags {
   TileFlags_Open = 1 << 0,
   TileFlags_Closed = 2 << 0,
 };
 
 struct TileNode {
-  TileNode *parent;
-  TileFlags flags;
+  TileNode *prev;
+  i32 flags;
+  float f; // g + h
+  float g; // cost so far
+  float h; // heuristic
+
   i32 x, y;
   float cost;
-  float f;
-  float g;
-  float h;
-  TileNode *neighbors[8];
   i32 neighbor_count;
+  TileNode *neighbors[8];
 };
 
 struct TileCost {
@@ -80,5 +81,4 @@ void tilemap_destroy_bodies(Tilemap *tm, b2World *world);
 void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
                             String layer_name, Array<TilemapInt> *walls);
 void tilemap_make_graph(Tilemap *tm, String layer_name, Array<TileCost> *costs);
-void tilemap_astar(Tilemap *tm, Array<TilePoint> *out, TilePoint start,
-                   TilePoint end);
+TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal);

@@ -396,10 +396,25 @@ void tilemap_make_graph(Tilemap *tm, String layer_name,
 
     for (i32 y = -1; y <= 1; y++) {
       for (i32 x = -1; x <= 1; x++) {
-        TileNode *n = hashmap_get(&graph, tile_key(v->x + x, v->y + y));
+        if (x == 0 && y == 0) {
+          continue;
+        }
+
+        i32 xx = v->x + x;
+        i32 yy = v->y + y;
+        TileNode *n = hashmap_get(&graph, tile_key(xx, yy));
         if (n != nullptr) {
-          v->neighbors[count] = n;
-          count++;
+          if (xx != 0 && yy != 0) {
+            TileNode *nx = hashmap_get(&graph, tile_key(v->x + x, v->y + 0));
+            TileNode *ny = hashmap_get(&graph, tile_key(v->x + 0, v->y + y));
+            if (nx != nullptr && ny != nullptr) {
+              v->neighbors[count] = n;
+              count++;
+            }
+          } else {
+            v->neighbors[count] = n;
+            count++;
+          }
         }
       }
     }
@@ -408,4 +423,80 @@ void tilemap_make_graph(Tilemap *tm, String layer_name,
   }
 
   tm->graph = graph;
+}
+
+static float tile_heuristic(TileNode *lhs, TileNode *rhs) {
+  float dx = abs(lhs->x - rhs->x);
+  float dy = abs(lhs->y - rhs->y);
+  return dx * dx + dy * dy;
+}
+
+static void astar_reset(Tilemap *tm) {
+  memset(tm->frontier.data, 0, sizeof(TileNode *) * tm->frontier.capacity);
+  tm->frontier.len = 0;
+
+  for (auto [k, v] : tm->graph) {
+    v->prev = 0;
+    v->flags = 0;
+    v->f = 0;
+    v->g = 0;
+    v->h = 0;
+  }
+}
+
+TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
+  astar_reset(tm);
+
+  TileNode *begin = hashmap_get(&tm->graph, tile_key(start.x, start.y));
+  if (begin == nullptr) {
+    return nullptr;
+  }
+
+  TileNode *end = hashmap_get(&tm->graph, tile_key(goal.x, goal.y));
+  if (end == nullptr) {
+    return nullptr;
+  }
+
+  begin->g = 0;
+  begin->h = tile_heuristic(begin, end);
+  begin->f = begin->g + begin->h;
+  begin->prev = nullptr;
+  begin->flags |= TileFlags_Open;
+  priority_queue_push(&tm->frontier, begin, begin->f);
+
+  while (tm->frontier.len != 0) {
+    TileNode *top = nullptr;
+    float cost = 0;
+    priority_queue_pop(&tm->frontier, &top, &cost);
+    if (top->f != cost) {
+      continue;
+    }
+
+    top->flags |= TileFlags_Closed;
+
+    if (top == end) {
+      return end;
+    }
+
+    for (i32 i = 0; i < top->neighbor_count; i++) {
+      TileNode *next = top->neighbors[i];
+
+      float g = next->g + next->cost;
+      float h = tile_heuristic(next, end);
+      float f = g + h;
+
+      if ((next->flags & TileFlags_Open) && next->g <= g) {
+        continue;
+      }
+
+      next->g = g;
+      next->h = h;
+      next->f = f;
+      next->prev = top;
+      next->flags |= TileFlags_Open;
+      priority_queue_push(&tm->frontier, next, next->f);
+    }
+  }
+
+  return nullptr;
 }

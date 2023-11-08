@@ -802,6 +802,35 @@ static int mt_tilemap_print_graph(lua_State *L) {
   return 0;
 }
 
+static int mt_tilemap_astar(lua_State *L) {
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
+  lua_Number sx = luaL_checknumber(L, 2);
+  lua_Number sy = luaL_checknumber(L, 3);
+  lua_Number ex = luaL_checknumber(L, 4);
+  lua_Number ey = luaL_checknumber(L, 5);
+
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
+
+  TilePoint start = {};
+  start.x = (i32)sx;
+  start.y = (i32)sy;
+
+  TilePoint goal = {};
+  goal.x = (i32)ex;
+  goal.y = (i32)ey;
+
+  TileNode *end = tilemap_astar(tm, start, goal);
+  if (end == nullptr) {
+    return 0;
+  }
+
+  for (TileNode *n = end; n != nullptr; n = n->prev) {
+    printf("(%d, %d)\n", n->x, n->y);
+  }
+
+  return 0;
+}
+
 static int open_mt_tilemap(lua_State *L) {
   luaL_Reg reg[] = {
       {"draw", mt_tilemap_draw},
@@ -810,6 +839,7 @@ static int open_mt_tilemap(lua_State *L) {
       {"draw_fixtures", mt_tilemap_draw_fixtures},
       {"make_graph", mt_tilemap_make_graph},
       {"print_graph", mt_tilemap_print_graph},
+      {"astar", mt_tilemap_astar},
       {nullptr, nullptr},
   };
 

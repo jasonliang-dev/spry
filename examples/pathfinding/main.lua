@@ -7,7 +7,8 @@ function spry.start()
   font = spry.default_font()
   map = spry.tilemap_load "map.ldtk"
   map:make_graph('IntGrid', { [1] = 1 })
-  map:print_graph()
+  -- map:print_graph()
+  map:astar(0, 0, 7, 2)
 end
 
 function spry.frame(dt)

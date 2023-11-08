@@ -519,17 +519,14 @@ static void cleanup() {
 
     fputs("[", f);
 
-    char buf[1024];
     for (TraceEvent &event : g_profile.events) {
-      i32 len = snprintf(
-          buf, sizeof(buf),
+      fprintf(
+          f,
           R"({"name":"%s","cat":"%s","ph":"X","ts":%.3f,"dur":%.3f,"pid":%d,"tid":%d},)"
           "\n",
           event.name, event.cat, stm_us(event.start),
           stm_us(stm_diff(event.end, event.start)), g_profile.process_id,
           g_profile.thread_id);
-
-      fwrite(buf, 1, len, f);
     }
 
     printf("  --- measured %llu event(s) ---\n",
