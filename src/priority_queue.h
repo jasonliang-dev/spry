@@ -45,6 +45,41 @@ void priority_queue_swap(PriorityQueue<T> *pq, i32 i, i32 j) {
 }
 
 template <typename T>
+void priority_queue_shift_up(PriorityQueue<T> *pq, i32 j) {
+  while (j > 0) {
+    i32 i = (j - 1) / 2;
+    if (i == j || pq->costs[i] < pq->costs[j]) {
+      break;
+    }
+
+    priority_queue_swap(pq, i, j);
+    j = i;
+  }
+}
+
+template <typename T>
+void priority_queue_shift_down(PriorityQueue<T> *pq, i32 i, i32 n) {
+  if (0 > i || i > n) {
+    return;
+  }
+
+  i32 j = 2 * i + 1;
+  while (j >= 0 && j < n) {
+    if (j + 1 < n && pq->costs[j + 1] < pq->costs[j]) {
+      j = j + 1;
+    }
+
+    if (pq->costs[i] < pq->costs[j]) {
+      break;
+    }
+
+    priority_queue_swap(pq, i, j);
+    i = j;
+    j = 2 * i + 1;
+  }
+}
+
+template <typename T>
 void priority_queue_push(PriorityQueue<T> *pq, T item, float cost) {
   if (pq->len == pq->capacity) {
     priority_queue_reserve(pq, pq->len * 2 + 1);
@@ -54,10 +89,7 @@ void priority_queue_push(PriorityQueue<T> *pq, T item, float cost) {
   pq->costs[pq->len] = cost;
   pq->len++;
 
-  for (i32 i = pq->len; i > 1 && pq->costs[i - 1] < pq->costs[i / 2 - 1];
-       i /= 2) {
-    priority_queue_swap(pq, i - 1, i / 2 - 1);
-  }
+  priority_queue_shift_up(pq, pq->len - 1);
 }
 
 template <typename T> bool priority_queue_pop(PriorityQueue<T> *pq, T *data) {
@@ -71,27 +103,6 @@ template <typename T> bool priority_queue_pop(PriorityQueue<T> *pq, T *data) {
   pq->costs[0] = pq->costs[pq->len - 1];
   pq->len--;
 
-  i32 i = 0, j = 1;
-  while (i != j) {
-    i = j;
-    if (2 * i + 1 <= pq->len) {
-      if (pq->costs[i - 1] > pq->costs[2 * i - 1]) {
-        j = 2 * i;
-      }
-      if (pq->costs[j - 1] > pq->costs[2 * i + 1 - 1]) {
-        j = 2 * i + 1;
-      }
-
-    } else if (2 * i <= pq->len) {
-      if (pq->costs[i - 1] > pq->costs[2 * i - 1]) {
-        j = 2 * i;
-      }
-    }
-
-    if (i != j) {
-      priority_queue_swap(pq, i - 1, j - 1);
-    }
-  }
-
+  priority_queue_shift_down(pq, 0, pq->len);
   return true;
 }
