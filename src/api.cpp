@@ -819,7 +819,7 @@ static int mt_tilemap_astar(lua_State *L) {
   goal.x = (i32)ex;
   goal.y = (i32)ey;
 
-  TileNode *end = tilemap_astar(tm, start, goal);
+  TileNode *end = tilemap_astar(tm, goal, start);
 
   lua_newtable(L);
 

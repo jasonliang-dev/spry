@@ -44,10 +44,7 @@ enum TileNodeFlags {
 
 struct TileNode {
   TileNode *prev;
-  float f; // g + h
   float g; // cost so far
-  float h; // heuristic
-
   u32 flags;
 
   i32 x, y;
@@ -75,7 +72,7 @@ struct Tilemap {
   Slice<TilemapLevel> levels;
   HashMap<Image> images;    // key: filepath
   HashMap<b2Body *> bodies; // key: layer name
-  HashMap<TileNode> graph; // key: x, y
+  HashMap<TileNode> graph;  // key: x, y
   PriorityQueue<TileNode *> frontier;
 };
 

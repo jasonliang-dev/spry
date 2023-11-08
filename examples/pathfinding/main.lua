@@ -12,33 +12,37 @@ function spry.start()
 end
 
 function spry.frame(dt)
+  local scale = 2
+
   if spry.platform() ~= "html5" and spry.key_down "esc" then
     spry.quit()
   end
 
+  local screen_to_tile = 1 / scale / 16
+
   if spry.mouse_down(0) then
     local x, y = spry.mouse_pos()
-    start.x = x / 3 / 16
-    start.y = y / 3 / 16
+    start.x = x * screen_to_tile
+    start.y = y * screen_to_tile
     path = map:astar(start.x, start.y, goal.x, goal.y)
   end
 
   if spry.mouse_down(1) then
     local x, y = spry.mouse_pos()
-    goal.x = x / 3 / 16
-    goal.y = y / 3 / 16
+    goal.x = x * screen_to_tile
+    goal.y = y * screen_to_tile
     path = map:astar(start.x, start.y, goal.x, goal.y)
   end
 
   if spry.mouse_down(2) then
     local x, y = spry.mouse_pos()
-    local x = x / 3 / 16
-    local y = y / 3 / 16
+    local x = x * screen_to_tile
+    local y = y * screen_to_tile
     neighbors = map:neighbors_for_tile(x, y)
   end
 
   spry.push_matrix()
-  spry.scale(3, 3)
+  spry.scale(scale, scale)
     map:draw()
 
     if neighbors ~= nil then
@@ -48,11 +52,11 @@ function spry.frame(dt)
     end
 
     if path ~= nil then
-      spry.push_color(255, 0, 0, 255)
       for k, v in ipairs(path) do
+        spry.push_color((#path - k) * 255 / #path, 0, k * 255 / #path, 255)
         spry.draw_line_rect(v.x * 16, v.y * 16, 16, 16)
+        spry.pop_color()
       end
-      spry.pop_color()
     end
   spry.pop_matrix()
 

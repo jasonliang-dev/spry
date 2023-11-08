@@ -44,78 +44,6 @@ void priority_queue_swap(PriorityQueue<T> *pq, i32 i, i32 j) {
   pq->costs[j] = f;
 }
 
-/*
-template <typename T>
-void priority_queue_shift_up(PriorityQueue<T> *pq, i32 j) {
-  while (j > 0) {
-    i32 i = (j - 1) / 2;
-    if (i == j || pq->costs[j] >= pq->costs[i]) {
-      break;
-    }
-    priority_queue_swap(pq, i, j);
-    j = i;
-  }
-}
-
-template <typename T>
-void priority_queue_shift_down(PriorityQueue<T> *pq, i32 i, i32 n) {
-  if (i < 0 || i > n) {
-    return;
-  }
-
-  while (true) {
-    i32 j1 = 2 * i + 1;
-    if (j1 < 0 || j1 >= n) {
-      break;
-    }
-
-    i32 j = j1;
-    i32 j2 = j1 + 1;
-    if (j2 < n && pq->costs[j] < pq->costs[i]) {
-      j = j2;
-    }
-
-    if (pq->costs[j] >= pq->costs[i]) {
-      break;
-    }
-
-    priority_queue_swap(pq, i, j);
-    i = j;
-  }
-}
-
-template <typename T>
-void priority_queue_push(PriorityQueue<T> *pq, T item, float cost) {
-  if (pq->len == pq->capacity) {
-    priority_queue_reserve(pq, pq->len * 2 + 1);
-  }
-
-  pq->data[pq->len] = item;
-  pq->costs[pq->len] = cost;
-
-  priority_queue_shift_up(pq, pq->len);
-  pq->len++;
-}
-
-template <typename T>
-bool priority_queue_pop(PriorityQueue<T> *pq, T *data, float *cost) {
-  if (pq->len == 0) {
-    return false;
-  }
-
-  *data = pq->data[0];
-  *cost = pq->costs[0];
-
-  pq->data[0] = pq->data[pq->len - 1];
-  pq->costs[0] = pq->costs[pq->len - 1];
-  pq->len--;
-
-  priority_queue_shift_down(pq, 0, pq->len);
-
-  return true;
-}
-*/
-
 template <typename T>
 void priority_queue_push(PriorityQueue<T> *pq, T item, float cost) {
   if (pq->len == pq->capacity) {
@@ -126,12 +54,9 @@ void priority_queue_push(PriorityQueue<T> *pq, T item, float cost) {
   pq->costs[pq->len] = cost;
   pq->len++;
 
-  for (i32 i = pq->len - 1; i >= 1; i--) {
-    if (pq->costs[i - 1] <= pq->costs[i]) {
-      break;
-    }
-
-    priority_queue_swap(pq, i - 1, i);
+  for (i32 i = pq->len; i > 1 && pq->costs[i - 1] < pq->costs[i / 2 - 1];
+       i /= 2) {
+    priority_queue_swap(pq, i - 1, i / 2 - 1);
   }
 }
 
@@ -141,10 +66,31 @@ template <typename T> bool priority_queue_pop(PriorityQueue<T> *pq, T *data) {
   }
 
   *data = pq->data[0];
+
+  pq->data[0] = pq->data[pq->len - 1];
+  pq->costs[0] = pq->costs[pq->len - 1];
   pq->len--;
 
-  for (i32 i = 0; i < pq->len; i++) {
-    priority_queue_swap(pq, i, i + 1);
+  i32 i = 0, j = 1;
+  while (i != j) {
+    i = j;
+    if (2 * i + 1 <= pq->len) {
+      if (pq->costs[i - 1] > pq->costs[2 * i - 1]) {
+        j = 2 * i;
+      }
+      if (pq->costs[j - 1] > pq->costs[2 * i + 1 - 1]) {
+        j = 2 * i + 1;
+      }
+
+    } else if (2 * i <= pq->len) {
+      if (pq->costs[i - 1] > pq->costs[2 * i - 1]) {
+        j = 2 * i;
+      }
+    }
+
+    if (i != j) {
+      priority_queue_swap(pq, i - 1, j - 1);
+    }
   }
 
   return true;

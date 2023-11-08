@@ -432,20 +432,26 @@ void tilemap_make_graph(Tilemap *tm, String layer_name, Slice<TileCost> costs) {
 static float tile_distance(TileNode *lhs, TileNode *rhs) {
   float dx = lhs->x - rhs->x;
   float dy = lhs->y - rhs->y;
-  return sqrtf(dx * dx + dy * dy);
+  return dx * dx + dy * dy;
+}
+
+static float tile_heuristic(TileNode *lhs, TileNode *rhs) {
+  float D = 1;
+  float D2 = 1.4142135f;
+
+  float dx = (float)abs(lhs->x - rhs->x);
+  float dy = (float)abs(lhs->y - rhs->y);
+  return D * (dx + dy) + (D2 - 2 * D) * fminf(dx, dy);
 }
 
 static void astar_reset(Tilemap *tm) {
   PROFILE_FUNC();
 
-  memset(tm->frontier.data, 0, sizeof(TileNode *) * tm->frontier.capacity);
   tm->frontier.len = 0;
 
   for (auto [k, v] : tm->graph) {
     v->prev = nullptr;
-    v->f = 0;
     v->g = 0;
-    v->h = 0;
     v->flags = 0;
   }
 }
@@ -466,11 +472,12 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
       return nullptr;
     }
 
+    float g = 0;
+    float h = tile_distance(begin, end);
+    float f = g + h;
     begin->g = 0;
-    begin->h = tile_distance(begin, end);
-    begin->f = begin->g + begin->h;
     begin->flags |= TileNodeFlags_Open;
-    priority_queue_push(&tm->frontier, begin, begin->f);
+    priority_queue_push(&tm->frontier, begin, f);
   }
 
   while (tm->frontier.len != 0) {
@@ -484,18 +491,22 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
 
     for (i32 i = 0; i < top->neighbor_count; i++) {
       TileNode *next = top->neighbors[i];
+      if (next->flags & TileNodeFlags_Closed) {
+        continue;
+      }
 
       float g = top->g + next->cost + tile_distance(top, next);
 
       bool open = next->flags & TileNodeFlags_Open;
       if (!open || g < next->g) {
-        next->prev = top;
+        float h = tile_heuristic(next, end);
+        float f = g + h;
+
         next->g = g;
-        next->h = tile_distance(next, end);
-        next->f = g + next->h;
+        next->prev = top;
         next->flags |= TileNodeFlags_Open;
 
-        priority_queue_push(&tm->frontier, next, next->f);
+        priority_queue_push(&tm->frontier, next, f);
       }
     }
   }
