@@ -6,7 +6,7 @@
 #include "profile.h"
 #include "slice.h"
 
-bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
+bool sprite_data_load(SpriteData *spr, Archive *ar, String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
@@ -76,20 +76,22 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   for (i32 i = 0; i < ase->tag_count; i++) {
     ase_tag_t &tag = ase->tags[i];
 
+    u64 len = (u64)((tag.to_frame + 1) - tag.from_frame);
+
     SpriteLoop loop = {};
 
-    for (i32 j = tag.from_frame; j <= tag.to_frame; j++) {
-      array_push(&loop.indices, j);
+    slice_from_arena(&loop.indices, &arena, len);
+    for (i32 j = 0; j < len; j++) {
+      loop.indices[j] = j + tag.from_frame;
     }
 
-    u64 key = fnv1a(tag.name, strlen(tag.name));
-    by_tag[key] = loop;
+    by_tag[fnv1a(tag.name)] = loop;
   }
 
   printf("created sprite with image id: %d and %llu frames\n", img.id,
          (unsigned long long)frames.len);
 
-  Sprite s = {};
+  SpriteData s = {};
   s.arena = arena;
   s.img = img;
   s.frames = frames;
@@ -100,61 +102,81 @@ bool sprite_load(Sprite *spr, Archive *ar, String filepath) {
   return true;
 }
 
-void sprite_trash(Sprite *spr) {
-  for (auto [k, v] : spr->by_tag) {
-    array_trash(&v->indices);
-  }
+void sprite_data_trash(SpriteData *spr) {
   hashmap_trash(&spr->by_tag);
   arena_trash(&spr->arena);
 }
 
-void sprite_renderer_play(SpriteRenderer *sr, String tag) {
-  sr->loop = fnv1a(tag);
+bool sprite_play(Sprite *spr, String tag) {
+  u64 key = fnv1a(tag);
+  bool same = spr->loop == key;
+  spr->loop = key;
+  return same;
 }
 
-void sprite_renderer_update(SpriteRenderer *sr, float dt) {
-  i32 index = 0;
-  u64 len = 0;
-
-  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
-  SpriteLoop *loop = hashmap_get(&sprite->by_tag, sr->loop);
-
-  if (loop != nullptr) {
-    index = loop->indices[sr->current_frame];
-    len = loop->indices.len;
-  } else {
-    index = sr->current_frame;
-    len = sprite->frames.len;
+void sprite_update(Sprite *spr, float dt) {
+  SpriteView view = {};
+  bool ok = sprite_view(&view, spr);
+  if (!ok) {
+    return;
   }
 
-  SpriteFrame frame = sprite->frames[index];
+  i32 index = sprite_view_frame(&view);
+  SpriteFrame frame = view.data->frames[index];
 
-  sr->elapsed += dt * 1000;
-  while (sr->elapsed > frame.duration) {
-    if (sr->current_frame == len - 1) {
-      sr->current_frame = 0;
+  spr->elapsed += dt * 1000;
+  if (spr->elapsed > frame.duration) {
+    if (spr->current_frame == sprite_view_len(&view) - 1) {
+      spr->current_frame = 0;
     } else {
-      sr->current_frame++;
+      spr->current_frame++;
     }
 
-    sr->elapsed -= frame.duration;
+    spr->elapsed -= frame.duration;
   }
 }
 
-void sprite_renderer_set_frame(SpriteRenderer *sr, i32 frame) {
-  i32 len;
-
-  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
-  SpriteLoop *loop = hashmap_get(&sprite->by_tag, sr->loop);
-
-  if (loop != nullptr) {
-    len = loop->indices.len;
-  } else {
-    len = sprite->frames.len;
+void sprite_set_frame(Sprite *spr, i32 frame) {
+  SpriteView view = {};
+  bool ok = sprite_view(&view, spr);
+  if (!ok) {
+    return;
   }
 
-  if (0 <= frame && frame < len) {
-    sr->current_frame = frame;
-    sr->elapsed = 0;
+  if (0 <= frame && frame < sprite_view_len(&view)) {
+    spr->current_frame = frame;
+    spr->elapsed = 0;
+  }
+}
+
+bool sprite_view(SpriteView *out, Sprite *spr) {
+  SpriteData *data = &g_app->assets[spr->sprite].sprite;
+  if (data == nullptr) {
+    return false;
+  }
+
+  SpriteLoop *loop = hashmap_get(&data->by_tag, spr->loop);
+
+  SpriteView view = {};
+  view.sprite = spr;
+  view.data = data;
+  view.loop = loop;
+  *out = view;
+  return true;
+}
+
+i32 sprite_view_frame(SpriteView *view) {
+  if (view->loop != nullptr) {
+    return view->loop->indices[view->sprite->current_frame];
+  } else {
+    return view->sprite->current_frame;
+  }
+}
+
+u64 sprite_view_len(SpriteView *view) {
+  if (view->loop != nullptr) {
+    return view->loop->indices.len;
+  } else {
+    return view->data->frames.len;
   }
 }

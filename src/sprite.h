@@ -1,8 +1,8 @@
 #pragma once
 
-#include "slice.h"
 #include "hash_map.h"
 #include "image.h"
+#include "slice.h"
 
 struct SpriteFrame {
   i32 duration;
@@ -10,19 +10,10 @@ struct SpriteFrame {
 };
 
 struct SpriteLoop {
-  Array<i32> indices;
+  Slice<i32> indices;
 };
 
-struct Sprite;
-
-struct SpriteRenderer {
-  u64 sprite;
-  u64 loop;
-  float elapsed;
-  i32 current_frame;
-};
-
-struct Sprite {
+struct SpriteData {
   Arena arena;
   Slice<SpriteFrame> frames;
   HashMap<SpriteLoop> by_tag;
@@ -31,8 +22,26 @@ struct Sprite {
   i32 height;
 };
 
-bool sprite_load(Sprite *spr, Archive *ar, String filepath);
-void sprite_trash(Sprite *spr);
-void sprite_renderer_play(SpriteRenderer *sr, String tag);
-void sprite_renderer_update(SpriteRenderer *sr, float dt);
-void sprite_renderer_set_frame(SpriteRenderer *sr, i32 frame);
+struct Sprite {
+  u64 sprite;
+  u64 loop;
+  float elapsed;
+  i32 current_frame;
+};
+
+struct SpriteView {
+  Sprite *sprite;
+  SpriteData *data;
+  SpriteLoop *loop;
+};
+
+bool sprite_data_load(SpriteData *spr, Archive *ar, String filepath);
+void sprite_data_trash(SpriteData *spr);
+
+bool sprite_play(Sprite *spr, String tag);
+void sprite_update(Sprite *spr, float dt);
+void sprite_set_frame(Sprite *spr, i32 frame);
+
+bool sprite_view(SpriteView *out, Sprite *spr);
+i32 sprite_view_frame(SpriteView *view);
+u64 sprite_view_len(SpriteView *view);

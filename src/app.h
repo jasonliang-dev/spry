@@ -23,7 +23,7 @@ struct Asset {
   AssetKind kind;
   union {
     Image image;
-    Sprite sprite;
+    SpriteData sprite;
     Tilemap tilemap;
   };
 };

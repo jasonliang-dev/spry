@@ -66,7 +66,7 @@ void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex);
 void renderer_push_xy(Renderer2D *ren, float x, float y);
 
 void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc);
-void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc);
+void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc);
 void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
                String text);
 void draw_tilemap(Renderer2D *ren, Tilemap *tm);

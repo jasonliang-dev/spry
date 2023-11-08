@@ -534,86 +534,79 @@ static int open_mt_audio(lua_State *L) {
   return 1;
 }
 
-// mt_sprite_renderer
+// mt_sprite
 
-static int mt_sprite_renderer_play(lua_State *L) {
-  SpriteRenderer *sr =
-      (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
+static int mt_sprite_play(lua_State *L) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
   String tag = luax_check_string(L, 2);
   bool restart = lua_toboolean(L, 3);
 
-  sprite_renderer_play(sr, tag);
-  if (restart) {
-    sr->current_frame = 0;
-    sr->elapsed = 0;
+  bool same = sprite_play(spr, tag);
+  if (!same || restart) {
+    spr->current_frame = 0;
+    spr->elapsed = 0;
   }
   return 0;
 }
 
-static int mt_sprite_renderer_update(lua_State *L) {
-  SpriteRenderer *sr =
-      (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
+static int mt_sprite_update(lua_State *L) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
   lua_Number dt = luaL_checknumber(L, 2);
 
-  sprite_renderer_update(sr, (float)dt);
+  sprite_update(spr, (float)dt);
   return 0;
 }
 
-static int mt_sprite_renderer_draw(lua_State *L) {
-  SpriteRenderer *sr =
-      (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
+static int mt_sprite_draw(lua_State *L) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
   DrawDescription dd = luax_draw_description(L, 2);
 
-  draw_sprite(&g_app->renderer, sr, &dd);
+  draw_sprite(&g_app->renderer, spr, &dd);
   return 0;
 }
 
-static int mt_sprite_renderer_width(lua_State *L) {
-  SpriteRenderer *sr =
-      (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
-  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
-  lua_pushnumber(L, (lua_Number)sprite->width);
+static int mt_sprite_width(lua_State *L) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  SpriteData *data = &g_app->assets[spr->sprite].sprite;
+  lua_pushnumber(L, (lua_Number)data->width);
   return 1;
 }
 
-static int mt_sprite_renderer_height(lua_State *L) {
-  SpriteRenderer *sr =
-      (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
-  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
-  lua_pushnumber(L, (lua_Number)sprite->height);
+static int mt_sprite_height(lua_State *L) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  SpriteData *data = &g_app->assets[spr->sprite].sprite;
+  lua_pushnumber(L, (lua_Number)data->height);
   return 1;
 }
 
-static int mt_sprite_renderer_set_frame(lua_State *L) {
-  SpriteRenderer *sr =
-      (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
+static int mt_sprite_set_frame(lua_State *L) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
   lua_Integer frame = luaL_checknumber(L, 2);
 
-  sprite_renderer_set_frame(sr, (i32)frame);
+  sprite_set_frame(spr, (i32)frame);
   return 0;
 }
 
-static int mt_sprite_renderer_total_frames(lua_State *L) {
-  SpriteRenderer *sr =
-      (SpriteRenderer *)luaL_checkudata(L, 1, "mt_sprite_renderer");
-  Sprite *sprite = &g_app->assets[sr->sprite].sprite;
+static int mt_sprite_total_frames(lua_State *L) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  SpriteData *sprite = &g_app->assets[spr->sprite].sprite;
   lua_pushinteger(L, sprite->frames.len);
   return 1;
 }
 
-static int open_mt_sprite_renderer(lua_State *L) {
+static int open_mt_sprite(lua_State *L) {
   luaL_Reg reg[] = {
-      {"play", mt_sprite_renderer_play},
-      {"update", mt_sprite_renderer_update},
-      {"draw", mt_sprite_renderer_draw},
-      {"width", mt_sprite_renderer_width},
-      {"height", mt_sprite_renderer_height},
-      {"set_frame", mt_sprite_renderer_set_frame},
-      {"total_frames", mt_sprite_renderer_total_frames},
+      {"play", mt_sprite_play},
+      {"update", mt_sprite_update},
+      {"draw", mt_sprite_draw},
+      {"width", mt_sprite_width},
+      {"height", mt_sprite_height},
+      {"set_frame", mt_sprite_set_frame},
+      {"total_frames", mt_sprite_total_frames},
       {nullptr, nullptr},
   };
 
-  luax_new_class(L, "mt_sprite_renderer", reg);
+  luax_new_class(L, "mt_sprite", reg);
   return 1;
 }
 
@@ -1810,16 +1803,16 @@ static int spry_sprite_load(lua_State *L) {
   bool loaded = get_asset(str, &asset);
   if (!loaded) {
     asset->kind = AssetKind_Sprite;
-    bool ok = sprite_load(&asset->sprite, g_app->archive, str);
+    bool ok = sprite_data_load(&asset->sprite, g_app->archive, str);
     if (!ok) {
       return 0;
     }
   }
 
-  SpriteRenderer sr = {};
-  sr.sprite = asset->hash;
+  Sprite spr = {};
+  spr.sprite = asset->hash;
 
-  luax_new_userdata(L, sr, "mt_sprite_renderer");
+  luax_new_userdata(L, spr, "mt_sprite");
   return 1;
 }
 
@@ -1921,12 +1914,10 @@ static int open_spry(lua_State *L) {
 
 void open_spry_api(lua_State *L) {
   lua_CFunction mt_funcs[] = {
-      open_mt_image,           open_mt_font,
-      open_mt_sound,           open_mt_audio,
-      open_mt_sprite_renderer, open_mt_atlas_image,
-      open_mt_atlas,           open_mt_tilemap,
-      open_mt_b2_fixture,      open_mt_b2_body,
-      open_mt_b2_world,
+      open_mt_image,   open_mt_font,     open_mt_sound,
+      open_mt_audio,   open_mt_sprite,   open_mt_atlas_image,
+      open_mt_atlas,   open_mt_tilemap,  open_mt_b2_fixture,
+      open_mt_b2_body, open_mt_b2_world,
   };
 
   for (u32 i = 0; i < array_size(mt_funcs); i++) {

@@ -488,7 +488,7 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
     }
 
     float g = 0;
-    float h = tile_distance(begin, end);
+    float h = tile_heuristic(begin, end);
     float f = g + h;
     begin->g = 0;
     begin->flags |= TileNodeFlags_Open;

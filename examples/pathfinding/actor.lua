@@ -32,21 +32,23 @@ function Actor:update(dt)
   vx, vy = normalize(vx, vy)
 
   local dx, dy = sign(vx), sign(vy)
-  if self.dx ~= dx or self.dy ~= dy then
-    if dx < 0 then
-      self.sprite:play "walk_left"
-    elseif dx > 0 then
-      self.sprite:play "walk_right"
-    elseif dy < 0 then
+  self.dx, self.dy = dx, dy
+
+  if math.abs(vx) < 0.1 then
+    if dy < 0 then
       self.sprite:play "walk_up"
     elseif dy > 0 then
       self.sprite:play "walk_down"
     end
-
-    self.dx, self.dy = dx, dy
+  else
+    if dx < 0 then
+      self.sprite:play "walk_left"
+    elseif dx > 0 then
+      self.sprite:play "walk_right"
+    end
   end
 
-  local s = dt * 100
+  local s = dt * 50
   self.x = self.x + vx * s
   self.y = self.y + vy * s
 end

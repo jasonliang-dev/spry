@@ -426,8 +426,8 @@ static void frame() {
           ok = image_load(&v->image, g_app->archive, v->name);
           break;
         case AssetKind_Sprite:
-          sprite_trash(&v->sprite);
-          ok = sprite_load(&v->sprite, g_app->archive, v->name);
+          sprite_data_trash(&v->sprite);
+          ok = sprite_data_load(&v->sprite, g_app->archive, v->name);
           break;
         case AssetKind_Tilemap:
           tilemap_trash(&v->tilemap);
@@ -474,7 +474,7 @@ static void actually_cleanup() {
 
     switch (v->kind) {
     case AssetKind_Image: image_trash(&v->image); break;
-    case AssetKind_Sprite: sprite_trash(&v->sprite); break;
+    case AssetKind_Sprite: sprite_data_trash(&v->sprite); break;
     case AssetKind_Tilemap: tilemap_trash(&v->tilemap); break;
     case AssetKind_None:
     default: break;

@@ -184,11 +184,16 @@ void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
   renderer_pop_matrix(ren);
 }
 
-void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
-  Sprite *spr = &g_app->assets[sr->sprite].sprite;
-  SpriteLoop *loop = hashmap_get(&spr->by_tag, sr->loop);
+void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
+  bool ok = false;
 
-  bool ok = renderer_push_matrix(ren);
+  ok = renderer_push_matrix(ren);
+  if (!ok) {
+    return;
+  }
+
+  SpriteView view = {};
+  ok = sprite_view(&view, spr);
   if (!ok) {
     return;
   }
@@ -198,22 +203,16 @@ void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
   renderer_scale(ren, desc->sx, desc->sy);
 
   sgl_enable_texture();
-  sgl_texture({spr->img.id});
+  sgl_texture({view.data->img.id});
   sgl_begin_quads();
 
   float x0 = -desc->ox;
   float y0 = -desc->oy;
-  float x1 = (float)spr->width - desc->ox;
-  float y1 = (float)spr->height - desc->oy;
+  float x1 = (float)view.data->width - desc->ox;
+  float y1 = (float)view.data->height - desc->oy;
 
-  i32 index;
-  if (loop != nullptr) {
-    index = loop->indices[sr->current_frame];
-  } else {
-    index = sr->current_frame;
-  }
-
-  SpriteFrame f = spr->frames[index];
+  i32 frame = sprite_view_frame(&view);
+  SpriteFrame f = view.data->frames[frame];
 
   renderer_apply_color(ren);
   renderer_push_quad(ren, vec4(x0, y0, x1, y1), vec4(f.u0, f.v0, f.u1, f.v1));

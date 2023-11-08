@@ -42,24 +42,7 @@ template <typename T> u64 hashmap_find_entry(HashMap<T> *map, u64 key) {
   }
 }
 
-inline u64 hash_map_reserve_size(u64 size) {
-  u64 n = (u64)(size / HASH_MAP_LOAD_FACTOR) + 1;
-
-  // next pow of 2
-  n--;
-  n |= n >> 1;
-  n |= n >> 2;
-  n |= n >> 4;
-  n |= n >> 8;
-  n |= n >> 16;
-  n |= n >> 32;
-  n++;
-
-  return n;
-}
-
-template <typename T> void hashmap_reserve(HashMap<T> *old, u64 capacity) {
-  capacity = hash_map_reserve_size(capacity);
+template <typename T> void hashmap_real_reserve(HashMap<T> *old, u64 capacity) {
   if (capacity <= old->capacity) {
     return;
   }
@@ -96,6 +79,27 @@ template <typename T> void hashmap_reserve(HashMap<T> *old, u64 capacity) {
   *old = map;
 }
 
+inline u64 hash_map_reserve_size(u64 size) {
+  u64 n = (u64)(size / HASH_MAP_LOAD_FACTOR) + 1;
+
+  // next pow of 2
+  n--;
+  n |= n >> 1;
+  n |= n >> 2;
+  n |= n >> 4;
+  n |= n >> 8;
+  n |= n >> 16;
+  n |= n >> 32;
+  n++;
+
+  return n;
+}
+
+template <typename T> void hashmap_reserve(HashMap<T> *old, u64 capacity) {
+  capacity = hash_map_reserve_size(capacity);
+  hashmap_real_reserve(old, capacity);
+}
+
 template <typename T> T *hashmap_get(HashMap<T> *map, u64 key) {
   if (map->load == 0) {
     return nullptr;
@@ -107,7 +111,7 @@ template <typename T> T *hashmap_get(HashMap<T> *map, u64 key) {
 
 template <typename T> bool hashmap_index(HashMap<T> *map, u64 key, T **value) {
   if (map->load >= map->capacity * HASH_MAP_LOAD_FACTOR) {
-    hashmap_reserve(map, map->capacity > 0 ? map->capacity * 2 : 16);
+    hashmap_real_reserve(map, map->capacity > 0 ? map->capacity * 2 : 16);
   }
 
   u64 index = hashmap_find_entry(map, key);
