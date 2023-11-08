@@ -3,6 +3,7 @@
 #include "hash_map.h"
 #include "image.h"
 #include "priority_queue.h"
+#include "slice.h"
 
 struct TilemapTile {
   float x, y, u, v;
@@ -20,11 +21,11 @@ using TilemapInt = unsigned char;
 struct TilemapLayer {
   String identifier;
   Image image;
-  Array<TilemapTile> tiles;
-  Array<TilemapEntity> entities;
+  Slice<TilemapTile> tiles;
+  Slice<TilemapEntity> entities;
   i32 c_width;
   i32 c_height;
-  Array<TilemapInt> int_grid;
+  Slice<TilemapInt> int_grid;
   float grid_size;
 };
 
@@ -33,7 +34,7 @@ struct TilemapLevel {
   String iid;
   float world_x, world_y;
   float px_width, px_height;
-  Array<TilemapLayer> layers;
+  Slice<TilemapLayer> layers;
 };
 
 enum TileNodeFlags {
@@ -48,8 +49,6 @@ struct TileNode {
   float h; // heuristic
 
   u32 flags;
-  bool open;
-  bool closed;
 
   i32 x, y;
   float cost;
@@ -72,7 +71,8 @@ class b2Body;
 class b2World;
 
 struct Tilemap {
-  Array<TilemapLevel> levels;
+  Arena arena;
+  Slice<TilemapLevel> levels;
   HashMap<Image> images;    // key: filepath
   HashMap<b2Body *> bodies; // key: layer name
   HashMap<TileNode> graph; // key: x, y
@@ -84,6 +84,6 @@ void tilemap_trash(Tilemap *tm);
 void tilemap_destroy_bodies(Tilemap *tm, b2World *world);
 
 void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
-                            String layer_name, Array<TilemapInt> *walls);
-void tilemap_make_graph(Tilemap *tm, String layer_name, Array<TileCost> *costs);
+                            String layer_name, Slice<TilemapInt> walls);
+void tilemap_make_graph(Tilemap *tm, String layer_name, Slice<TileCost> costs);
 TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal);

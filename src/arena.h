@@ -2,9 +2,9 @@
 
 #include "prelude.h"
 
-struct ArenaBlock;
+struct ArenaNode;
 struct Arena {
-  ArenaBlock *head;
+  ArenaNode *head;
 };
 
 void arena_trash(Arena *arena);

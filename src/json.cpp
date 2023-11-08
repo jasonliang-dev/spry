@@ -300,10 +300,10 @@ static String json_parse_array(Arena *a, JSONScanner *scan, JSONArray **out) {
     JSONArray *el = (JSONArray *)arena_bump(a, sizeof(JSONArray));
     el->next = arr;
     el->value = value;
-    el->count = 0;
+    el->index = 0;
 
     if (arr != nullptr) {
-      el->count = arr->count + 1;
+      el->index = arr->index + 1;
     }
 
     arr = el;
@@ -314,18 +314,6 @@ static String json_parse_array(Arena *a, JSONScanner *scan, JSONArray **out) {
   }
 }
 
-static JSONArray *reverse_list(JSONArray *head) {
-  JSONArray *prev = nullptr;
-  while (head != nullptr) {
-    JSONArray *next = head->next;
-
-    head->next = prev;
-    prev = head;
-    head = next;
-  }
-  return prev;
-}
-
 static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
   switch (scan->token.kind) {
   case JSONTok_LBrace: {
@@ -334,15 +322,7 @@ static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
   }
   case JSONTok_LBracket: {
     out->kind = JSONKind_Array;
-
-    JSONArray *arr = nullptr;
-    String res = json_parse_array(a, scan, &arr);
-    if (res.len != 0) {
-      return res;
-    }
-
-    out->array = reverse_list(arr);
-    return res;
+    return json_parse_array(a, scan, &out->array);
   }
   case JSONTok_String: {
     out->kind = JSONKind_String;
@@ -444,7 +424,7 @@ JSON *json_index(JSON *arr, i32 index) {
 
   if (arr->kind == JSONKind_Array) {
     for (JSONArray *a = arr->array; a != nullptr; a = a->next) {
-      if (a->count == index) {
+      if (a->index == index) {
         return &a->value;
       }
     }

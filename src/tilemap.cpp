@@ -1,4 +1,5 @@
 #include "tilemap.h"
+#include "arena.h"
 #include "box2d/b2_body.h"
 #include "box2d/b2_fixture.h"
 #include "box2d/b2_polygon_shape.h"
@@ -8,13 +9,16 @@
 #include "prelude.h"
 #include "priority_queue.h"
 #include "profile.h"
+#include "slice.h"
 #include "strings.h"
 
-static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
-                            String filepath, HashMap<Image> *images) {
+static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
+                            Archive *ar, String filepath,
+                            HashMap<Image> *images) {
   PROFILE_FUNC();
 
-  layer->identifier = to_cstr(json_lookup_string(json, "__identifier"));
+  layer->identifier =
+      arena_bump_string(arena, json_lookup_string(json, "__identifier"));
   layer->c_width = (i32)json_lookup_number(json, "__cWid");
   layer->c_height = (i32)json_lookup_number(json, "__cHei");
   layer->grid_size = json_lookup_number(json, "__gridSize");
@@ -29,7 +33,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
   JSONArray *grid_tiles = json_array(json_lookup(json, "gridTiles"));
   JSONArray *auto_layer_tiles = json_array(json_lookup(json, "autoLayerTiles"));
 
-  JSONArray *arr_tiles = (grid_tiles != nullptr && grid_tiles->count != 0)
+  JSONArray *arr_tiles = (grid_tiles != nullptr && grid_tiles->index != 0)
                              ? grid_tiles
                              : auto_layer_tiles;
 
@@ -60,22 +64,24 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
     }
   }
 
-  Array<TilemapInt> grid = {};
+  Slice<TilemapInt> grid = {};
   if (int_grid_csv != nullptr) {
     PROFILE_BLOCK("int grid");
 
-    array_reserve(&grid, int_grid_csv->count);
+    i32 len = int_grid_csv->index + 1;
+    slice_from_arena(&grid, arena, len);
     for (JSONArray *a = int_grid_csv; a != nullptr; a = a->next) {
-      array_push(&grid, (TilemapInt)json_number(&a->value));
+      grid[--len] = (TilemapInt)json_number(&a->value);
     }
   }
   layer->int_grid = grid;
 
-  Array<TilemapTile> tiles = {};
+  Slice<TilemapTile> tiles = {};
   if (arr_tiles != nullptr) {
     PROFILE_BLOCK("tiles");
 
-    array_reserve(&tiles, arr_tiles->count);
+    i32 len = arr_tiles->index + 1;
+    slice_from_arena(&tiles, arena, len);
     for (JSONArray *a = arr_tiles; a != nullptr; a = a->next) {
       JSON *px = json_lookup(&a->value, "px");
       JSON *src = json_lookup(&a->value, "src");
@@ -88,7 +94,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
       tile.v = json_number(json_index(src, 1));
 
       tile.flip_bits = (i32)json_lookup_number(&a->value, "f");
-      array_push(&tiles, tile);
+      tiles[--len] = tile;
     }
   }
   layer->tiles = tiles;
@@ -100,21 +106,22 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
     tile.v1 = (tile.v + layer->grid_size) / layer->image.height;
   }
 
-  Array<TilemapEntity> entities = {};
+  Slice<TilemapEntity> entities = {};
   if (entity_instances != nullptr) {
     PROFILE_BLOCK("entities");
 
-    array_reserve(&entities, entity_instances->count);
+    i32 len = entity_instances->index + 1;
+    slice_from_arena(&entities, arena, len);
     for (JSONArray *a = entity_instances; a != nullptr; a = a->next) {
       JSON *px = json_lookup(&a->value, "px");
 
       TilemapEntity entity = {};
       entity.x = json_number(json_index(px, 0));
       entity.y = json_number(json_index(px, 1));
-      entity.identifier =
-          to_cstr(json_lookup_string(&a->value, "__identifier"));
+      entity.identifier = arena_bump_string(
+          arena, json_lookup_string(&a->value, "__identifier"));
 
-      array_push(&entities, entity);
+      entities[--len] = entity;
     }
   }
   layer->entities = entities;
@@ -122,12 +129,14 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Archive *ar,
   return true;
 }
 
-static bool level_from_json(TilemapLevel *level, JSON *json, Archive *ar,
-                            String filepath, HashMap<Image> *images) {
+static bool level_from_json(TilemapLevel *level, JSON *json, Arena *arena,
+                            Archive *ar, String filepath,
+                            HashMap<Image> *images) {
   PROFILE_FUNC();
 
-  level->identifier = to_cstr(json_lookup_string(json, "identifier"));
-  level->iid = to_cstr(json_lookup_string(json, "iid"));
+  level->identifier =
+      arena_bump_string(arena, json_lookup_string(json, "identifier"));
+  level->iid = arena_bump_string(arena, json_lookup_string(json, "iid"));
   level->world_x = json_lookup_number(json, "worldX");
   level->world_y = json_lookup_number(json, "worldY");
   level->px_width = json_lookup_number(json, "pxWid");
@@ -135,16 +144,17 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Archive *ar,
 
   JSONArray *layer_instances = json_array(json_lookup(json, "layerInstances"));
 
-  Array<TilemapLayer> layers = {};
+  Slice<TilemapLayer> layers = {};
   if (layer_instances != nullptr) {
-    array_reserve(&layers, layer_instances->count);
+    i32 len = layer_instances->index + 1;
+    slice_from_arena(&layers, arena, len);
     for (JSONArray *a = layer_instances; a != nullptr; a = a->next) {
       TilemapLayer layer = {};
-      bool ok = layer_from_json(&layer, &a->value, ar, filepath, images);
+      bool ok = layer_from_json(&layer, &a->value, arena, ar, filepath, images);
       if (!ok) {
         return false;
       }
-      array_push(&layers, layer);
+      layers[--len] = layer;
     }
   }
   level->layers = layers;
@@ -154,6 +164,8 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Archive *ar,
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   PROFILE_FUNC();
+
+  Arena arena = {};
 
   String contents = {};
   bool ok = ar->read_entire_file(&contents, filepath);
@@ -175,19 +187,22 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
 
   JSONArray *arr_levels = json_array(json_lookup(&doc.root, "levels"));
 
-  Array<TilemapLevel> levels = {};
+  Slice<TilemapLevel> levels = {};
   if (arr_levels != nullptr) {
-    array_reserve(&levels, arr_levels->count);
+    i32 len = arr_levels->index + 1;
+    slice_from_arena(&levels, &arena, len);
     for (JSONArray *a = arr_levels; a != nullptr; a = a->next) {
       TilemapLevel level = {};
-      bool ok = level_from_json(&level, &a->value, ar, filepath, &images);
+      bool ok =
+          level_from_json(&level, &a->value, &arena, ar, filepath, &images);
       if (!ok) {
         return false;
       }
-      array_push(&levels, level);
+      levels[--len] = level;
     }
   }
 
+  tilemap.arena = arena;
   tilemap.levels = levels;
   tilemap.images = images;
 
@@ -202,24 +217,6 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
 }
 
 void tilemap_trash(Tilemap *tm) {
-  for (TilemapLevel &level : tm->levels) {
-    for (TilemapLayer &layer : level.layers) {
-      for (TilemapEntity &entity : layer.entities) {
-        mem_free(entity.identifier.data);
-      }
-      array_trash(&layer.entities);
-
-      mem_free(layer.identifier.data);
-      array_trash(&layer.tiles);
-      array_trash(&layer.int_grid);
-    }
-    array_trash(&level.layers);
-
-    mem_free(level.identifier.data);
-    mem_free(level.iid.data);
-  }
-  array_trash(&tm->levels);
-
   for (auto [k, v] : tm->images) {
     image_trash(v);
   }
@@ -228,6 +225,8 @@ void tilemap_trash(Tilemap *tm) {
   hashmap_trash(&tm->bodies);
   hashmap_trash(&tm->graph);
   priority_queue_trash(&tm->frontier);
+
+  arena_trash(&tm->arena);
 }
 
 void tilemap_destroy_bodies(Tilemap *tm, b2World *world) {
@@ -238,7 +237,7 @@ void tilemap_destroy_bodies(Tilemap *tm, b2World *world) {
 
 static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
                                      float world_x, float world_y, float meter,
-                                     Array<TilemapInt> *walls) {
+                                     Slice<TilemapInt> walls) {
   PROFILE_FUNC();
 
   auto is_wall = [layer, walls](i32 y, i32 x) {
@@ -246,7 +245,7 @@ static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
       return false;
     }
 
-    for (TilemapInt n : *walls) {
+    for (TilemapInt n : walls) {
       if (layer->int_grid[y * layer->c_width + x] == n) {
         return true;
       }
@@ -320,7 +319,7 @@ static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
 }
 
 void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
-                            String layer_name, Array<TilemapInt> *walls) {
+                            String layer_name, Slice<TilemapInt> walls) {
   PROFILE_FUNC();
 
   b2Body *body = nullptr;
@@ -349,8 +348,8 @@ void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
   tm->bodies[fnv1a(layer_name)] = body;
 }
 
-static float get_tile_cost(TilemapInt n, Array<TileCost> *costs) {
-  for (TileCost cost : *costs) {
+static float get_tile_cost(TilemapInt n, Slice<TileCost> costs) {
+  for (TileCost cost : costs) {
     if (cost.cell == n) {
       return cost.value;
     }
@@ -360,7 +359,9 @@ static float get_tile_cost(TilemapInt n, Array<TileCost> *costs) {
 
 static void make_graph_for_layer(HashMap<TileNode> *graph, TilemapLayer *layer,
                                  float world_x, float world_y,
-                                 Array<TileCost> *costs) {
+                                 Slice<TileCost> costs) {
+  PROFILE_FUNC();
+
   for (i32 y = 0; y < layer->c_height; y++) {
     for (i32 x = 0; x < layer->c_width; x++) {
       float cost =
@@ -377,8 +378,9 @@ static void make_graph_for_layer(HashMap<TileNode> *graph, TilemapLayer *layer,
   }
 }
 
-void tilemap_make_graph(Tilemap *tm, String layer_name,
-                        Array<TileCost> *costs) {
+void tilemap_make_graph(Tilemap *tm, String layer_name, Slice<TileCost> costs) {
+  PROFILE_FUNC();
+
   HashMap<TileNode> graph = {};
 
   for (TilemapLevel &level : tm->levels) {
@@ -389,35 +391,39 @@ void tilemap_make_graph(Tilemap *tm, String layer_name,
     }
   }
 
-  for (auto [k, v] : graph) {
-    i32 count = 0;
+  {
+    PROFILE_BLOCK("create neighbors");
 
-    for (i32 y = -1; y <= 1; y++) {
-      for (i32 x = -1; x <= 1; x++) {
-        if (x == 0 && y == 0) {
-          continue;
-        }
+    for (auto [k, v] : graph) {
+      i32 count = 0;
 
-        i32 xx = v->x + x;
-        i32 yy = v->y + y;
-        TileNode *n = hashmap_get(&graph, tile_key(xx, yy));
-        if (n != nullptr) {
-          if (x != 0 && y != 0) {
-            TileNode *nx = hashmap_get(&graph, tile_key(v->x + x, v->y + 0));
-            TileNode *ny = hashmap_get(&graph, tile_key(v->x + 0, v->y + y));
-            if (nx != nullptr && ny != nullptr) {
+      for (i32 y = -1; y <= 1; y++) {
+        for (i32 x = -1; x <= 1; x++) {
+          if (x == 0 && y == 0) {
+            continue;
+          }
+
+          i32 xx = v->x + x;
+          i32 yy = v->y + y;
+          TileNode *n = hashmap_get(&graph, tile_key(xx, yy));
+          if (n != nullptr) {
+            if (x != 0 && y != 0) {
+              TileNode *nx = hashmap_get(&graph, tile_key(v->x + x, v->y + 0));
+              TileNode *ny = hashmap_get(&graph, tile_key(v->x + 0, v->y + y));
+              if (nx != nullptr && ny != nullptr) {
+                v->neighbors[count] = n;
+                count++;
+              }
+            } else {
               v->neighbors[count] = n;
               count++;
             }
-          } else {
-            v->neighbors[count] = n;
-            count++;
           }
         }
       }
-    }
 
-    v->neighbor_count = count;
+      v->neighbor_count = count;
+    }
   }
 
   tm->graph = graph;
@@ -430,6 +436,8 @@ static float tile_distance(TileNode *lhs, TileNode *rhs) {
 }
 
 static void astar_reset(Tilemap *tm) {
+  PROFILE_FUNC();
+
   memset(tm->frontier.data, 0, sizeof(TileNode *) * tm->frontier.capacity);
   tm->frontier.len = 0;
 
@@ -443,6 +451,8 @@ static void astar_reset(Tilemap *tm) {
 }
 
 TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
+  PROFILE_FUNC();
+
   astar_reset(tm);
 
   TileNode *end = hashmap_get(&tm->graph, tile_key(goal.x, goal.y));
@@ -475,13 +485,10 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
     for (i32 i = 0; i < top->neighbor_count; i++) {
       TileNode *next = top->neighbors[i];
 
-      if (next->flags & TileNodeFlags_Closed) {
-        continue;
-      }
+      float g = top->g + next->cost + tile_distance(top, next);
 
-      float g = top->g + next->cost;
-
-      if (!(next->flags & TileNodeFlags_Open) || g < next->g) {
+      bool open = next->flags & TileNodeFlags_Open;
+      if (!open || g < next->g) {
         next->prev = top;
         next->g = g;
         next->h = tile_distance(next, end);

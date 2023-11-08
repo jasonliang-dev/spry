@@ -742,7 +742,7 @@ static int mt_tilemap_make_collision(lua_State *L) {
     lua_pop(L, 1);
   }
 
-  tilemap_make_collision(tm, physics->world, physics->meter, name, &walls);
+  tilemap_make_collision(tm, physics->world, physics->meter, name, walls);
   return 0;
 }
 
@@ -786,7 +786,7 @@ static int mt_tilemap_make_graph(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  tilemap_make_graph(tm, name, &costs);
+  tilemap_make_graph(tm, name, costs);
 
   return 0;
 }

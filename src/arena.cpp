@@ -1,7 +1,7 @@
 #include "arena.h"
 
-struct ArenaBlock {
-  ArenaBlock *next;
+struct ArenaNode {
+  ArenaNode *next;
   u64 capacity;
   u64 allocd;
   u8 buf[1];
@@ -14,13 +14,13 @@ static u64 align_forward(u64 p, u32 align) {
   return p;
 }
 
-static ArenaBlock *arena_block_make(u64 capacity) {
-  u64 page = 4096 - offsetof(ArenaBlock, buf);
+static ArenaNode *arena_block_make(u64 capacity) {
+  u64 page = 4096 - offsetof(ArenaNode, buf);
   if (capacity < page) {
     capacity = page;
   }
 
-  ArenaBlock *a = (ArenaBlock *)mem_alloc(offsetof(ArenaBlock, buf[capacity]));
+  ArenaNode *a = (ArenaNode *)mem_alloc(offsetof(ArenaNode, buf[capacity]));
   a->next = nullptr;
   a->allocd = 0;
   a->capacity = capacity;
@@ -28,9 +28,9 @@ static ArenaBlock *arena_block_make(u64 capacity) {
 }
 
 void arena_trash(Arena *arena) {
-  ArenaBlock *a = arena->head;
+  ArenaNode *a = arena->head;
   while (a != nullptr) {
-    ArenaBlock *rm = a;
+    ArenaNode *rm = a;
     a = a->next;
     mem_free(rm);
   }
@@ -48,7 +48,7 @@ void *arena_bump(Arena *arena, u64 size) {
       break;
     }
 
-    ArenaBlock *block = arena_block_make(size);
+    ArenaNode *block = arena_block_make(size);
     block->next = arena->head;
 
     arena->head = block;
@@ -60,7 +60,12 @@ void *arena_bump(Arena *arena, u64 size) {
 }
 
 String arena_bump_string(Arena *arena, String s) {
-  char *cstr = (char *)arena_bump(arena, s.len + 1);
-  memcpy(cstr, s.data, s.len + 1);
-  return {cstr, s.len};
+  if (s.len > 0) {
+    char *cstr = (char *)arena_bump(arena, s.len + 1);
+    memcpy(cstr, s.data, s.len + 1);
+    cstr[s.len] = '\0';
+    return {cstr, s.len};
+  } else {
+    return {};
+  }
 }

@@ -35,7 +35,7 @@ struct JSONObject {
 struct JSONArray {
   JSON value;
   JSONArray *next;
-  u64 count;
+  u64 index;
 };
 
 struct JSONDocument {
