@@ -820,15 +820,47 @@ static int mt_tilemap_astar(lua_State *L) {
   goal.y = (i32)ey;
 
   TileNode *end = tilemap_astar(tm, start, goal);
-  if (end == nullptr) {
-    return 0;
-  }
 
+  lua_newtable(L);
+
+  i32 i = 1;
   for (TileNode *n = end; n != nullptr; n = n->prev) {
-    printf("(%d, %d)\n", n->x, n->y);
+    lua_createtable(L, 0, 2);
+
+    luax_set_field(L, "x", n->x);
+    luax_set_field(L, "y", n->y);
+
+    lua_rawseti(L, -2, i);
+    i++;
   }
 
-  return 0;
+  return 1;
+}
+
+static int mt_tilemap_neighbors_for_tile(lua_State *L) {
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
+  lua_Number x = luaL_checknumber(L, 2);
+  lua_Number y = luaL_checknumber(L, 3);
+
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
+
+  TileNode *node = hashmap_get(&tm->graph, tile_key(x, y));
+
+  lua_newtable(L);
+
+  if (node != nullptr) {
+    for (i32 i = 0; i < node->neighbor_count; i++) {
+      TileNode *next = node->neighbors[i];
+      lua_createtable(L, 0, 2);
+
+      luax_set_field(L, "x", next->x);
+      luax_set_field(L, "y", next->y);
+
+      lua_rawseti(L, -2, i + 1);
+    }
+  }
+
+  return 1;
 }
 
 static int open_mt_tilemap(lua_State *L) {
@@ -840,6 +872,7 @@ static int open_mt_tilemap(lua_State *L) {
       {"make_graph", mt_tilemap_make_graph},
       {"print_graph", mt_tilemap_print_graph},
       {"astar", mt_tilemap_astar},
+      {"neighbors_for_tile", mt_tilemap_neighbors_for_tile},
       {nullptr, nullptr},
   };
 

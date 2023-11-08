@@ -197,19 +197,15 @@ UTEST(priority_queue, push_pop) {
   priority_queue_push(&pq, String("two"), 2);
 
   String s = {};
-  float c = 0;
 
-  ASSERT_TRUE(priority_queue_pop(&pq, &s, &c));
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
   ASSERT_STREQ("one", s.data);
-  ASSERT_EQ(1, c);
 
-  ASSERT_TRUE(priority_queue_pop(&pq, &s, &c));
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
   ASSERT_STREQ("two", s.data);
-  ASSERT_EQ(2, c);
 
-  ASSERT_TRUE(priority_queue_pop(&pq, &s, &c));
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
   ASSERT_STREQ("three", s.data);
-  ASSERT_EQ(3, c);
 }
 
 UTEST(priority_queue, same_costs) {
@@ -222,16 +218,13 @@ UTEST(priority_queue, same_costs) {
   priority_queue_push(&pq, String("one"), 1);
 
   String s = {};
-  float c = 0;
 
-  ASSERT_TRUE(priority_queue_pop(&pq, &s, &c));
+  ASSERT_TRUE(priority_queue_pop(&pq, &s));
   ASSERT_STREQ("one", s.data);
-  ASSERT_EQ(1, c);
 
   for (i32 i = 0; i < 3; i++) {
-    ASSERT_TRUE(priority_queue_pop(&pq, &s, &c));
+    ASSERT_TRUE(priority_queue_pop(&pq, &s));
     ASSERT_STREQ("three", s.data);
-    ASSERT_EQ(3, c);
   }
 }
 

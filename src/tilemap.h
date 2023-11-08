@@ -36,17 +36,20 @@ struct TilemapLevel {
   Array<TilemapLayer> layers;
 };
 
-enum TileFlags {
-  TileFlags_Open = 1 << 0,
-  TileFlags_Closed = 2 << 0,
+enum TileNodeFlags {
+  TileNodeFlags_Open = 1 << 0,
+  TileNodeFlags_Closed = 1 << 1,
 };
 
 struct TileNode {
   TileNode *prev;
-  i32 flags;
   float f; // g + h
   float g; // cost so far
   float h; // heuristic
+
+  u32 flags;
+  bool open;
+  bool closed;
 
   i32 x, y;
   float cost;
@@ -59,6 +62,8 @@ struct TileCost {
   float value;
 };
 
+inline u64 tile_key(i32 x, i32 y) { return ((u64)x << 32) | (u64)y; }
+
 struct TilePoint {
   i32 x, y;
 };
@@ -70,7 +75,7 @@ struct Tilemap {
   Array<TilemapLevel> levels;
   HashMap<Image> images;    // key: filepath
   HashMap<b2Body *> bodies; // key: layer name
-  HashMap<TileNode> graph;  // key: x, y
+  HashMap<TileNode> graph; // key: x, y
   PriorityQueue<TileNode *> frontier;
 };
 
