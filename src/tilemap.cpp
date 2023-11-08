@@ -104,6 +104,21 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
     tile.v0 = tile.v / layer->image.height;
     tile.u1 = (tile.u + layer->grid_size) / layer->image.width;
     tile.v1 = (tile.v + layer->grid_size) / layer->image.height;
+
+    i32 FLIP_X = 1 << 0;
+    i32 FLIP_Y = 1 << 1;
+
+    if (tile.flip_bits & FLIP_X) {
+      float tmp = tile.u0;
+      tile.u0 = tile.u1;
+      tile.u1 = tmp;
+    }
+
+    if (tile.flip_bits & FLIP_Y) {
+      float tmp = tile.v0;
+      tile.v0 = tile.v1;
+      tile.v1 = tmp;
+    }
   }
 
   Slice<TilemapEntity> entities = {};
