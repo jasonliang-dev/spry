@@ -6,6 +6,7 @@
 #include "hash_map.h"
 #include "json.h"
 #include "prelude.h"
+#include "priority_queue.h"
 #include "profile.h"
 #include "strings.h"
 
@@ -221,10 +222,18 @@ void tilemap_trash(Tilemap *tm) {
   for (auto [k, v] : tm->images) {
     image_trash(v);
   }
+  hashmap_trash(&tm->images);
 
   array_trash(&tm->levels);
-  hashmap_trash(&tm->images);
   hashmap_trash(&tm->bodies);
+  hashmap_trash(&tm->graph);
+  priority_queue_trash(&tm->frontier);
+}
+
+void tilemap_destroy_bodies(Tilemap *tm, b2World *world) {
+  for (auto [k, v] : tm->bodies) {
+    world->DestroyBody(*v);
+  }
 }
 
 static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
@@ -338,4 +347,65 @@ void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
   }
 
   tm->bodies[fnv1a(layer_name)] = body;
+}
+
+static float get_tile_cost(TilemapInt n, Array<TileCost> *costs) {
+  for (TileCost cost : *costs) {
+    if (cost.cell == n) {
+      return cost.value;
+    }
+  }
+  return -1;
+}
+
+static u64 tile_key(i32 x, i32 y) { return ((u64)x << 32) | (u64)y; }
+
+static void make_graph_for_layer(HashMap<TileNode> *graph, TilemapLayer *layer,
+                                 float world_x, float world_y,
+                                 Array<TileCost> *costs) {
+  for (i32 y = 0; y < layer->c_height; y++) {
+    for (i32 x = 0; x < layer->c_width; x++) {
+      float cost =
+          get_tile_cost(layer->int_grid[y * layer->c_width + x], costs);
+      if (cost > 0) {
+        TileNode node = {};
+        node.x = x + (i32)world_x;
+        node.y = y + (i32)world_x;
+        node.cost = cost;
+
+        (*graph)[tile_key(node.x, node.y)] = node;
+      }
+    }
+  }
+}
+
+void tilemap_make_graph(Tilemap *tm, String layer_name,
+                        Array<TileCost> *costs) {
+  HashMap<TileNode> graph = {};
+
+  for (TilemapLevel &level : tm->levels) {
+    for (TilemapLayer &l : level.layers) {
+      if (l.identifier == layer_name) {
+        make_graph_for_layer(&graph, &l, level.world_x, level.world_y, costs);
+      }
+    }
+  }
+
+  for (auto [k, v] : graph) {
+    i32 count = 0;
+
+    for (i32 y = -1; y <= 1; y++) {
+      for (i32 x = -1; x <= 1; x++) {
+        TileNode *n = hashmap_get(&graph, tile_key(v->x + x, v->y + y));
+        if (n != nullptr) {
+          v->neighbors[count] = n;
+          count++;
+        }
+      }
+    }
+
+    v->neighbor_count = count;
+  }
+
+  tm->graph = graph;
 }

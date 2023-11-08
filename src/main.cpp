@@ -185,9 +185,13 @@ static i32 require_lua_script(Archive *ar, String filepath) {
   lua_newtable(L);
   i32 table_index = lua_gettop(L);
 
-  if (luaL_loadbuffer(L, contents.data, contents.len, path.data) != LUA_OK) {
-    fatal_error(luax_check_string(L, -1));
-    return LUA_REFNIL;
+  {
+    PROFILE_BLOCK("load lua script");
+
+    if (luaL_loadbuffer(L, contents.data, contents.len, path.data) != LUA_OK) {
+      fatal_error(luax_check_string(L, -1));
+      return LUA_REFNIL;
+    }
   }
 
   // [1] {}

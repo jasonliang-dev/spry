@@ -2,6 +2,7 @@
 
 #include "hash_map.h"
 #include "image.h"
+#include "priority_queue.h"
 
 struct TilemapTile {
   float x, y, u, v;
@@ -12,14 +13,6 @@ struct TilemapTile {
 struct TilemapEntity {
   String identifier;
   float x, y;
-};
-
-union TilemapPoint {
-  struct {
-    i32 x;
-    i32 y;
-  };
-  u64 value;
 };
 
 using TilemapInt = unsigned char;
@@ -35,13 +28,6 @@ struct TilemapLayer {
   float grid_size;
 };
 
-enum TilemapDir : i32 {
-  TilemapDir_North,
-  TilemapDir_East,
-  TilemapDir_South,
-  TilemapDir_West,
-};
-
 struct TilemapLevel {
   String identifier;
   String iid;
@@ -50,16 +36,49 @@ struct TilemapLevel {
   Array<TilemapLayer> layers;
 };
 
+enum TileFlags : i32 {
+  TileFlags_Open = 1 << 0,
+  TileFlags_Closed = 2 << 0,
+};
+
+struct TileNode {
+  TileNode *parent;
+  TileFlags flags;
+  i32 x, y;
+  float cost;
+  float f;
+  float g;
+  float h;
+  TileNode *neighbors[8];
+  i32 neighbor_count;
+};
+
+struct TileCost {
+  TilemapInt cell;
+  float value;
+};
+
+struct TilePoint {
+  i32 x, y;
+};
+
 class b2Body;
+class b2World;
+
 struct Tilemap {
   Array<TilemapLevel> levels;
   HashMap<Image> images;    // key: filepath
   HashMap<b2Body *> bodies; // key: layer name
+  HashMap<TileNode> graph;  // key: x, y
+  PriorityQueue<TileNode *> frontier;
 };
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath);
 void tilemap_trash(Tilemap *tm);
+void tilemap_destroy_bodies(Tilemap *tm, b2World *world);
 
-class b2World;
 void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
                             String layer_name, Array<TilemapInt> *walls);
+void tilemap_make_graph(Tilemap *tm, String layer_name, Array<TileCost> *costs);
+void tilemap_astar(Tilemap *tm, Array<TilePoint> *out, TilePoint start,
+                   TilePoint end);

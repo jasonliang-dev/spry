@@ -158,8 +158,6 @@ void renderer_push_xy(Renderer2D *ren, float x, float y) {
 }
 
 void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
-  PROFILE_FUNC();
-
   bool ok = renderer_push_matrix(ren);
   if (!ok) {
     return;
@@ -187,8 +185,6 @@ void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
 }
 
 void draw_sprite(Renderer2D *ren, SpriteRenderer *sr, DrawDescription *desc) {
-  PROFILE_FUNC();
-
   Sprite *spr = &g_app->assets[sr->sprite].sprite;
   SpriteLoop *loop = hashmap_get(&spr->by_tag, sr->loop);
 

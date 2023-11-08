@@ -761,12 +761,55 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
   return 0;
 }
 
+static int mt_tilemap_make_graph(lua_State *L) {
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
+  String name = luax_check_string(L, 2);
+
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
+
+  Array<TileCost> costs = {};
+  defer(array_trash(&costs));
+
+  lua_pushvalue(L, 3);
+  lua_pushnil(L);
+
+  while (lua_next(L, -2)) {
+    lua_Number value = luaL_checknumber(L, -1);
+    lua_Number key = luaL_checknumber(L, -2);
+
+    TileCost cost = {};
+    cost.cell = (TilemapInt)key;
+    cost.value = (float)value;
+
+    array_push(&costs, cost);
+    lua_pop(L, 1);
+  }
+  lua_pop(L, 1);
+
+  tilemap_make_graph(tm, name, &costs);
+
+  return 0;
+}
+
+static int mt_tilemap_print_graph(lua_State *L) {
+  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
+  Tilemap *tm = &g_app->assets[*udata].tilemap;
+
+  for (auto [k, v] : tm->graph) {
+    printf("(%d, %d)\n", v->x, v->y);
+  }
+
+  return 0;
+}
+
 static int open_mt_tilemap(lua_State *L) {
   luaL_Reg reg[] = {
       {"draw", mt_tilemap_draw},
       {"entities", mt_tilemap_entities},
       {"make_collision", mt_tilemap_make_collision},
       {"draw_fixtures", mt_tilemap_draw_fixtures},
+      {"make_graph", mt_tilemap_make_graph},
+      {"print_graph", mt_tilemap_print_graph},
       {nullptr, nullptr},
   };
 
