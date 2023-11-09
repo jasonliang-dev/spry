@@ -383,8 +383,8 @@ static void make_graph_for_layer(HashMap<TileNode> *graph, TilemapLayer *layer,
           get_tile_cost(layer->int_grid[y * layer->c_width + x], costs);
       if (cost > 0) {
         TileNode node = {};
-        node.x = x + (i32)world_x;
-        node.y = y + (i32)world_x;
+        node.x = (i32)(x + world_x);
+        node.y = (i32)(y + world_x);
         node.cost = cost;
 
         (*graph)[tile_key(node.x, node.y)] = node;
@@ -393,61 +393,100 @@ static void make_graph_for_layer(HashMap<TileNode> *graph, TilemapLayer *layer,
   }
 }
 
-void tilemap_make_graph(Tilemap *tm, String layer_name, Slice<TileCost> costs) {
+static bool tilemap_rect_overlaps_graph(HashMap<TileNode> *graph, i32 x0,
+                                        i32 y0, i32 x1, i32 y1) {
+  if (x0 > x1) {
+    i32 tmp = x0;
+    x0 = x1;
+    x1 = tmp;
+  }
+
+  if (y0 > y1) {
+    i32 tmp = y0;
+    y0 = y1;
+    y1 = tmp;
+  }
+
+  for (i32 y = y0; y <= y1; y++) {
+    for (i32 x = x0; x <= x1; x++) {
+      if ((x == x0 && y == y0) || (x == x1 && y == y1)) {
+        continue;
+      }
+
+      TileNode *node = hashmap_get(graph, tile_key(x, y));
+      if (node == nullptr) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+static void create_neighbor_nodes(HashMap<TileNode> *graph, Arena *arena,
+                                  i32 bloom) {
   PROFILE_FUNC();
 
+  for (auto [k, v] : *graph) {
+    i32 len = 0;
+    Slice<TileNode *> neighbors = {};
+
+    for (i32 y = -bloom; y <= bloom; y++) {
+      for (i32 x = -bloom; x <= bloom; x++) {
+        if (x == 0 && y == 0) {
+          continue;
+        }
+
+        i32 dx = v->x + x;
+        i32 dy = v->y + y;
+        TileNode *node = hashmap_get(graph, tile_key(dx, dy));
+        if (node != nullptr) {
+          bool ok = tilemap_rect_overlaps_graph(graph, v->x, v->y, dx, dy);
+          if (!ok) {
+            continue;
+          }
+
+          if (len == neighbors.len) {
+            slice_resize(&neighbors, arena, neighbors.len * 2 + 8);
+          }
+
+          neighbors[len] = node;
+          len++;
+        }
+      }
+    }
+
+    v->neighbors.data = neighbors.data;
+    v->neighbors.len = len;
+  }
+}
+
+void tilemap_make_graph(Tilemap *tm, i32 bloom, String layer_name,
+                        Slice<TileCost> costs) {
   HashMap<TileNode> graph = {};
+  float grid_size = 0;
 
   for (TilemapLevel &level : tm->levels) {
     for (TilemapLayer &l : level.layers) {
       if (l.identifier == layer_name) {
+        if (grid_size == 0) {
+          grid_size = l.grid_size;
+        }
         make_graph_for_layer(&graph, &l, level.world_x, level.world_y, costs);
       }
     }
   }
 
-  {
-    PROFILE_BLOCK("create neighbors");
-
-    for (auto [k, v] : graph) {
-      i32 count = 0;
-
-      for (i32 y = -1; y <= 1; y++) {
-        for (i32 x = -1; x <= 1; x++) {
-          if (x == 0 && y == 0) {
-            continue;
-          }
-
-          i32 xx = v->x + x;
-          i32 yy = v->y + y;
-          TileNode *n = hashmap_get(&graph, tile_key(xx, yy));
-          if (n != nullptr) {
-            if (x != 0 && y != 0) {
-              TileNode *nx = hashmap_get(&graph, tile_key(v->x + x, v->y + 0));
-              TileNode *ny = hashmap_get(&graph, tile_key(v->x + 0, v->y + y));
-              if (nx != nullptr && ny != nullptr) {
-                v->neighbors[count] = n;
-                count++;
-              }
-            } else {
-              v->neighbors[count] = n;
-              count++;
-            }
-          }
-        }
-      }
-
-      v->neighbor_count = count;
-    }
-  }
+  create_neighbor_nodes(&graph, &tm->arena, bloom);
 
   tm->graph = graph;
+  tm->graph_grid_size = grid_size;
 }
 
 static float tile_distance(TileNode *lhs, TileNode *rhs) {
   float dx = lhs->x - rhs->x;
   float dy = lhs->y - rhs->y;
-  return dx * dx + dy * dy;
+  return sqrtf(dx * dx + dy * dy);
 }
 
 static float tile_heuristic(TileNode *lhs, TileNode *rhs) {
@@ -476,13 +515,18 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
 
   astar_reset(tm);
 
-  TileNode *end = hashmap_get(&tm->graph, tile_key(goal.x, goal.y));
+  i32 sx = (i32)(start.x / tm->graph_grid_size);
+  i32 sy = (i32)(start.y / tm->graph_grid_size);
+  i32 ex = (i32)(goal.x / tm->graph_grid_size);
+  i32 ey = (i32)(goal.y / tm->graph_grid_size);
+
+  TileNode *end = hashmap_get(&tm->graph, tile_key(ex, ey));
   if (end == nullptr) {
     return nullptr;
   }
 
   {
-    TileNode *begin = hashmap_get(&tm->graph, tile_key(start.x, start.y));
+    TileNode *begin = hashmap_get(&tm->graph, tile_key(sx, sy));
     if (begin == nullptr) {
       return nullptr;
     }
@@ -504,13 +548,12 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
       return top;
     }
 
-    for (i32 i = 0; i < top->neighbor_count; i++) {
-      TileNode *next = top->neighbors[i];
+    for (TileNode *next : top->neighbors) {
       if (next->flags & TileNodeFlags_Closed) {
         continue;
       }
 
-      float g = top->g + next->cost * tile_distance(top, next);
+      float g = top->g + tile_distance(top, next);
 
       bool open = next->flags & TileNodeFlags_Open;
       if (!open || g < next->g) {
