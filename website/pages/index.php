@@ -9,7 +9,7 @@ function code(string $code) {
 $features = [
   [
     "text" => "Code with Lua",
-    "img" => "static/feat-lua.png",
+    "img" => "static/assets/feat-lua.png",
     "icon" => '
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" class="flex-none gray">
         <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
@@ -23,7 +23,7 @@ $features = [
   ],
   [
     "text" => "Aseprite, LDtk, and rTexPacker support",
-    "img" => "static/feat-ase.png",
+    "img" => "static/assets/feat-ase.png",
     "icon" => '
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" class="flex-none gray">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
@@ -37,7 +37,7 @@ $features = [
   ],
   [
     "text" => "Create for desktop and web",
-    "img" => "static/feat-web.png",
+    "img" => "static/assets/feat-web.png",
     "icon" => '
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" class="flex-none gray">
         <path stroke-linecap="round" stroke-linejoin="round" d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525" />
@@ -53,7 +53,7 @@ $features = [
 $code_examples = [
   [
     "text" => "Hello, World!",
-    "image" => "static/code-hello.png",
+    "image" => "static/assets/code-hello.png",
     "video" => false,
     "code" => "
       function spry.start()
@@ -68,7 +68,7 @@ $code_examples = [
   [
     "text" => "Load an image and move it to the left over time.",
     "image" => false,
-    "video" => "static/code-tile.webm",
+    "video" => "static/assets/code-tile.webm",
     "code" => "
       function spry.start()
         img = spry.image_load 'tile.png'
@@ -84,7 +84,7 @@ $code_examples = [
   [
     "text" => "Load an Aseprite file and display a sprite animation.",
     "image" => false,
-    "video" => "static/code-ase.webm",
+    "video" => "static/assets/code-ase.webm",
     "code" => "
       class 'Player'
 
@@ -141,15 +141,15 @@ $code_examples = [
 
 <div class="mw8 center pv2">
   <div class="flex flex-wrap na2">
-    <?php foreach (data()->demos as $title => $demo): ?>
+    <?php foreach (all("pages/demo.php") as $demo): ?>
       <div class="pa2 w-100 w-50-ns">
         <div class="br3 shadow-sm ba b--black-10 dm-b--white-20">
-          <a href="<?= $demo["page"] ?>.html" class="video-overlay">
+          <a href="<?= $demo["path"] ?>.html" class="video-overlay">
             <div
               class="absolute z-1 absolute--fill flex justify-start items-end white pa3 pa4-l f3 fw6"
               style="background: linear-gradient(5deg, rgb(6.667% 6.667% 6.667% / 0.75) 0%, rgb(5.493% 5.493% 5.493% / 0.61798095703125) 6.25%, rgb(4.466% 4.466% 4.466% / 0.50244140625) 12.5%, rgb(3.576% 3.576% 3.576% / 0.40228271484375) 18.75%, rgb(2.812% 2.812% 2.812% / 0.31640625) 25%, rgb(2.166% 2.166% 2.166% / 0.24371337890625) 31.25%, rgb(1.628% 1.628% 1.628% / 0.18310546875) 37.5%, rgb(1.187% 1.187% 1.187% / 0.13348388671875) 43.75%, rgb(0.833% 0.833% 0.833% / 0.09375) 50%, rgb(0.558% 0.558% 0.558% / 0.06280517578125) 56.25%, rgb(0.352% 0.352% 0.352% / 0.03955078125) 62.5%, rgb(0.203% 0.203% 0.203% / 0.02288818359375) 68.75%, rgb(0.104% 0.104% 0.104% / 0.01171875) 75%, rgb(0.044% 0.044% 0.044% / 0.00494384765625) 81.25%, rgb(0.013% 0.013% 0.013% / 0.00146484375) 87.5%, rgb(0.002% 0.002% 0.002% / 0.00018310546875) 93.75%, rgb(0% 0% 0% / 0) 100% );"
             >
-              <?= $title ?>
+              <?= $demo["title"] ?>
             </div>
             <video autoplay muted loop class="w-100 z-0 db br3 br--top">
               <source src="<?= $demo["video"] ?>" type="video/webm">
@@ -158,7 +158,7 @@ $code_examples = [
           <div class="bg-white dm-bg-white-10 br3 br--bottom pa2 flex justify-center">
             <a
               class="w-50 dark-gray dm-light-silver link underline-hover pa2 dn inline-flex-ns justify-center items-center"
-              href="<?= $demo["page"] ?>.html"
+              href="<?= $demo["path"] ?>.html"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
                 <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />

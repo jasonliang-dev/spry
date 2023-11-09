@@ -2071,7 +2071,7 @@ $api_reference = [
 <div class="mw8 center">
   <div
     class="dn db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden"
-    style="width: 300px; top: <?= data()->nav_height ?>"
+    style="width: 300px; top: <?= NAV_HEIGHT ?>"
   >
     <form
       onsubmit="event.preventDefault()"

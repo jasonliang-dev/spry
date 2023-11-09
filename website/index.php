@@ -2,113 +2,176 @@
 
 require "Parsedown.php";
 
-class Data {
-  public string $nav_height;
-  public array $guides;
-  public array $demos;
-  public array $pages;
+define("NAV_HEIGHT", "3.5rem");
 
-  function __construct() {
-    $this->nav_height = "3.5rem";
+$pages = [
+  [
+    "path" => "index",
+    "file" => "pages/index.php",
+    "title" => "Homepage",
+  ],
+  [
+    "path" => "docs",
+    "file" => "pages/docs.php",
+    "title" => "API Reference",
+  ],
+  [
+    "path" => "quick-start",
+    "file" => "pages/guide.php",
+    "title" => "Quick Start",
+    "use_php" => true,
+  ],
+  [
+    "path" => "ufo-game",
+    "file" => "pages/guide.php",
+    "title" => "UFO Game",
+  ],
+  [
+    "path" => "hot-reload",
+    "file" => "pages/guide.php",
+    "title" => "Hot Reloading",
+  ],
+  [
+    "path" => "distribution",
+    "file" => "pages/guide.php",
+    "title" => "Distribution",
+  ],
+  [
+    "path" => "plane-demo",
+    "file" => "pages/demo.php",
+    "title" => "Planes",
+    "video" => "static/demos/example-ships.webm",
+    "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/planes",
+    "mount" => "static/demos/planes.zip",
+    "width" => 800,
+    "height" => 600,
+    "text" => "
+      - `A` and `S` to steer left/right
+      - `W` to accelerate
+      - Spacebar to shoot
+    ",
+  ],
+  [
+    "path" => "dungeon-demo",
+    "file" => "pages/demo.php",
+    "title" => "Dungeon",
+    "video" => "static/demos/example-dungeon.webm",
+    "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/dungeon",
+    "mount" => "static/demos/dungeon.zip",
+    "width" => 800,
+    "height" => 600,
+    "text" => "
+      - `WASD` to move
+      - Mouse to aim
+      - Right click to shoot arrow
+      - Tab to view collision shapes
+    ",
+  ],
+  [
+    "path" => "jump-demo",
+    "file" => "pages/demo.php",
+    "title" => "Jump",
+    "video" => "static/demos/example-jump.webm",
+    "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/jump",
+    "mount" => "static/demos/jump.zip",
+    "width" => 500,
+    "height" => 700,
+    "text" => "
+      - `A` and `D` to move left/right
+      - `M` to unmute sound.
 
-    $this->guides = [
-      "quick-start" => "Quick Start",
-      "ufo-game" => "UFO Game",
-      "hot-reload" => "Hot Reloading",
-      "distribution" => "Distribution",
-    ];
+      **Volume warning:** The music can be loud!
+    ",
+  ],
+  [
+    "path" => "physics-demo",
+    "file" => "pages/demo.php",
+    "title" => "Physics",
+    "video" => "static/demos/example-physics.webm",
+    "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/boxes",
+    "mount" => "static/demos/boxes.zip",
+    "width" => 800,
+    "height" => 600,
+    "text" => "
+      - Left click to spawn box
+      - Right click to spawn ball
+      - Middle click to move camera
+    ",
+  ],
+];
 
-    $this->demos = [
-      "Planes" => [
-        "page" => "plane-demo",
-        "video" => "static/example-ships.webm",
-        "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/planes",
-        "mount" => "static/planes.zip",
-        "width" => 800,
-        "height" => 600,
-        "text" => "
-          - `A` and `S` to steer left/right
-          - `W` to accelerate
-          - Spacebar to shoot
-        ",
-      ],
-      "Dungeon" => [
-        "page" => "dungeon-demo",
-        "video" => "static/example-dungeon.webm",
-        "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/dungeon",
-        "mount" => "static/dungeon.zip",
-        "width" => 800,
-        "height" => 600,
-        "text" => "
-          - `WASD` to move
-          - Mouse to aim
-          - Right click to shoot arrow
-          - Tab to view collision shapes
-        ",
-      ],
-      "Jump" => [
-        "page" => "jump-demo",
-        "video" => "static/example-jump.webm",
-        "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/jump",
-        "mount" => "static/jump.zip",
-        "width" => 500,
-        "height" => 700,
-        "text" => "
-          - `A` and `D` to move left/right
-          - `M` to unmute sound.
-
-          **Volume warning:** The music can be loud!
-        ",
-      ],
-      "Physics" => [
-        "page" => "physics-demo",
-        "video" => "static/example-physics.webm",
-        "source" => "https://github.com/jasonliang-dev/spry/tree/master/examples/boxes",
-        "mount" => "static/boxes.zip",
-        "width" => 800,
-        "height" => 600,
-        "text" => "
-          - Left click to spawn box
-          - Right click to spawn ball
-          - Middle click to move camera
-        ",
-      ],
-    ];
-
-    $demo_pages = [];
-    foreach ($this->demos as $title => $desc) {
-      $demo_pages[$desc["page"]] = $title;
-    }
-
-    $this->pages = array_merge($this->guides, $demo_pages, [ "docs" => "API Reference" ]);
-  }
-};
-
-function data() {
-  static $s_data = new Data();
-  return $s_data;
+if (php_sapi_name() === "cli") {
+  generate();
+} else {
+  serve();
 }
 
-function multiline_trim(string $str) {
-  $lines = explode("\n", $str);
+function generate() {
+  global $pages;
 
-  $min = PHP_INT_MAX;
-  foreach ($lines as $line) {
-    if (trim($line) != "") {
-      $min = min($min, strlen($line) - strlen(ltrim($line)));
+  if (file_exists("dist")) {
+    system(PHP_OS_FAMILY === "Windows" ? "rmdir /s /q dist" : "rm -rf dist");
+  }
+  mkdir("dist");
+
+  foreach ($pages as $page) {
+    $file = "dist/{$page["path"]}.html";
+    ob_start();
+    render($page);
+    file_put_contents($file, ob_get_clean());
+    echo "{$page["file"]} -> $file\n";
+  }
+
+  if (PHP_OS_FAMILY === "Windows") {
+    system("xcopy public dist\\public /s /e /I");
+  } else {
+    system("cp -r public dist/public");
+  }
+}
+
+function serve() {
+  global $pages;
+
+  $path = parse_url($_SERVER["REQUEST_URI"])["path"];
+
+  if (str_ends_with($path, ".html")) {
+    $path = substr($path, 0, -strlen(".html"));
+  }
+
+  if ($path === "/") {
+    $path = "/index";
+  }
+
+  $path = substr($path, 1);
+
+  foreach ($pages as $page) {
+    if ($path === $page["path"]) {
+      render($page);
+      die;
     }
   }
 
-  $arr = [];
-  foreach ($lines as &$line) {
-    $line = substr($line, $min);
-    if (strlen($line) > 0 || count($arr) > 0) {
-      $arr[] = $line;
+  if (file_exists($path)) {
+    $content_types = [
+      "css" => "text/css",
+      "js" => "text/javascript",
+      "wasm" => "application/wasm",
+      "png" => "image/png",
+      "jpg" => "image/jpeg",
+      "webm" => "video/webm",
+    ];
+
+    $type = substr($path, strrpos($path, ".") + 1);
+    if (isset($content_types[$type])) {
+      header("Content-Type: " . $content_types[$type]);
     }
+
+    echo file_get_contents($path);
+    die;
   }
 
-  $joined = implode("\n", $arr);
-  return $joined;
+  http_response_code(404);
+  echo "'$path' Not Found";
 }
 
 function footer(string $class) {
@@ -127,64 +190,12 @@ function footer(string $class) {
   <?php
 }
 
-function article(callable $fn) {
-  ob_start();
-  $fn();
-  $contents = ob_get_clean();
-  ?>
-  <div class="mw7 center prose pt3"><?= Parsedown::instance()->text($contents) ?></div>
-  <?php
-}
+function render(array $page) {
+  global $pages; ($pages);
 
-function spry_demo(string $name) {
-  assert(isset(data()->demos[$name]));
-  $demo = data()->demos[$name];
-  ?>
-  <div class="flex flex-column items-center center" style="width: <?= $demo["width"] ?>px">
-    <div class="prose w-100">
-      <h1><?= $name ?></h1>
-      <?= Parsedown::instance()->text(multiline_trim($demo["text"])) ?>
-    </div>
-    <canvas
-      oncontextmenu="event.preventDefault()"
-      id="canvas"
-      tabindex="-1"
-      class="shadow ba b--black-10 dm-b--white-10 br3"
-      style="width: <?= $demo["width"] ?>px; height: <?= $demo["height"] ?>px"
-    ></canvas>
-    <div class="mt3 flex justify-between w-100">
-      <a class="blue link underline-hover inline-flex items-center" href="index.html">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-        </svg>
-        <span class="ml2">
-          Back to home
-        </span>
-      </a>
-      <a class="blue link underline-hover inline-flex items-center" href="<?= $demo["source"] ?>">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-        </svg>
-        <span class="ml2">
-          View source code
-        </span>
-      </a>
-    </div>
-    <?php footer("w-100") ?>
-  </div>
-  <script type="text/javascript">
-    var canvas = document.getElementById('canvas')
-    var Module = { canvas }
-    var spryMount = '<?= $demo["mount"] ?>'
-  </script>
-  <script src="static/spry.js" type="text/javascript"></script>
-  <?php
-}
-
-function render(string $page) {
   $title = "";
-  if (isset(data()->pages[$page])) {
-    $title .= data()->pages[$page] . " | ";
+  if ($page["path"] !== "index") {
+   $title .= $page["title"] .  " | ";
   }
   $title .= "Spry";
 
@@ -254,7 +265,7 @@ function render(string $page) {
   <body class="ph3 black bg-near-white dm-bg-near-black dm-light-gray">
     <div
       class="fixed top-0 left-0 right-0 bb b--black-10 dm-b--white-10 bg-white-90 dm-bg-black-90 ph3"
-      style="height: <?= data()->nav_height ?>; z-index: 100"
+      style="height: <?= NAV_HEIGHT ?>; z-index: 100"
     >
       <div class="mw8 center flex items-center justify-between h-100">
         <a class="link dim black dm-white f3 fw6" href="index.html">Spry</a>
@@ -280,10 +291,10 @@ function render(string $page) {
                 class="absolute right-0 list shadow-sm ba pv1 b--black-10 dm-b--white-10 pl0 mv0 bg-white dm-bg-near-black nowrap br2"
                 style="top: 1.8rem"
               >
-                <?php foreach (data()->guides as $name => $title): ?>
+                <?php foreach (all("pages/guide.php") as $guide): ?>
                   <li>
-                    <a href="<?= $name ?>.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
-                      <?= $title ?>
+                    <a href="<?= $guide["path"] ?>.html" class="ph3 pv2 hover-bg-near-white dm-hover-bg-black-50 link dark-gray dm-silver db">
+                      <?= $guide["title"] ?>
                     </a>
                   </li>
                 <?php endforeach ?>
@@ -312,10 +323,10 @@ function render(string $page) {
               style="transition: transform 150ms; width: 70%; z-index: 1000"
               :style="{ transform: open ? 'translateX(0)' : 'translateX(100%)' }"
             >
-              <?php foreach (data()->guides as $name => $title): ?>
+              <?php foreach (all("pages/guide.php") as $guide): ?>
                 <li>
-                  <a href="<?= $name ?>.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
-                    <?= $title ?>
+                  <a href="<?= $guide["path"] ?>.html" class="dark-gray dm-silver link underline-hover dib pt3 pb2">
+                    <?= $guide["title"] ?>
                   </a>
                 </li>
               <?php endforeach ?>
@@ -329,74 +340,38 @@ function render(string $page) {
         </div>
       </div>
     </div>
-    <div style="margin-top: <?= data()->nav_height ?>">
-      <?php require "pages/$page.php" ?>
+    <div style="margin-top: <?= NAV_HEIGHT ?>">
+      <?php require $page["file"] ?>
     </div>
     <script>hljs.highlightAll()</script>
   </body>
   </html>
   <?php
-  return true;
 }
 
-function render_to_file(string $page) {
-  $file = "dist/$page.html";
-  ob_start();
-  render($page);
-  file_put_contents($file, ob_get_clean());
-  echo "$page -> $file\n";
-}
+function multiline_trim(string $str) {
+  $lines = explode("\n", $str);
 
-if (php_sapi_name() === "cli") {
-  if (file_exists("dist")) {
-    system(PHP_OS_FAMILY === "Windows" ? "rmdir /s /q dist" : "rm -rf dist");
-  }
-  mkdir("dist");
-
-  render_to_file("index");
-  foreach (data()->pages as $page => $title) {
-    render_to_file($page);
-  }
-
-  if (PHP_OS_FAMILY === "Windows") {
-    system("xcopy static dist\\static /s /e /I");
-  } else {
-    system("cp -r static dist/static");
-  }
-} else {
-  $uri = parse_url($_SERVER["REQUEST_URI"])["path"];
-
-  if (str_ends_with($uri, ".html")) {
-    $uri = substr($uri, 0, -strlen(".html"));
-  }
-
-  if ($uri === "/index") {
-    $uri = "/";
-  }
-
-  if ($uri === "/") {
-    render("index") and die();
-  }
-
-  foreach (data()->pages as $page => $title) {
-    if ($uri === "/" . $page) {
-      render($page) and die();
+  $min = PHP_INT_MAX;
+  foreach ($lines as $line) {
+    if (trim($line) != "") {
+      $min = min($min, strlen($line) - strlen(ltrim($line)));
     }
   }
 
-  if (file_exists(__DIR__ . $uri)) {
-    $data = file_get_contents(__DIR__ . $uri);
-    if (str_ends_with($uri, ".css")) {
-      header("Content-Type: text/css");
-    } else if (str_ends_with($uri, ".js")) {
-      header("Content-Type: text/javascript");
-    } else if (str_ends_with($uri, ".wasm")) {
-      header("Content-Type: application/wasm");
+  $arr = [];
+  foreach ($lines as &$line) {
+    $line = substr($line, $min);
+    if (strlen($line) > 0 || count($arr) > 0) {
+      $arr[] = $line;
     }
-    echo $data;
-  } else {
-    http_response_code(404);
-    header("Content-Type: text/plain");
-    echo "'$uri' Not Found";
   }
+
+  $joined = implode("\n", $arr);
+  return $joined;
+}
+
+function all(string $file) {
+  global $pages;
+  return array_filter($pages, fn($p) => $p["file"] === $file);
 }

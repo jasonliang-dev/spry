@@ -1,5 +1,3 @@
-<?php article(function () { ?>
-
 # Distribution
 
 There are two main ways you can share your game made with Spry. On desktop,
@@ -132,7 +130,3 @@ python -m http.server 8080
 php -S localhost:8080
 caddy file-server
 ```
-
-<?php });
-
-footer("mw7");

@@ -1,9 +1,7 @@
-<?php article(function () { ?>
-
 # UFO Game
 
 <video controls class="w-100 mw7 center db">
-  <source src="static/ufo-demo.webm" type="video/webm">
+  <source src="static/assets/ufo-demo.webm" type="video/webm">
 </video>
 
 We'll be creating a little demo that sees a UFO move around the screen using
@@ -18,7 +16,7 @@ end
 
 [kenney.nl](https://kenney.nl/assets/alien-ufo-pack) provides free
 (public domain) game assets. One of the asset packs includes
-[a green UFO](static/green-ufo.png). Add it to the game folder, and load it
+[a green UFO](static/assets/green-ufo.png). Add it to the game folder, and load it
 using `spry.image_load`.
 
 ```lua
@@ -166,7 +164,3 @@ vx, vy = normalize(vx, vy)
 
 Run the game again, and you'll see that the player moves at the same speed
 regardless of direction.
-
-<?php });
-
-footer("mw7");

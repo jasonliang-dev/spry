@@ -1,5 +1,3 @@
-<?php article(function () { ?>
-
 ## Hot Reloading
 
 Spry has the ablity to hot reload recently changed Lua scripts, Aseprite
@@ -7,15 +5,15 @@ files, LDtk files, and images. While Spry is running, you can update a file
 and the changes will be reflected without having to restart your program.
 
 <video autoplay muted loop class="w-100 mw7 center db mb2">
-  <source src="static/hot-lua.webm" type="video/webm">
+  <source src="static/assets/hot-lua.webm" type="video/webm">
 </video>
 
 <video autoplay muted loop class="w-100 mw7 center db mb2">
-  <source src="static/hot-png.webm" type="video/webm">
+  <source src="static/assets/hot-png.webm" type="video/webm">
 </video>
 
 <video autoplay muted loop class="w-100 mw7 center db mb2">
-  <source src="static/hot-ldtk.webm" type="video/webm">
+  <source src="static/assets/hot-ldtk.webm" type="video/webm">
 </video>
 
 Hot reloading Lua scripts will not update any references or callbacks. For
@@ -56,7 +54,3 @@ end
 ```
 
 Hot reloading is not supported for web builds.
-
-<?php });
-
-footer("mw7");

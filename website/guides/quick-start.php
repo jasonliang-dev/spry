@@ -1,4 +1,4 @@
-<?php article(function () { ?>
+<?php ob_start(); ?>
 
 # Getting Started
 
@@ -42,9 +42,11 @@ C:\path\to\spry.exe my_folder
 A window should open with the text `Hello World!`. You've successfully created
 your first game using Spry!
 
-<?php });
+<?php
 
-$cards = [
+render_article(ob_get_clean());
+
+$what_next = [
   "UFO game" => [
     "link" => "ufo-game.html",
     "link_text" => "Let&#39;s create",
@@ -84,7 +86,7 @@ $cards = [
   <h2 class="mb3">What next?</h2>
 
   <div class="flex flex-wrap na2">
-    <?php foreach ($cards as $title => $card): ?>
+    <?php foreach ($what_next as $title => $card): ?>
       <div class="w-100 w-50-l pa2">
         <div class="bg-white dm-bg-white-10 br3 ba b--black-10 dm-b--white-20 pa3 shadow-sm">
           <h3><?= $title ?></h3>
@@ -107,6 +109,5 @@ $cards = [
     <a href="https://learnxinyminutes.com/docs/lua/" class="blue link underline-hover">Learn Lua in Y minutes</a>.
   </p>
 </div>
-
 <?php
 footer("mw7");
