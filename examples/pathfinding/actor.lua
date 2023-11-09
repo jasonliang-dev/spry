@@ -5,7 +5,7 @@ function Actor:new(path)
 
   self.path = path
   self.index = 1
-  self.x, self.y = tile_to_world(path[1].x, path[1].y)
+  self.x, self.y = path[1].x, path[1].y
   self.vx, self.vy = 0, 0
   self.dx, self.dy = 0, 0
   self.sprite = spry.sprite_load "char.ase"
@@ -18,7 +18,7 @@ function Actor:update(dt)
   self.sprite:update(dt)
 
   local top = self.path[self.index]
-  local tx, ty = tile_to_world(top.x, top.y)
+  local tx, ty = top.x, top.y
 
   if distance(self.x, self.y, tx, ty) < 2 then
     self.index = self.index + 1
@@ -54,9 +54,11 @@ function Actor:update(dt)
 end
 
 function Actor:draw()
+  local x = self.x + tile / 2
+  local y = self.y + tile / 2
   local sx = 1 + self.spring.x
   local sy = 1 - self.spring.x
   local ox = self.sprite:width() / 2
   local oy = self.sprite:height() / 2
-  self.sprite:draw(self.x, self.y, 0, sx, sy, ox, oy)
+  self.sprite:draw(x, y, 0, sx, sy, ox, oy)
 end

@@ -7,7 +7,7 @@ function spry.start()
   font = spry.default_font()
 
   map = spry.tilemap_load "map.ldtk"
-  map:make_graph("IntGrid", { [1] = 1 })
+  map:make_graph("IntGrid", { [1] = 1 }, 4)
 
   start = { x = 0, y = 0 }
   goal = { x = 0, y = 0 }
@@ -16,18 +16,13 @@ function spry.start()
 
   scale = 2
   tile = 16
+
+  spry.clear_color(155, 212, 195, 255)
 end
 
-function screen_to_tile(x, y)
-  x = x / scale / tile
-  y = y / scale / tile
-
-  return x, y
-end
-
-function tile_to_world(x, y)
-  x = x * tile + (tile / 2)
-  y = y * tile + (tile / 2)
+function screen_to_world(x, y)
+  x = x / scale
+  y = y / scale
 
   return x, y
 end
@@ -39,7 +34,7 @@ function spry.frame(dt)
 
   if spry.mouse_down(0) then
     local x, y = spry.mouse_pos()
-    start.x, start.y = screen_to_tile(x, y)
+    start.x, start.y = screen_to_world(x, y)
     path = map:astar(start.x, start.y, goal.x, goal.y)
     if spry.mouse_click(0) and #path > 0 then
       world:add(Actor(path))
@@ -48,8 +43,11 @@ function spry.frame(dt)
 
   if spry.mouse_down(1) then
     local x, y = spry.mouse_pos()
-    goal.x, goal.y = screen_to_tile(x, y)
-    path = map:astar(start.x, start.y, goal.x, goal.y)
+    goal.x, goal.y = screen_to_world(x, y)
+    path = map:astar(goal.x, goal.y, start.x, start.y)
+    if spry.mouse_click(1) and #path > 0 then
+      world:add(Actor(path))
+    end
   end
 
   world:update(dt)
@@ -59,13 +57,14 @@ function spry.frame(dt)
     map:draw()
 
     if path ~= nil then
-      for k, v in ipairs(path) do
-        local x = v.x * tile
-        local y = v.y * tile
-        local w = tile
+      for i = 1, #path - 1 do
+        local x0 = path[i + 0].x + tile / 2
+        local y0 = path[i + 0].y + tile / 2
+        local x1 = path[i + 1].x + tile / 2
+        local y1 = path[i + 1].y + tile / 2
 
-        spry.push_color(255, 0, k * 255 / #path, 64)
-        spry.draw_filled_rect(x, y, w, w)
+        spry.push_color(255, 0, i * 255 / #path, 255)
+        spry.draw_line(x0, y0, x1, y1)
         spry.pop_color()
       end
     end
