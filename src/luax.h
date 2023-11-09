@@ -36,3 +36,10 @@ void luax_new_class(lua_State *L, const char *mt_name, const luaL_Reg *l);
     memcpy(udata, &data, sizeof(data));                                        \
     luaL_setmetatable(L, tname);                                               \
   } while (0)
+
+#define luax_ptr_userdata(L, data, tname)                                      \
+  do {                                                                         \
+    void *udata = lua_newuserdatauv(L, sizeof(void *), 0);                     \
+    memcpy(udata, &data, sizeof(void *));                                      \
+    luaL_setmetatable(L, tname);                                               \
+  } while (0)

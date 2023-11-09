@@ -518,8 +518,7 @@ static int mt_audio_make_sound(lua_State *L) {
     return 0;
   }
 
-  // NOLINTNEXTLINE(bugprone-sizeof-expression)
-  luax_new_userdata(L, sound, "mt_sound");
+  luax_ptr_userdata(L, sound, "mt_sound");
   return 1;
 }
 
@@ -762,6 +761,7 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
 static int mt_tilemap_make_graph(lua_State *L) {
   u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   String name = luax_check_string(L, 2);
+  i32 bloom = (i32)luaL_optnumber(L, 4, 1);
 
   Tilemap *tm = &g_app->assets[*udata].tilemap;
 
@@ -784,7 +784,7 @@ static int mt_tilemap_make_graph(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  tilemap_make_graph(tm, name, costs);
+  tilemap_make_graph(tm, bloom, name, costs);
 
   return 0;
 }
@@ -814,8 +814,8 @@ static int mt_tilemap_astar(lua_State *L) {
   for (TileNode *n = end; n != nullptr; n = n->prev) {
     lua_createtable(L, 0, 2);
 
-    luax_set_field(L, "x", n->x);
-    luax_set_field(L, "y", n->y);
+    luax_set_field(L, "x", n->x * tm->graph_grid_size);
+    luax_set_field(L, "y", n->y * tm->graph_grid_size);
 
     lua_rawseti(L, -2, i);
     i++;
@@ -1678,8 +1678,7 @@ static int spry_default_font(lua_State *L) {
     g_app->default_font_loaded = true;
   }
 
-  // NOLINTNEXTLINE(bugprone-sizeof-expression)
-  luax_new_userdata(L, g_app->default_font, "mt_font");
+  luax_ptr_userdata(L, g_app->default_font, "mt_font");
   return 1;
 }
 
@@ -1701,6 +1700,16 @@ static int spry_draw_line_circle(lua_State *L) {
   lua_Number radius = luaL_checknumber(L, 3);
 
   draw_line_circle(&g_app->renderer, x, y, radius);
+  return 0;
+}
+
+static int spry_draw_line(lua_State *L) {
+  lua_Number x0 = luaL_checknumber(L, 1);
+  lua_Number y0 = luaL_checknumber(L, 2);
+  lua_Number x1 = luaL_checknumber(L, 3);
+  lua_Number y1 = luaL_checknumber(L, 4);
+
+  draw_line(&g_app->renderer, x0, y0, x1, y1);
   return 0;
 }
 
@@ -1737,8 +1746,7 @@ static int spry_font_load(lua_State *L) {
     return 0;
   }
 
-  // NOLINTNEXTLINE(bugprone-sizeof-expression)
-  luax_new_userdata(L, font, "mt_font");
+  luax_ptr_userdata(L, font, "mt_font");
   return 1;
 }
 
@@ -1752,8 +1760,7 @@ static int spry_audio_load(lua_State *L) {
     return 0;
   }
 
-  // NOLINTNEXTLINE(bugprone-sizeof-expression)
-  luax_new_userdata(L, audio, "mt_audio");
+  luax_ptr_userdata(L, audio, "mt_audio");
   return 1;
 }
 
@@ -1858,6 +1865,7 @@ static int open_spry(lua_State *L) {
       {"draw_filled_rect", spry_draw_filled_rect},
       {"draw_line_rect", spry_draw_line_rect},
       {"draw_line_circle", spry_draw_line_circle},
+      {"draw_line", spry_draw_line},
       {"set_master_volume", spry_set_master_volume},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
