@@ -4,6 +4,7 @@ struct ArenaNode {
   ArenaNode *next;
   u64 capacity;
   u64 allocd;
+  u64 prev;
   u8 buf[1];
 };
 
@@ -56,7 +57,29 @@ void *arena_bump(Arena *arena, u64 size) {
 
   void *ptr = &arena->head->buf[next];
   arena->head->allocd = next + size;
+  arena->head->prev = next;
   return ptr;
+}
+
+void *arena_rebump(Arena *arena, void *ptr, u64 old, u64 size) {
+  if (arena->head == nullptr || ptr == nullptr || old == 0) {
+    return arena_bump(arena, size);
+  }
+
+  if (&arena->head->buf[arena->head->prev] == ptr) {
+    u64 resize = arena->head->prev + size;
+    if (resize <= arena->head->capacity) {
+      arena->head->allocd = resize;
+      return ptr;
+    }
+  }
+
+  void *new_ptr = arena_bump(arena, size);
+
+  u64 copy = old < size ? old : size;
+  memmove(new_ptr, ptr, copy);
+
+  return new_ptr;
 }
 
 String arena_bump_string(Arena *arena, String s) {

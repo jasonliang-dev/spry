@@ -1,3 +1,4 @@
+#include "arena.cpp"
 #include "array.h"
 #include "deps/utest.h"
 #include "hash_map.h"
@@ -226,6 +227,35 @@ UTEST(priority_queue, same_costs) {
     ASSERT_TRUE(priority_queue_pop(&pq, &s));
     ASSERT_STREQ("three", s.data);
   }
+}
+
+UTEST(arena, rebump) {
+  Arena a = {};
+  defer(arena_trash(&a));
+
+  void *ptr0 = arena_bump(&a, 32);
+  void *ptr1 = arena_rebump(&a, ptr0, 32, 64);
+  ASSERT_EQ(ptr0, ptr1);
+}
+
+UTEST(arena, rebump_exhaust) {
+  Arena a = {};
+  defer(arena_trash(&a));
+
+  void *ptr0 = arena_bump(&a, 32);
+  arena_bump(&a, 4096);
+  void *ptr1 = arena_rebump(&a, ptr0, 32, 64);
+  ASSERT_NE(ptr0, ptr1);
+}
+
+UTEST(arena, rebump_exhaust_big) {
+  Arena a = {};
+  defer(arena_trash(&a));
+
+  void *ptr0 = arena_bump(&a, 4000);
+  arena_bump(&a, 32);
+  void *ptr1 = arena_rebump(&a, ptr0, 4000, 8000);
+  ASSERT_NE(ptr0, ptr1);
 }
 
 // main

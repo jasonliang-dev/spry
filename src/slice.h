@@ -24,5 +24,15 @@ void slice_from_arena(Slice<T> *s, Arena *arena, u64 len) {
   s->len = len;
 }
 
+template <typename T> u64 slice_resize(Slice<T> *s, Arena *arena, u64 len) {
+  T *buf =
+      (T *)arena_rebump(arena, s->data, sizeof(T) * s->len, sizeof(T) * len);
+
+  s->data = buf;
+  s->len = len;
+
+  return len;
+}
+
 template <typename T> T *begin(const Slice<T> &s) { return s.data; }
 template <typename T> T *end(const Slice<T> &s) { return &s.data[s.len]; }
