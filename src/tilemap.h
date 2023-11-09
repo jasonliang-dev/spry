@@ -5,7 +5,7 @@
 #include "priority_queue.h"
 #include "slice.h"
 
-struct TilemapTile {
+struct Tile {
   float x, y, u, v;
   float u0, v0, u1, v1;
   i32 flip_bits;
@@ -21,7 +21,7 @@ using TilemapInt = unsigned char;
 struct TilemapLayer {
   String identifier;
   Image image;
-  Slice<TilemapTile> tiles;
+  Slice<Tile> tiles;
   Slice<TilemapEntity> entities;
   i32 c_width;
   i32 c_height;

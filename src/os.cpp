@@ -34,7 +34,7 @@ String os_program_dir() {
 String os_program_path() {
   static char s_buf[2048];
 
-#ifdef IS_WIN32
+#if defined(IS_WIN32)
   DWORD len = GetModuleFileNameA(NULL, s_buf, array_size(s_buf));
 
   for (i32 i = 0; s_buf[i]; i++) {
@@ -42,14 +42,13 @@ String os_program_path() {
       s_buf[i] = '/';
     }
   }
-#endif
 
-#ifdef IS_LINUX
+#elif defined(IS_LINUX)
   i32 len = (i32)readlink("/proc/self/exe", s_buf, array_size(s_buf));
-#endif
 
-#ifdef IS_HTML5
+#elif defined(IS_HTML5)
   i32 len = 0;
+
 #endif
 
   return {s_buf, (u64)len};
@@ -102,11 +101,10 @@ void os_high_timer_resolution() {
 }
 
 void os_sleep(u32 ms) {
-#ifdef IS_WIN32
+#if defined(IS_WIN32)
   Sleep(ms);
-#endif
 
-#ifdef IS_LINUX
+#elif defined(IS_LINUX)
   struct timespec ts;
   ts.tv_sec = ms / 1000;
   ts.tv_nsec = (ms % 1000) * 1000000;
@@ -121,21 +119,19 @@ void os_yield() {
 }
 
 i32 os_process_id() {
-#ifdef IS_WIN32
+#if defined(IS_WIN32)
   return (i32)GetCurrentProcessId();
-#endif
 
-#ifdef IS_LINUX
+#elif defined(IS_LINUX)
   return (i32)getpid();
 #endif
 }
 
 i32 os_thread_id() {
-#ifdef IS_WIN32
+#if defined(IS_WIN32)
   return (i32)GetCurrentThreadId();
-#endif
 
-#ifdef IS_LINUX
+#elif defined(IS_LINUX)
   return (i32)syscall(SYS_gettid);
 #endif
 }

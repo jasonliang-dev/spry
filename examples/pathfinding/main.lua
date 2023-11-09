@@ -7,7 +7,7 @@ function spry.start()
   font = spry.default_font()
 
   map = spry.tilemap_load "map.ldtk"
-  map:make_graph("IntGrid", { [1] = 1 }, 4)
+  map:make_graph("IntGrid", { [1] = 1 }, 2)
 
   start = { x = 0, y = 0 }
   goal = { x = 0, y = 0 }

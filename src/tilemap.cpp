@@ -76,7 +76,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
   }
   layer->int_grid = grid;
 
-  Slice<TilemapTile> tiles = {};
+  Slice<Tile> tiles = {};
   if (arr_tiles != nullptr) {
     PROFILE_BLOCK("tiles");
 
@@ -86,7 +86,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
       JSON *px = json_lookup(&a->value, "px");
       JSON *src = json_lookup(&a->value, "src");
 
-      TilemapTile tile = {};
+      Tile tile = {};
       tile.x = json_number(json_index(px, 0));
       tile.y = json_number(json_index(px, 1));
 
@@ -99,7 +99,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
   }
   layer->tiles = tiles;
 
-  for (TilemapTile &tile : layer->tiles) {
+  for (Tile &tile : layer->tiles) {
     tile.u0 = tile.u / layer->image.width;
     tile.v0 = tile.v / layer->image.height;
     tile.u1 = (tile.u + layer->grid_size) / layer->image.width;
@@ -395,20 +395,17 @@ static void make_graph_for_layer(HashMap<TileNode> *graph, TilemapLayer *layer,
 
 static bool tilemap_rect_overlaps_graph(HashMap<TileNode> *graph, i32 x0,
                                         i32 y0, i32 x1, i32 y1) {
-  if (x0 > x1) {
-    i32 tmp = x0;
-    x0 = x1;
-    x1 = tmp;
-  }
+  i32 lhs = x0 <= x1 ? x0 : x1;
+  i32 rhs = x0 <= x1 ? x1 : x0;
+  i32 top = y0 <= y1 ? y0 : y1;
+  i32 bot = y0 <= y1 ? y1 : y0;
 
-  if (y0 > y1) {
-    i32 tmp = y0;
-    y0 = y1;
-    y1 = tmp;
-  }
+  for (i32 y = top; y <= bot; y++) {
+    for (i32 x = lhs; x <= rhs; x++) {
+      if ((x == x0 && y == y0) || (x == x1 && y == y1)) {
+        continue;
+      }
 
-  for (i32 y = y0; y <= y1; y++) {
-    for (i32 x = x0; x <= x1; x++) {
       TileNode *node = hashmap_get(graph, tile_key(x, y));
       if (node == nullptr) {
         return false;
@@ -443,7 +440,8 @@ static void create_neighbor_nodes(HashMap<TileNode> *graph, Arena *arena,
           }
 
           if (len == neighbors.len) {
-            slice_resize(&neighbors, arena, neighbors.len * 2 + 8);
+            i32 grow = len > 0 ? len * 2 : 8;
+            slice_resize(&neighbors, arena, grow);
           }
 
           neighbors[len] = node;
@@ -452,8 +450,8 @@ static void create_neighbor_nodes(HashMap<TileNode> *graph, Arena *arena,
       }
     }
 
-    v->neighbors.data = neighbors.data;
-    v->neighbors.len = len;
+    slice_resize(&neighbors, arena, len);
+    v->neighbors = neighbors;
   }
 }
 

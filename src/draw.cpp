@@ -270,7 +270,7 @@ void draw_tilemap(Renderer2D *ren, Tilemap *tm) {
       TilemapLayer &layer = level.layers[i];
       sgl_texture({layer.image.id});
       sgl_begin_quads();
-      for (TilemapTile tile : layer.tiles) {
+      for (Tile tile : layer.tiles) {
         float x0 = tile.x;
         float y0 = tile.y;
         float x1 = tile.x + layer.grid_size;

@@ -1355,11 +1355,11 @@ static int spry_quit(lua_State *L) {
 }
 
 static int spry_platform(lua_State *L) {
-#if defined(__EMSCRIPTEN__)
+#if defined(IS_HTML5)
   lua_pushliteral(L, "html5");
-#elif defined(_WIN32)
+#elif defined(IS_WIN32)
   lua_pushliteral(L, "windows");
-#elif defined(__linux__) || defined(__unix__)
+#elif defined(IS_LINUX)
   lua_pushliteral(L, "linux");
 #endif
   return 1;

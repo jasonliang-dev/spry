@@ -32,10 +32,13 @@ template <typename T> void array_resize(Array<T> *arr, u64 len) {
 }
 
 template <typename T> void array_push(Array<T> *arr, T item) {
-  if (arr->len == arr->capacity) {
-    array_reserve(arr, arr->capacity * 2 + 8);
+  i32 len = arr->len;
+  if (len == arr->capacity) {
+    i32 grow = len > 0 ? len * 2 : 8;
+    array_reserve(arr, grow);
   }
-  arr->data[arr->len++] = item;
+  arr->data[len] = item;
+  arr->len++;
 }
 
 template <typename T> void array_pop(Array<T> *arr) {
