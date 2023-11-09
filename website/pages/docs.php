@@ -106,7 +106,7 @@ $api_reference = [
       "return" => false,
     ],
   ],
-  "Core Functions" => [
+  "Core" => [
     "spry.quit" => [
       "desc" => "Exit the program.",
       "example" => "
@@ -161,6 +161,8 @@ $api_reference = [
       "args" => [],
       "return" => "number",
     ],
+  ],
+  "Input" => [
     "spry.key_down" => [
       "desc" => "
         Check if a keyboard key is held down since last frame.
@@ -293,6 +295,8 @@ $api_reference = [
       "args" => [],
       "return" => "number, number",
     ],
+  ],
+  "Drawing" => [
     "spry.push_matrix" => [
       "desc" => "Push a matrix onto the matrix transform stack.",
       "example" => "
@@ -412,6 +416,27 @@ $api_reference = [
         "x" => ["number", "The x position to draw at."],
         "y" => ["number", "The y position to draw at."],
         "radius" => ["number", "The radius of the circle."],
+      ],
+      "return" => false,
+    ],
+    "spry.draw_line" => [
+      "desc" => "Draw a line between two points.",
+      "example" => "
+        local path = tilemap:astar(...)
+        for i = 1, #path - 1 do
+          local x0 = path[i + 0].x + off
+          local y0 = path[i + 0].y + off
+          local x1 = path[i + 1].x + off
+          local y1 = path[i + 1].y + off
+
+          spry.draw_line(x0, y0, x1, y1)
+        end
+      ",
+      "args" => [
+        "x0" => ["number", "The starting x position to draw at."],
+        "y0" => ["number", "The starting y position to draw at."],
+        "x1" => ["number", "The ending x position to draw at."],
+        "y1" => ["number", "The ending y position to draw at."],
       ],
       "return" => false,
     ],
@@ -677,9 +702,8 @@ $api_reference = [
   "Sprite" => [
     "spry.sprite_load" => [
       "desc" => "
-        Create a sprite renderer from an Aseprite file. Sprites are cached, so
-        creating a sprite renderer from a file that has already been loaded
-        is cheap.
+        Create a sprite from an Aseprite file. Sprite data is cached, so
+        calling this multiple tiles for the same file is cheap.
       ",
       "example" => "
         function Player:new()
@@ -689,48 +713,53 @@ $api_reference = [
       "args" => [
         "file" => ["string", "The Aseprite file to open."],
       ],
-      "return" => "SpriteRenderer",
+      "return" => "Sprite",
     ],
-    "SpriteRenderer:play" => [
-      "desc" => "Play an animation loop with the given tag.",
+    "Sprite:play" => [
+      "desc" => "
+        Play an animation loop with the given tag. If the sprite's animation
+        loop is the same as the previous, then this function does nothing,
+        unless restart is also set to true.
+      ",
       "example" => "
         if spry.key_down 'w' then
           spr:play 'walk_up'
         end
       ",
       "args" => [
-        "tag" => ["string", "The tag name."]
+        "tag" => ["string", "The tag name."],
+        "restart" => ["boolean", "Force the animation to start on the first frame of the loop."],
       ],
       "return" => false,
     ],
-    "SpriteRenderer:update" => [
-      "desc" => "Call this method every frame to update a sprite renderer's animation state.",
+    "Sprite:update" => [
+      "desc" => "Call this method every frame to update a sprite's animation state.",
       "example" => "spr:update(dt)",
       "args" => [
-        "dt" => ["number", "Delta time."]
+        "dt" => ["number", "Delta time."],
       ],
       "return" => false,
     ],
-    "SpriteRenderer:draw" => [
+    "Sprite:draw" => [
       "desc" => "Draw a sprite on the screen.",
       "example" => "spr:draw(x, y)",
       "args" => $draw_description,
       "return" => false,
     ],
-    "SpriteRenderer:width" => [
+    "Sprite:width" => [
       "desc" => "Get the width of a sprite in pixels.",
       "example" => "local w = spr:width()",
       "args" => [],
       "return" => "number",
     ],
-    "SpriteRenderer:height" => [
+    "Sprite:height" => [
       "desc" => "Get the height of a sprite in pixels.",
       "example" => "local h = spr:height()",
       "args" => [],
       "return" => "number",
     ],
-    "SpriteRenderer:set_frame" => [
-      "desc" => "Set the current frame index for a sprite renderer.",
+    "Sprite:set_frame" => [
+      "desc" => "Set the current frame index for a sprite.",
       "example" => "
         if spry.mouse_click(0) then
           sprite:set_frame(0)
@@ -741,7 +770,7 @@ $api_reference = [
       ],
       "return" => false,
     ],
-    "SpriteRenderer:total_frames" => [
+    "Sprite:total_frames" => [
       "desc" => "Get the total number of frames of a sprite.",
       "example" => "local frames = sprite:total_frames()",
       "args" => [],
@@ -855,9 +884,7 @@ $api_reference = [
       "return" => false,
     ],
     "Tilemap:draw_fixtures" => [
-      "desc" => "
-        Draw all box fixtures for a given tilemap layer.
-      ",
+      "desc" => "Draw all box fixtures for a given tilemap layer.",
       "example" => "
         tilemap:draw_fixtures(b2, 'Collision')
       ",
@@ -866,6 +893,46 @@ $api_reference = [
         "layer" => ["string", "The name of the IntGrid collision layer."],
       ],
       "return" => false,
+    ],
+    "Tilemap:make_graph" => [
+      "desc" => "
+        Prepare a tilemap for pathfinding by internally constructing a graph.
+
+        The `costs` argument is required. The keys are the IntGrid values and
+        the values are the costs to traverse to each tile. Any IntGrid values
+        not in the `costs` table will be ignored.
+
+        The `bloom` argument determines the number of nodes to consider as
+        neighbor nodes. For example, a bloom of 1 looks at adjacent tiles. A
+        bloom of 2 looks for nodes in a 5x5 region, 2 nodes outwards. Bloom
+        of 3 looks for nodes in a 7x7 region, 3 nodes outwards, etc.
+      ",
+      "example" => "
+        tilemap = spry.tilemap_load 'map.ldtk'
+        tilemap:make_graph('Floor', { [1] = 1, [2] = 1 }, 2)
+      ",
+      "args" => [
+        "layer" => ["string", "The name of the IntGrid collision layer."],
+        "costs" => ["table", "The costs to traverse to each tile."],
+        "bloom" => ["number", "The number of nodes outwards to consider as neighbors.", 1],
+      ],
+      "return" => false,
+    ],
+    "Tilemap:astar" => [
+      "desc" => "Find the shortest path between two tiles.",
+      "example" => "
+        local path = tilemap:astar(start.x, start.y, goal.x, goal.y)
+        for k, v in ipairs(path) do
+          spry.draw_filled_rect(v.x, v.y, 16, 16)
+        end
+      ",
+      "args" => [
+        "sx" => ["number", "The starting tile's x position."],
+        "sy" => ["number", "The starting tile's y position."],
+        "ex" => ["number", "The target tile's x position."],
+        "ey" => ["number", "The target tile's y position."],
+      ],
+      "return" => "table",
     ],
   ],
   "Box2D World" => [
