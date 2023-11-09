@@ -409,10 +409,6 @@ static bool tilemap_rect_overlaps_graph(HashMap<TileNode> *graph, i32 x0,
 
   for (i32 y = y0; y <= y1; y++) {
     for (i32 x = x0; x <= x1; x++) {
-      if ((x == x0 && y == y0) || (x == x1 && y == y1)) {
-        continue;
-      }
-
       TileNode *node = hashmap_get(graph, tile_key(x, y));
       if (node == nullptr) {
         return false;
