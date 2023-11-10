@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #elif defined(IS_LINUX)
+#include <sched.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -115,6 +116,9 @@ void os_sleep(u32 ms) {
 void os_yield() {
 #ifdef IS_WIN32
   YieldProcessor();
+
+#elif defined(IS_LINUX)
+  sched_yield();
 #endif
 }
 
