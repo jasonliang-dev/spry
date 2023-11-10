@@ -249,8 +249,6 @@ static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
     sg_image_desc sg_image = {};
     sg_image.width = width;
     sg_image.height = height;
-    sg_image.min_filter = SG_FILTER_LINEAR;
-    sg_image.mag_filter = SG_FILTER_LINEAR;
     sg_image.data.subimage[0][0].ptr = image;
     sg_image.data.subimage[0][0].size = width * height * 4;
 

@@ -52,9 +52,6 @@ bool image_load(Image *image, Archive *ar, String filepath) {
     desc.pixel_format = SG_PIXELFORMAT_RGBA8;
     desc.width = width;
     desc.height = height;
-    desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
-    desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-    desc.wrap_w = SG_WRAP_CLAMP_TO_EDGE;
     desc.data.subimage[0][0].ptr = data;
     desc.data.subimage[0][0].size = width * height * 4;
     id = sg_make_image(desc).id;

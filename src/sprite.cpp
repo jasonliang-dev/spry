@@ -53,9 +53,6 @@ bool sprite_data_load(SpriteData *spr, Archive *ar, String filepath) {
   sg_image_desc desc = {};
   desc.width = ase->w;
   desc.height = ase->h * ase->frame_count;
-  desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
-  desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-  desc.wrap_w = SG_WRAP_CLAMP_TO_EDGE;
   desc.data.subimage[0][0].ptr = pixels.data;
   desc.data.subimage[0][0].size = ase->frame_count * rect;
 

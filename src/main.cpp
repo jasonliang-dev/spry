@@ -69,14 +69,14 @@ static void init() {
     sg_desc sg = {};
     sg.logger.func = slog_func;
     sg.context = sapp_sgcontext();
-    sg.allocator.alloc = sokol_alloc;
-    sg.allocator.free = sokol_free;
+    sg.allocator.alloc_fn = sokol_alloc;
+    sg.allocator.free_fn = sokol_free;
     sg_setup(sg);
 
     sgl_desc_t sgl = {};
     sgl.logger.func = slog_func;
-    sgl.allocator.alloc = sokol_alloc;
-    sgl.allocator.free = sokol_free;
+    sgl.allocator.alloc_fn = sokol_alloc;
+    sgl.allocator.free_fn = sokol_free;
     sgl_setup(sgl);
 
     sg_pipeline_desc sg_pipline = {};
@@ -282,14 +282,15 @@ static void frame() {
     PROFILE_BLOCK("begin render pass");
 
     sg_pass_action pass = {};
-    pass.colors[0].action = SG_ACTION_CLEAR;
+    pass.colors[0].load_action = SG_LOADACTION_CLEAR;
+    pass.colors[0].store_action = SG_STOREACTION_STORE;
     if (g_app->error_mode) {
-      pass.colors[0].value = {0.0f, 0.0f, 0.0f, 1.0f};
+      pass.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
     } else {
-      pass.colors[0].value.r = g_app->renderer.clear_color[0];
-      pass.colors[0].value.g = g_app->renderer.clear_color[1];
-      pass.colors[0].value.b = g_app->renderer.clear_color[2];
-      pass.colors[0].value.a = g_app->renderer.clear_color[3];
+      pass.colors[0].clear_value.r = g_app->renderer.clear_color[0];
+      pass.colors[0].clear_value.g = g_app->renderer.clear_color[1];
+      pass.colors[0].clear_value.b = g_app->renderer.clear_color[2];
+      pass.colors[0].clear_value.a = g_app->renderer.clear_color[3];
     }
     sg_begin_default_pass(pass, sapp_width(), sapp_height());
 
@@ -808,8 +809,8 @@ sapp_desc sokol_main(int argc, char **argv) {
   sapp.win32_console_attach = console_attach;
   sapp.swap_interval = (i32)swap_interval;
   sapp.fullscreen = fullscreen;
-  sapp.allocator.alloc = sokol_alloc;
-  sapp.allocator.free = sokol_free;
+  sapp.allocator.alloc_fn = sokol_alloc;
+  sapp.allocator.free_fn = sokol_free;
 
 #ifdef __EMSCRIPTEN__
   sapp.gl_force_gles2 = true;
