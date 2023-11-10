@@ -49,6 +49,10 @@ summary::marker {
   overflow-wrap: break-word;
 }
 
+.bg-none {
+  background: none;
+}
+
 .bg-off-white {
   background-color: #fafafa;
 }
@@ -91,9 +95,21 @@ summary::marker {
   color: #ffffff;
 }
 
+.translate-x-n120px {
+  transform: translateX(-120%);
+}
+
+.ml-100px {
+  margin-left: 100px;
+}
+
 @media screen and (min-width: 60em) {
   .ml-300px-l {
     margin-left: 300px;
+  }
+
+  .translate-x-0-l {
+    transform: translateX(0);
   }
 }
 

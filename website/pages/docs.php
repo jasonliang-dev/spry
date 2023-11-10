@@ -2068,29 +2068,52 @@ $api_reference = [
 ];
 
 ?>
-<div class="mw8 center">
+<div x-cloak x-data="{ open: false }" class="mw8 center">
+  <div x-show="open" @click="open = false" x-transition.opacity class="fixed absolute--fill bg-white-50 dm-bg-black-50 z-3 ml-100px"></div>
   <div
-    class="dn db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden"
-    style="width: 300px; top: <?= NAV_HEIGHT ?>"
+    x-show="!open"
+    class="db dn-l fixed bottom-0 left-0 mb3 z-4 shadow ba bl-0 b--black-10 dm-b--white-20 bg-near-white dm-bg-near-black"
+    style="border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem"
   >
-    <form
-      onsubmit="event.preventDefault()"
-      class="top-0 pt3 pb4 flex items-center bg-fade-down"
-      style="position: sticky"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px; margin-bottom: 1px" class="gray absolute ml2">
-        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+    <button @click="open = true" class="bg-none bn pointer pa3 flex dark-gray dm-silver">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
       </svg>
-      <input
-        id="search"
-        autocomplete="off"
-        class="input-reset shadow-sm ba b--black-20 dm-b--white-20 placeholder black dm-white br2 pv2 pl4 pr2 w-100 bg-white dm-bg-black"
-        type="text"
-        placeholder="Search"
-        style="outline-offset: 2px"
-      />
-    </form>
-    <ul id="function-list" class="list pl1 mt0" style="margin-top: -1rem">
+    </button>
+  </div>
+  <div
+    class="db-l fixed bottom-0 pr2 pb2 overflow-y-scroll overflow-x-hidden z-5 bg-near-white dm-bg-near-black translate-x-0-l"
+    style="transition: transform 200ms; width: 70%; max-width: 300px; top: <?= NAV_HEIGHT ?>"
+    :class="open ? '' : 'translate-x-n120px'"
+  >
+    <div class="top-0 bg-fade-down z-5" style="position: sticky">
+      <form onsubmit="event.preventDefault()" class="flex items-center pt3 pb3">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px; margin-bottom: 1px" class="gray absolute ml2">
+          <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+        </svg>
+        <input
+          id="search"
+          autocomplete="off"
+          class="input-reset shadow-sm ba b--black-20 dm-b--white-20 placeholder black dm-white br2 pv2 pl4 pr2 w-100 bg-white dm-bg-black"
+          type="text"
+          placeholder="Search"
+          style="outline-offset: 2px"
+        />
+      </form>
+    </div>
+    <button
+      x-data="{ expand: false }"
+      class="bn pointer f6 fw6 dark-gray dm-silver mb3 bg-none"
+      @click="
+        expand = !expand
+        for (const detail of details) {
+          detail.open = expand
+          detail.dataset.open = expand
+        }
+      "
+      x-text="expand ? 'Collapse all' : 'Expand all'"
+    >Expand all</button>
+    <ul id="function-list" class="list pl1" style="margin-top: -1rem">
       <?php foreach ($api_reference as $header => $section): ?>
         <li class="mt3">
           <details>
@@ -2098,7 +2121,14 @@ $api_reference = [
             <ul class="list pl0 mt2">
               <?php foreach ($section as $name => $func): ?>
                 <li class="pv1" data-key="<?= strtolower($name) ?>">
-                  <a href="#<?= strtolower($name) ?>" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#<?= strtolower($name) ?>"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code><?= $name ?></code>
                   </a>
                 </li>
@@ -2109,7 +2139,7 @@ $api_reference = [
       <?php endforeach ?>
     </ul>
   </div>
-  <div class="pl3-l pt3 ml-300px-l">
+  <div x-ignore class="pl3-l pt3 ml-300px-l">
     <?php foreach ($api_reference as $header => $section): ?>
       <?php foreach ($section as $name => $func): ?>
         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
@@ -2202,6 +2232,11 @@ $api_reference = [
         </div>
       <?php endforeach ?>
     <?php endforeach ?>
+    <div class="mv4 tr">
+      <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover pv3 dib">
+        GitHub
+      </a>
+    </div>
   </div>
 </div>
 
