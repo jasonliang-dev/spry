@@ -5,6 +5,7 @@
 #include "deps/lua/lua.h"
 #include "draw.h"
 #include "prelude.h"
+#include <initializer_list>
 
 void luax_stack_dump(lua_State *L);
 
@@ -28,6 +29,8 @@ String luax_opt_string(lua_State *L, i32 arg, String def);
 DrawDescription luax_draw_description(lua_State *L, i32 arg_start);
 RectDescription luax_rect_description(lua_State *L, i32 arg_start);
 
+int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
+                      String needle);
 void luax_new_class(lua_State *L, const char *mt_name, const luaL_Reg *l);
 
 #define luax_new_userdata(L, data, tname)                                      \

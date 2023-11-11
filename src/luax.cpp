@@ -2,6 +2,7 @@
 #include "app.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
+#include "strings.h"
 
 void luax_stack_dump(lua_State *L) {
   i32 top = lua_gettop(L);
@@ -152,6 +153,27 @@ RectDescription luax_rect_description(lua_State *L, i32 arg_start) {
   rd.oy = (float)luaL_optnumber(L, arg_start + 8, 0);
 
   return rd;
+}
+
+int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
+                       String needle) {
+  StringBuilder sb = string_builder_make();
+  defer(string_builder_trash(&sb));
+
+  string_builder_concat(&sb, "expected one of: {");
+  for (String s : haystack) {
+    string_builder_concat(&sb, "\"");
+    string_builder_concat(&sb, s);
+    string_builder_concat(&sb, "\", ");
+  }
+  if (haystack.size() != 0) {
+    sb.len -= 2;
+  }
+  string_builder_concat(&sb, "} got: \"");
+  string_builder_concat(&sb, needle);
+  string_builder_concat(&sb, "\".");
+
+  return luaL_error(L, sb.data);
 }
 
 void luax_new_class(lua_State *L, const char *mt_name, const luaL_Reg *l) {

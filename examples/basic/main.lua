@@ -1,8 +1,3 @@
-function spry.conf(t)
-  t.swap_interval = 0
-  t.target_fps = 500
-end
-
 function spry.start()
   jp = spry.font_load("noto-sans-jp.ttf")
   font = spry.default_font()

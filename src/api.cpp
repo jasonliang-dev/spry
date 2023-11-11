@@ -232,6 +232,36 @@ static void draw_fixtures_for_body(b2Body *body, float meter) {
   }
 }
 
+// mt_sampler
+
+static int mt_sampler_gc(lua_State *L) {
+  u32 *udata = (u32 *)luaL_checkudata(L, 1, "mt_sampler");
+  u32 id = *udata;
+
+  if (id != SG_INVALID_ID) {
+    sg_destroy_sampler({id});
+  }
+
+  return 0;
+}
+
+static int mt_sampler_use(lua_State *L) {
+  u32 *id = (u32 *)luaL_checkudata(L, 1, "mt_sampler");
+  g_app->renderer.sampler = *id;
+  return 0;
+}
+
+static int open_mt_sampler(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"__gc", mt_sampler_gc},
+      {"use", mt_sampler_use},
+      {nullptr, nullptr},
+  };
+
+  luax_new_class(L, "mt_sampler", reg);
+  return 1;
+}
+
 // mt_image
 
 static int mt_image_draw(lua_State *L) {
@@ -1719,6 +1749,51 @@ static int spry_set_master_volume(lua_State *L) {
   return 0;
 }
 
+static sg_filter str_to_filter_mode(lua_State *L, String s) {
+  switch (fnv1a(s)) {
+  case "nearest"_hash: return SG_FILTER_NEAREST; break;
+  case "linear"_hash: return SG_FILTER_LINEAR; break;
+  default:
+    luax_string_oneof(L, {"nearest", "linear"}, s);
+    return _SG_FILTER_DEFAULT;
+  }
+}
+
+static sg_wrap str_to_wrap_mode(lua_State *L, String s) {
+  switch (fnv1a(s)) {
+  case "repeat"_hash: return SG_WRAP_REPEAT; break;
+  case "mirroredrepeat"_hash: return SG_WRAP_MIRRORED_REPEAT; break;
+  case "clamp"_hash: return SG_WRAP_CLAMP_TO_EDGE; break;
+  default:
+    luax_string_oneof(L, {"repeat", "mirroredrepeat", "clamp"}, s);
+    return _SG_WRAP_DEFAULT;
+  }
+}
+
+static int spry_make_sampler(lua_State *L) {
+  String min_filter = luax_string_field(L, "min_filter", "nearest");
+  String mag_filter = luax_string_field(L, "mag_filter", "nearest");
+  String wrap_u = luax_string_field(L, "wrap_u", "repeat");
+  String wrap_v = luax_string_field(L, "wrap_v", "repeat");
+
+  sg_sampler_desc desc = {};
+  desc.min_filter = str_to_filter_mode(L, min_filter);
+  desc.mag_filter = str_to_filter_mode(L, mag_filter);
+  desc.wrap_u = str_to_wrap_mode(L, wrap_u);
+  desc.wrap_v = str_to_wrap_mode(L, wrap_v);
+
+  sg_sampler sampler = sg_make_sampler(&desc);
+
+  luax_new_userdata(L, sampler.id, "mt_sampler");
+  return 1;
+}
+
+static int spry_default_sampler(lua_State *L) {
+  u32 id = SG_INVALID_ID;
+  luax_new_userdata(L, id, "mt_sampler");
+  return 1;
+}
+
 static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
@@ -1836,6 +1911,7 @@ static int spry_b2_world(lua_State *L) {
 
 static int open_spry(lua_State *L) {
   luaL_Reg reg[] = {
+      // core
       {"quit", spry_quit},
       {"platform", spry_platform},
       {"dt", spry_dt},
@@ -1843,6 +1919,8 @@ static int open_spry(lua_State *L) {
       {"toggle_fullscreen", spry_toggle_fullscreen},
       {"window_width", spry_window_width},
       {"window_height", spry_window_height},
+
+      // input
       {"key_down", spry_key_down},
       {"key_release", spry_key_release},
       {"key_press", spry_key_press},
@@ -1853,6 +1931,8 @@ static int open_spry(lua_State *L) {
       {"mouse_delta", spry_mouse_delta},
       {"show_mouse", spry_show_mouse},
       {"scroll_wheel", spry_scroll_wheel},
+
+      // draw
       {"push_matrix", spry_push_matrix},
       {"pop_matrix", spry_pop_matrix},
       {"translate", spry_translate},
@@ -1862,11 +1942,17 @@ static int open_spry(lua_State *L) {
       {"push_color", spry_push_color},
       {"pop_color", spry_pop_color},
       {"default_font", spry_default_font},
+      {"default_sampler", spry_default_sampler},
       {"draw_filled_rect", spry_draw_filled_rect},
       {"draw_line_rect", spry_draw_line_rect},
       {"draw_line_circle", spry_draw_line_circle},
       {"draw_line", spry_draw_line},
+
+      // audio
       {"set_master_volume", spry_set_master_volume},
+
+      // construct types
+      {"make_sampler", spry_make_sampler},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
       {"audio_load", spry_audio_load},
@@ -1883,10 +1969,10 @@ static int open_spry(lua_State *L) {
 
 void open_spry_api(lua_State *L) {
   lua_CFunction mt_funcs[] = {
-      open_mt_image,   open_mt_font,     open_mt_sound,
-      open_mt_audio,   open_mt_sprite,   open_mt_atlas_image,
-      open_mt_atlas,   open_mt_tilemap,  open_mt_b2_fixture,
-      open_mt_b2_body, open_mt_b2_world,
+      open_mt_sampler,     open_mt_image,   open_mt_font,
+      open_mt_sound,       open_mt_audio,   open_mt_sprite,
+      open_mt_atlas_image, open_mt_atlas,   open_mt_tilemap,
+      open_mt_b2_fixture,  open_mt_b2_body, open_mt_b2_world,
   };
 
   for (u32 i = 0; i < array_size(mt_funcs); i++) {

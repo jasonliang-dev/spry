@@ -49,6 +49,8 @@ struct Renderer2D {
   float clear_color[4];
   Color draw_colors[32];
   u64 draw_colors_len;
+
+  u32 sampler;
 };
 
 void renderer_setup(Renderer2D *ren);

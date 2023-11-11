@@ -441,6 +441,57 @@ $api_reference = [
       "return" => false,
     ],
   ],
+  "Sampler" => [
+    "spry.make_sampler" => [
+      "desc" => "
+        Create a sampler used with images and fonts.
+
+        `min_filter` and `mag_filter` can be set to:
+        - `linear`, good for pixel art
+        - `nearest`, suitable for larger/smoother images
+
+        `wrap_u` and `wrap_v` can be set to `repeat`, `mirroredrepeat`, or
+        `clamp`.
+      ",
+      "example" => "
+        my_sampler = spry.make_sampler {
+          min_filter = 'linear',
+          mag_filter = 'linear',
+          wrap_u = 'clamp',
+          wrap_v = 'clamp',
+        }
+      ",
+      "args" => [
+        "t" => ["table", "Sampler options."],
+        " .min_filter" => ["string", "Filter mode when scaling down."],
+        " .mag_filter" => ["string", "Filter mode when scaling up."],
+        " .wrap_u" => ["string", "Wrap mode for the horizontal direction."],
+        " .wrap_v" => ["string", "Wrap mode for the vertical direction."],
+      ],
+      "return" => "Sampler",
+    ],
+    "spry.default_sampler" => [
+      "desc" => "
+        Get the default sampler, which uses nearest neighbor filtering, and
+        repeat wrapping.
+      ",
+      "example" => "
+        spry.default_sampler():use()
+        player:draw(x, y, 0, sx, sy)
+      ",
+      "args" => [],
+      "return" => "Sampler",
+    ],
+    "Sampler:use" => [
+      "desc" => "Use this sampler for future image/font drawing.",
+      "example" => "
+        wrap_sampler:use()
+        background:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)
+      ",
+      "args" => [],
+      "return" => false,
+    ],
+  ],
   "Image" => [
     "spry.image_load" => [
       "desc" => "Create an image object from an image file.",

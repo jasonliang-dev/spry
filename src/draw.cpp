@@ -26,6 +26,8 @@ void renderer_setup(Renderer2D *ren) {
   ren->matrices[0].cols[2][2] = 1.0f;
   ren->matrices[0].cols[3][3] = 1.0f;
   ren->matrices_len = 1;
+
+  ren->sampler = SG_INVALID_ID;
 }
 
 void renderer_apply_color(Renderer2D *ren) {
@@ -168,7 +170,7 @@ void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
   renderer_scale(ren, desc->sx, desc->sy);
 
   sgl_enable_texture();
-  sgl_texture({img->id}, {SG_INVALID_ID});
+  sgl_texture({img->id}, {ren->sampler});
   sgl_begin_quads();
 
   float x0 = -desc->ox;
@@ -203,7 +205,7 @@ void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
   renderer_scale(ren, desc->sx, desc->sy);
 
   sgl_enable_texture();
-  sgl_texture({view.data->img.id}, {SG_INVALID_ID});
+  sgl_texture({view.data->img.id}, {ren->sampler});
   sgl_begin_quads();
 
   float x0 = -desc->ox;
@@ -239,7 +241,7 @@ void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
       stbtt_aligned_quad q =
           font_quad(font, &atlas, &xpos, &ypos, size, rune_charcode(r));
 
-      sgl_texture({atlas}, {SG_INVALID_ID});
+      sgl_texture({atlas}, {ren->sampler});
       sgl_begin_quads();
       renderer_push_quad(ren, vec4(x + q.x0, y + q.y0, x + q.x1, y + q.y1),
                          vec4(q.s0, q.t0, q.s1, q.t1));
@@ -268,7 +270,7 @@ void draw_tilemap(Renderer2D *ren, Tilemap *tm) {
     renderer_translate(ren, level.world_x, level.world_y);
     for (i32 i = level.layers.len - 1; i >= 0; i--) {
       TilemapLayer &layer = level.layers[i];
-      sgl_texture({layer.image.id}, {SG_INVALID_ID});
+      sgl_texture({layer.image.id}, {ren->sampler});
       sgl_begin_quads();
       for (Tile tile : layer.tiles) {
         float x0 = tile.x;
