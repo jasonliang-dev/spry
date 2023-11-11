@@ -1,6 +1,5 @@
 #include "draw.h"
 #include "algebra.h"
-#include "app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "prelude.h"

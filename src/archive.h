@@ -1,7 +1,6 @@
 #pragma once
 
 #include "array.h"
-#include "deps/miniz.h"
 #include "prelude.h"
 
 struct Archive {

@@ -1,4 +1,5 @@
 #include "archive.h"
+#include "deps/miniz.h"
 #include "deps/tinydir.h"
 #include "os.h"
 #include "prelude.h"
