@@ -3,6 +3,7 @@
 #if defined(IS_WIN32)
 #include <direct.h>
 #include <windows.h>
+#include <timeapi.h>
 #pragma comment(lib, "winmm.lib")
 
 #elif defined(IS_HTML5)

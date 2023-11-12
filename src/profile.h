@@ -23,7 +23,6 @@ struct TraceEvent {
 };
 
 struct Profile {
-  i32 process_id;
   i32 thread_id;
   Array<TraceEvent> events;
 };

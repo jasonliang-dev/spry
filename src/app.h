@@ -41,6 +41,7 @@ struct App {
   bool hot_reload_enabled;
   float reload_time_elapsed;
   float reload_interval;
+
   Archive *archive;
   HashMap<Module> modules;
 

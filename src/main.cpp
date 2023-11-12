@@ -523,11 +523,10 @@ static void cleanup() {
     for (TraceEvent &event : g_profile.events) {
       fprintf(
           f,
-          R"({"name":"%s","cat":"%s","ph":"X","ts":%.3f,"dur":%.3f,"pid":%d,"tid":%d},)"
+          R"({"name":"%s","cat":"%s","ph":"X","ts":%.3f,"dur":%.3f,"pid":0,"tid":%d},)"
           "\n",
           event.name, event.cat, stm_us(event.start),
-          stm_us(stm_diff(event.end, event.start)), g_profile.process_id,
-          g_profile.thread_id);
+          stm_us(stm_diff(event.end, event.start)), g_profile.thread_id);
     }
 
     printf("  --- measured %llu event(s) ---\n",
@@ -737,7 +736,6 @@ sapp_desc sokol_main(int argc, char **argv) {
 #endif
 
 #ifdef USE_PROFILER
-  g_profile.process_id = os_process_id();
   g_profile.thread_id = os_thread_id();
   array_reserve(&g_profile.events, 16384);
 #endif

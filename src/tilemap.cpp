@@ -547,7 +547,7 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
         continue;
       }
 
-      float g = top->g + tile_distance(top, next);
+      float g = top->g + next->cost * tile_distance(top, next);
 
       bool open = next->flags & TileNodeFlags_Open;
       if (!open || g < next->g) {

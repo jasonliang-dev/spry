@@ -57,8 +57,6 @@ struct TileCost {
   float value;
 };
 
-inline u64 tile_key(i32 x, i32 y) { return ((u64)x << 32) | (u64)y; }
-
 struct TilePoint {
   float x, y;
 };
@@ -75,6 +73,8 @@ struct Tilemap {
   PriorityQueue<TileNode *> frontier;
   float graph_grid_size;
 };
+
+inline u64 tile_key(i32 x, i32 y) { return ((u64)x << 32) | (u64)y; }
 
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath);
 void tilemap_trash(Tilemap *tm);
