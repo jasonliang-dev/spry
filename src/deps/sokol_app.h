@@ -3004,7 +3004,7 @@ _SOKOL_PRIVATE sapp_desc _sapp_desc_defaults(const sapp_desc* desc) {
     SOKOL_ASSERT((desc->allocator.alloc_fn && desc->allocator.free_fn) || (!desc->allocator.alloc_fn && !desc->allocator.free_fn));
     sapp_desc res = *desc;
     res.sample_count = _sapp_def(res.sample_count, 1);
-    res.swap_interval = _sapp_def(res.swap_interval, 1);
+    res.swap_interval = _sapp_def(res.swap_interval, 0);
     // NOTE: can't patch the default for gl_major_version and gl_minor_version
     // independently, because a desired version 4.0 would be patched to 4.2
     // (or expressed differently: zero is a valid value for gl_minor_version
