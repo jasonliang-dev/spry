@@ -2,13 +2,6 @@
 #include "app.h"
 #include "atlas.h"
 #include "audio.h"
-#include "box2d/b2_body.h"
-#include "box2d/b2_circle_shape.h"
-#include "box2d/b2_contact.h"
-#include "box2d/b2_fixture.h"
-#include "box2d/b2_math.h"
-#include "box2d/b2_polygon_shape.h"
-#include "box2d/b2_world.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/sokol_app.h"
@@ -22,6 +15,13 @@
 #include "prelude.h"
 #include "sprite.h"
 #include "tilemap.h"
+#include <box2d/b2_body.h>
+#include <box2d/b2_circle_shape.h>
+#include <box2d/b2_contact.h>
+#include <box2d/b2_fixture.h>
+#include <box2d/b2_math.h>
+#include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_world.h>
 
 static bool get_asset(String filepath, Asset **out) {
   Asset *asset = nullptr;

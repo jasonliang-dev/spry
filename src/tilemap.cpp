@@ -1,9 +1,5 @@
 #include "tilemap.h"
 #include "arena.h"
-#include "box2d/b2_body.h"
-#include "box2d/b2_fixture.h"
-#include "box2d/b2_polygon_shape.h"
-#include "box2d/b2_world.h"
 #include "hash_map.h"
 #include "json.h"
 #include "prelude.h"
@@ -11,6 +7,10 @@
 #include "profile.h"
 #include "slice.h"
 #include "strings.h"
+#include <box2d/b2_body.h>
+#include <box2d/b2_fixture.h>
+#include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_world.h>
 
 static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
                             Archive *ar, String filepath,
