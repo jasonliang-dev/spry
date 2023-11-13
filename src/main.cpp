@@ -2,6 +2,7 @@
 #include "app.h"
 #include "archive.h"
 #include "array.h"
+#include "deps/cute_sync.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/lua/lualib.h"
@@ -509,30 +510,7 @@ static void cleanup() {
   actually_cleanup();
 
 #ifdef USE_PROFILER
-  {
-    StringBuilder sb = string_builder_make();
-    defer(string_builder_trash(&sb));
-
-    string_builder_swap_filename(&sb, os_program_path(), "profile.json");
-
-    FILE *f = fopen(sb.data, "w");
-    defer(fclose(f));
-
-    fputs("[", f);
-
-    for (TraceEvent &event : g_profile.events) {
-      fprintf(
-          f,
-          R"({"name":"%s","cat":"%s","ph":"X","ts":%.3f,"dur":%.3f,"pid":0,"tid":%d},)"
-          "\n",
-          event.name, event.cat, stm_us(event.start),
-          stm_us(stm_diff(event.end, event.start)), g_profile.thread_id);
-    }
-
-    printf("  --- measured %llu event(s) ---\n",
-           (unsigned long long)g_profile.events.len);
-    array_trash(&g_profile.events);
-  }
+  profile_shutdown();
 #endif
 
 #ifdef DEBUG
@@ -735,13 +713,13 @@ sapp_desc sokol_main(int argc, char **argv) {
   g_allocator = new HeapAllocator();
 #endif
 
-#ifdef USE_PROFILER
-  g_profile.thread_id = os_thread_id();
-  array_reserve(&g_profile.events, 16384);
-#endif
-
   os_high_timer_resolution();
   stm_setup();
+
+#ifdef USE_PROFILER
+  profile_setup();
+#endif
+
   PROFILE_FUNC();
 
   g_app = (App *)mem_alloc(sizeof(App));

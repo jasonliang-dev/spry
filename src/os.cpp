@@ -2,7 +2,6 @@
 
 #if defined(IS_WIN32)
 #include <direct.h>
-#include <windows.h>
 #include <timeapi.h>
 #pragma comment(lib, "winmm.lib")
 
@@ -12,7 +11,6 @@
 #elif defined(IS_LINUX)
 #include <sched.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
 #include <unistd.h>
 
 #endif
@@ -137,6 +135,6 @@ i32 os_thread_id() {
   return (i32)GetCurrentThreadId();
 
 #elif defined(IS_LINUX)
-  return (i32)syscall(SYS_gettid);
+  return (i32)gettid();
 #endif
 }

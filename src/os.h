@@ -4,6 +4,7 @@
 
 #if defined(_WIN32)
 #define IS_WIN32
+#include <windows.h>
 
 #elif defined(__EMSCRIPTEN__)
 #define IS_HTML5
