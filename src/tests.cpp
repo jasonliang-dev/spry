@@ -3,6 +3,7 @@
 #include "deps/utest.h"
 #include "hash_map.h"
 #include "priority_queue.h"
+#include "queue.h"
 #include "strings.cpp"
 
 // prelude
@@ -182,6 +183,106 @@ UTEST(hash_map, drop_arrays) {
     }
     map[i] = arr;
   }
+}
+
+UTEST(queue, empty) {
+  Queue<String> q;
+  defer(queue_trash(&q));
+}
+
+UTEST(queue, push_pop) {
+  Queue<i32> q;
+  defer(queue_trash(&q));
+
+  queue_push(&q, 1);
+  queue_push(&q, 2);
+  queue_push(&q, 3);
+  queue_push(&q, 4);
+
+  i32 n = 0;
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(1, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(2, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(3, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(4, n);
+
+  ASSERT_FALSE(queue_pop(&q, &n));
+}
+
+UTEST(queue, push_pop_grow) {
+  Queue<i32> q;
+  defer(queue_trash(&q));
+
+  queue_reserve(&q, 3);
+
+  queue_push(&q, 1);
+  queue_push(&q, 2);
+  queue_push(&q, 3);
+  queue_push(&q, 4);
+  queue_push(&q, 5);
+
+  i32 n = 0;
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(1, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(2, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(3, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(4, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(5, n);
+
+  ASSERT_FALSE(queue_pop(&q, &n));
+}
+
+UTEST(queue, push_pop_grow_shifted) {
+  Queue<i32> q;
+  defer(queue_trash(&q));
+
+  queue_reserve(&q, 3);
+
+  i32 n = 0;
+
+  queue_push(&q, -2);
+  queue_push(&q, -1);
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_TRUE(queue_pop(&q, &n));
+
+  queue_push(&q, 1);
+  queue_push(&q, 2);
+  queue_push(&q, 3);
+  queue_push(&q, 4);
+  queue_push(&q, 5);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(1, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(2, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(3, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(4, n);
+
+  ASSERT_TRUE(queue_pop(&q, &n));
+  ASSERT_EQ(5, n);
+
+  ASSERT_FALSE(queue_pop(&q, &n));
 }
 
 UTEST(priority_queue, empty) {
