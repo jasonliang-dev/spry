@@ -1,6 +1,5 @@
 #pragma once
 
-#include "strings.h"
 #ifdef DEBUG
 #ifndef USE_PROFILER
 #define USE_PROFILER
@@ -13,9 +12,10 @@
 #endif
 
 #ifdef USE_PROFILER
-#include "deps/cute_sync.h"
 #include "deps/sokol_time.h"
 #include "os.h"
+#include "queue.h"
+#include "strings.h"
 
 struct TraceEvent {
   const char *cat;
@@ -26,19 +26,11 @@ struct TraceEvent {
 };
 
 struct Profile {
-  TraceEvent events[256];
   cute_semaphore_t send;
-
-  struct {
-    cute_cv_t cv;
-    cute_mutex_t mtx;
-  } have_space;
-
-  cute_atomic_int_t front;
-  cute_atomic_int_t back;
-  cute_atomic_int_t len;
-
+  cute_mutex_t mtx;
   cute_thread_t *recv_thread;
+
+  Queue<TraceEvent> events;
 };
 
 extern Profile g_profile;
@@ -59,10 +51,10 @@ inline i32 profile_recv_thread(void *) {
       return 1;
     }
 
-    i32 front = cute_atomic_add(&g_profile.front, 1);
-    front &= array_size(Profile::events) - 1;
-
-    TraceEvent e = g_profile.events[front];
+    TraceEvent e = {};
+    cute_lock(&g_profile.mtx);
+    queue_pop(&g_profile.events, &e);
+    cute_unlock(&g_profile.mtx);
 
     fprintf(
         f,
@@ -70,41 +62,25 @@ inline i32 profile_recv_thread(void *) {
         "\n",
         e.name, e.cat, stm_us(e.start), stm_us(stm_diff(e.end, e.start)),
         e.tid);
-
-    i32 len = cute_atomic_add(&g_profile.len, -1);
-    assert(len != 0);
-    if (len == array_size(Profile::events)) {
-      cute_cv_wake_one(&g_profile.have_space.cv);
-    }
   }
 }
 
 inline void profile_setup() {
+  g_profile = {};
+
   g_profile.send = cute_semaphore_create(0);
-  g_profile.have_space.cv = cute_cv_create();
-  g_profile.have_space.mtx = cute_mutex_create();
+  g_profile.mtx = cute_mutex_create();
   g_profile.recv_thread =
       cute_thread_create(profile_recv_thread, "profile", nullptr);
 }
 
 inline void profile_shutdown() {
   cute_semaphore_destroy(&g_profile.send);
-  cute_cv_destroy(&g_profile.have_space.cv);
-  cute_mutex_destroy(&g_profile.have_space.mtx);
   cute_thread_wait(g_profile.recv_thread);
-}
 
-inline void profile_send(TraceEvent e) {
-  if (cute_atomic_get(&g_profile.len) == array_size(Profile::events)) {
-    cute_cv_wait(&g_profile.have_space.cv, &g_profile.have_space.mtx);
-  }
-  cute_atomic_add(&g_profile.len, 1);
+  cute_mutex_destroy(&g_profile.mtx);
 
-  i32 back = cute_atomic_add(&g_profile.back, 1);
-  back &= array_size(Profile::events) - 1;
-
-  g_profile.events[back] = e;
-  cute_semaphore_post(&g_profile.send);
+  queue_trash(&g_profile.events);
 }
 
 struct Instrument {
@@ -115,7 +91,7 @@ struct Instrument {
   Instrument(const char *cat, const char *name)
       : cat(cat), name(name), start(stm_now()) {}
 
-  ~Instrument() noexcept {
+  ~Instrument() {
     i32 tid = os_thread_id();
     u64 end = stm_now();
 
@@ -126,7 +102,11 @@ struct Instrument {
     e.end = end;
     e.tid = tid;
 
-    profile_send(e);
+    cute_lock(&g_profile.mtx);
+    queue_push(&g_profile.events, e);
+    cute_unlock(&g_profile.mtx);
+
+    cute_semaphore_post(&g_profile.send);
   }
 };
 
@@ -136,4 +116,4 @@ struct Instrument {
 #define PROFILE_BLOCK(name)                                                    \
   auto JOIN_2(_profile_, __COUNTER__) = Instrument("block", name);
 
-#endif
+#endif // USE_PROFILER
