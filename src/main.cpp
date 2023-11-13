@@ -2,11 +2,9 @@
 #include "app.h"
 #include "archive.h"
 #include "array.h"
-#include "deps/cute_sync.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/lua/lualib.h"
-#include "deps/luaalloc.h"
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
@@ -28,10 +26,6 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
-
-static LuaAlloc *LA = nullptr;
-static lua_State *L = nullptr;
-static sgl_pipeline g_pipeline;
 
 static void fatal_error(String str) {
   g_app->fatal_error = to_cstr(str);
@@ -61,7 +55,7 @@ static void sokol_free(void *ptr, void *) {
   mem_free(mem);
 }
 
-static i32 require_lua_script(Archive *ar, String filepath) {
+static i32 require_lua_script(lua_State *L, Archive *ar, String filepath) {
   PROFILE_FUNC();
 
   if (g_app->error_mode) {
@@ -158,7 +152,7 @@ static i32 hot_reload_thread(void *) {
       PROFILE_BLOCK("reload lua scripts");
 
       for (auto [k, v] : g_app->modules) {
-        require_lua_script(g_app->archive, v->name);
+        require_lua_script(g_app->L, g_app->archive, v->name);
       }
     }
 
@@ -225,7 +219,7 @@ static void init() {
     sg_pipline.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
     sg_pipline.colors[0].blend.dst_factor_rgb =
         SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    g_pipeline = sgl_make_pipeline(sg_pipline);
+    g_app->pipeline = sgl_make_pipeline(sg_pipline);
   }
 
   {
@@ -246,6 +240,8 @@ static void init() {
 
   {
     PROFILE_BLOCK("spry.start");
+
+    lua_State *L = g_app->L;
 
     if (!g_app->error_mode) {
       lua_getglobal(L, "spry");
@@ -363,7 +359,7 @@ static void frame() {
     sg_begin_default_pass(pass, sapp_width(), sapp_height());
 
     sgl_defaults();
-    sgl_load_pipeline(g_pipeline);
+    sgl_load_pipeline(g_app->pipeline);
 
     sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
     sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
@@ -397,6 +393,7 @@ static void frame() {
     }
   }
 
+  lua_State *L = g_app->L;
   lua_getglobal(L, "spry");
 
   if (!g_app->error_mode) {
@@ -467,17 +464,21 @@ static void frame() {
 static void actually_cleanup() {
   PROFILE_FUNC();
 
-  cute_atomic_set(&g_app->hot_reload.shutdown_request, 1);
-  cute_thread_wait(g_app->hot_reload.thread);
-  cute_mutex_destroy(&g_app->mtx);
+  {
+    PROFILE_BLOCK("wait for hot reload");
+
+    cute_atomic_set(&g_app->hot_reload.shutdown_request, 1);
+    cute_thread_wait(g_app->hot_reload.thread);
+    cute_mutex_destroy(&g_app->mtx);
+  }
 
   for (auto [k, v] : g_app->modules) {
     mem_free(v->name);
   }
   hashmap_trash(&g_app->modules);
 
-  lua_close(L);
-  luaalloc_delete(LA);
+  lua_close(g_app->L);
+  luaalloc_delete(g_app->LA);
 
   if (g_app->default_font_loaded) {
     font_trash(g_app->default_font);
@@ -505,7 +506,7 @@ static void actually_cleanup() {
 
   ma_engine_uninit(&g_app->audio_engine);
 
-  sgl_destroy_pipeline(g_pipeline);
+  sgl_destroy_pipeline(g_app->pipeline);
   sgl_shutdown();
   sg_shutdown();
 
@@ -533,19 +534,20 @@ static void cleanup() {
 #endif
 
 #ifdef DEBUG
-  DebugAllocator *allocator = (DebugAllocator *)g_allocator;
-
-  i32 allocs = 0;
-  for (DebugAllocInfo *info = allocator->head; info != nullptr;
-       info = info->next) {
-    printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
-           info->file, info->line);
-    allocs++;
+  DebugAllocator *allocator = dynamic_cast<DebugAllocator *>(g_allocator);
+  if (allocator != nullptr) {
+    i32 allocs = 0;
+    for (DebugAllocInfo *info = allocator->head; info != nullptr;
+         info = info->next) {
+      printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
+             info->file, info->line);
+      allocs++;
+    }
+    printf("  --- %d allocation(s) ---\n", allocs);
   }
-  printf("  --- %d allocation(s) ---\n", allocs);
 #endif
 
-  operator delete(g_allocator);
+  delete g_allocator;
 
 #ifdef DEBUG
   printf("bye\n");
@@ -556,7 +558,7 @@ static int spry_require_lua_script(lua_State *L) {
   PROFILE_FUNC();
 
   String path = luax_check_string(L, 1);
-  i32 ref = require_lua_script(g_app->archive, path);
+  i32 ref = require_lua_script(L, g_app->archive, path);
 
   if (ref != LUA_REFNIL) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
@@ -628,8 +630,11 @@ EM_ASYNC_JS(void, web_load_files, (), {
 static void setup_lua() {
   PROFILE_FUNC();
 
-  LA = luaalloc_create(nullptr, nullptr);
-  L = lua_newstate(luaalloc, LA);
+  LuaAlloc *LA = luaalloc_create(nullptr, nullptr);
+  lua_State *L = lua_newstate(luaalloc, LA);
+
+  g_app->LA = LA;
+  g_app->L = L;
 
   luaL_openlibs(L);
   open_spry_api(L);
@@ -691,7 +696,7 @@ static void mount_files(int argc, char **argv, bool *can_hot_reload) {
 #endif
 }
 
-static void load_all_lua_scripts() {
+static void load_all_lua_scripts(lua_State *L) {
   PROFILE_FUNC();
 
   Array<String> files = {};
@@ -715,7 +720,7 @@ static void load_all_lua_scripts() {
 
   for (String file : files) {
     if (file != "main.lua" && ends_with(file, ".lua")) {
-      require_lua_script(g_app->archive, file);
+      require_lua_script(L, g_app->archive, file);
     }
   }
 }
@@ -749,6 +754,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   *g_app = {};
 
   setup_lua();
+  lua_State *L = g_app->L;
 
   bool can_hot_reload = false;
   mount_files(argc, argv, &can_hot_reload);
@@ -756,7 +762,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   if (argc == 2 && g_app->archive == nullptr) {
     fatal_error(tmp_fmt("failed to load: %s", argv[1]));
   } else if (g_app->archive != nullptr) {
-    require_lua_script(g_app->archive, "main.lua");
+    require_lua_script(L, g_app->archive, "main.lua");
   }
 
   lua_newtable(L);
@@ -786,7 +792,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   lua_pop(L, 1);
 
   if (startup_load_scripts && g_app->archive != nullptr) {
-    load_all_lua_scripts();
+    load_all_lua_scripts(L);
   }
 
   g_app->hot_reload_enabled = can_hot_reload && hot_reload;

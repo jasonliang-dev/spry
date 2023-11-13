@@ -1,7 +1,10 @@
 #pragma once
 
 #include "audio.h"
-#include "deps/cute_sync.h"
+#include "deps/lua/lua.h"
+#include "deps/luaalloc.h"
+#include "deps/sokol_gfx.h"
+#include "deps/sokol_gl.h"
 #include "draw.h"
 
 struct Module {
@@ -37,16 +40,20 @@ struct AppTime {
 };
 
 struct App {
+  cute_mutex_t mtx;
+  Archive *archive;
+  HashMap<Asset> assets;
+  HashMap<Module> modules;
+  LuaAlloc *LA;
+  lua_State *L;
+
+  sgl_pipeline pipeline;
+
   AppTime time;
 
   bool hot_reload_enabled;
   float reload_time_elapsed;
   float reload_interval;
-
-  cute_mutex_t mtx;
-  Archive *archive;
-  HashMap<Asset> assets;
-  HashMap<Module> modules;
 
   struct {
     cute_atomic_int_t shutdown_request;
