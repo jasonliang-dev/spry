@@ -28,7 +28,12 @@ struct TraceEvent {
 struct Profile {
   TraceEvent events[256];
   cute_semaphore_t send;
-  cute_semaphore_t recv;
+
+  struct {
+    cute_cv_t cv;
+    cute_mutex_t mtx;
+  } have_space;
+
   cute_atomic_int_t front;
   cute_atomic_int_t back;
   cute_atomic_int_t len;
@@ -69,27 +74,29 @@ inline i32 profile_recv_thread(void *) {
     i32 len = cute_atomic_add(&g_profile.len, -1);
     assert(len != 0);
     if (len == array_size(Profile::events)) {
-      cute_semaphore_post(&g_profile.recv);
+      cute_cv_wake_one(&g_profile.have_space.cv);
     }
   }
 }
 
 inline void profile_setup() {
   g_profile.send = cute_semaphore_create(0);
-  g_profile.recv = cute_semaphore_create(0);
+  g_profile.have_space.cv = cute_cv_create();
+  g_profile.have_space.mtx = cute_mutex_create();
   g_profile.recv_thread =
       cute_thread_create(profile_recv_thread, "profile", nullptr);
 }
 
 inline void profile_shutdown() {
   cute_semaphore_destroy(&g_profile.send);
-  cute_semaphore_destroy(&g_profile.recv);
+  cute_cv_destroy(&g_profile.have_space.cv);
+  cute_mutex_destroy(&g_profile.have_space.mtx);
   cute_thread_wait(g_profile.recv_thread);
 }
 
 inline void profile_send(TraceEvent e) {
   if (cute_atomic_get(&g_profile.len) == array_size(Profile::events)) {
-    cute_semaphore_wait(&g_profile.recv);
+    cute_cv_wait(&g_profile.have_space.cv, &g_profile.have_space.mtx);
   }
   cute_atomic_add(&g_profile.len, 1);
 
