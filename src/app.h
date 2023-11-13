@@ -6,15 +6,11 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "draw.h"
-
-struct Module {
-  char *name;
-  u64 modtime;
-  i32 ref;
-};
+#include "os.h"
 
 enum AssetKind : u64 {
   AssetKind_None,
+  AssetKind_LuaRef,
   AssetKind_Image,
   AssetKind_Sprite,
   AssetKind_Tilemap,
@@ -26,11 +22,33 @@ struct Asset {
   u64 modtime;
   AssetKind kind;
   union {
+    i32 lua_ref;
     Image image;
     SpriteData sprite;
     Tilemap tilemap;
   };
 };
+
+inline bool get_asset(HashMap<Asset> *assets, AssetKind kind, String filepath,
+                      Asset **out) {
+  Asset *asset = nullptr;
+  u64 key = fnv1a(filepath);
+
+  bool ok = hashmap_index(assets, key, &asset);
+  if (!ok) {
+    asset->name = to_cstr(filepath).data;
+    asset->hash = key;
+    asset->modtime = os_file_modtime(asset->name);
+    asset->kind = kind;
+  }
+
+  if (asset->kind != kind) {
+    return false;
+  }
+
+  *out = asset;
+  return ok;
+}
 
 struct AppTime {
   u64 last;
@@ -43,7 +61,6 @@ struct App {
   cute_mutex_t mtx;
   Archive *archive;
   HashMap<Asset> assets;
-  HashMap<Module> modules;
   LuaAlloc *LA;
   lua_State *L;
 

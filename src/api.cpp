@@ -23,21 +23,6 @@
 #include <box2d/b2_polygon_shape.h>
 #include <box2d/b2_world.h>
 
-static bool get_asset(String filepath, Asset **out) {
-  Asset *asset = nullptr;
-  u64 key = fnv1a(filepath);
-
-  bool ok = hashmap_index(&g_app->assets, key, &asset);
-  if (!ok) {
-    asset->name = to_cstr(filepath).data;
-    asset->hash = key;
-    asset->modtime = os_file_modtime(asset->name);
-  }
-
-  *out = asset;
-  return ok;
-}
-
 struct PhysicsContactListener;
 struct Physics {
   b2World *world;
@@ -1798,9 +1783,8 @@ static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset *asset = nullptr;
-  bool loaded = get_asset(str, &asset);
+  bool loaded = get_asset(&g_app->assets, AssetKind_Image, str, &asset);
   if (!loaded) {
-    asset->kind = AssetKind_Image;
     bool ok = image_load(&asset->image, g_app->archive, str);
     if (!ok) {
       return 0;
@@ -1843,9 +1827,8 @@ static int spry_sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset *asset = nullptr;
-  bool loaded = get_asset(str, &asset);
+  bool loaded = get_asset(&g_app->assets, AssetKind_Sprite, str, &asset);
   if (!loaded) {
-    asset->kind = AssetKind_Sprite;
     bool ok = sprite_data_load(&asset->sprite, g_app->archive, str);
     if (!ok) {
       return 0;
@@ -1876,9 +1859,8 @@ static int spry_tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset *asset = nullptr;
-  bool loaded = get_asset(str, &asset);
+  bool loaded = get_asset(&g_app->assets, AssetKind_Tilemap, str, &asset);
   if (!loaded) {
-    asset->kind = AssetKind_Tilemap;
     bool ok = tilemap_load(&asset->tilemap, g_app->archive, str);
     if (!ok) {
       return 0;
