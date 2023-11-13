@@ -72,6 +72,8 @@ inline void profile_setup() {
   g_profile.mtx = cute_mutex_create();
   g_profile.recv_thread =
       cute_thread_create(profile_recv_thread, "profile", nullptr);
+
+  queue_reserve(&g_profile.events, 256);
 }
 
 inline void profile_shutdown() {
