@@ -2133,7 +2133,7 @@ $api_reference = [
     </button>
   </div>
   <div
-    class="db-l fixed bottom-0 pr2 pb2 overflow-y-scroll overflow-x-hidden z-5 bg-near-white dm-bg-near-black translate-x-0-l"
+    class="db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden z-5 bg-near-white dm-bg-near-black translate-x-0-l"
     style="transition: transform 200ms; width: 70%; max-width: 300px; top: <?= NAV_HEIGHT ?>"
     :class="open ? '' : 'translate-x-n120px'"
   >
@@ -2154,7 +2154,7 @@ $api_reference = [
     </div>
     <button
       x-data="{ expand: false }"
-      class="bn pointer f6 fw6 dark-gray dm-silver mb3 bg-none"
+      class="bn pointer f6 fw6 dark-gray dm-silver mb3 bg-none underline-hover"
       @click="
         expand = !expand
         for (const detail of details) {
