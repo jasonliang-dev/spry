@@ -1,5 +1,6 @@
 #pragma once
 
+#include "deps/cute_sync.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -16,6 +17,20 @@
 #define FORMAT_ARGS(n)
 #endif
 
+#define JOIN_1(x, y) x##y
+#define JOIN_2(x, y) JOIN_1(x, y)
+
+template <typename F> struct Defer {
+  F f;
+  Defer(F f) : f(f) {}
+  ~Defer() { f(); }
+};
+
+template <typename F> Defer<F> defer_func(F f) { return Defer<F>(f); }
+
+#define defer(code)                                                            \
+  auto JOIN_2(_defer_, __COUNTER__) = defer_func([&]() { code; })
+
 using i8 = int8_t;
 using i16 = int16_t;
 using i32 = int32_t;
@@ -25,6 +40,19 @@ using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
+struct Allocator {
+  virtual ~Allocator() = 0;
+  virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
+  virtual void free(void *ptr) = 0;
+};
+inline Allocator::~Allocator() {}
+
+struct HeapAllocator : Allocator {
+  ~HeapAllocator() = default;
+  void *alloc(size_t bytes, const char *, i32) { return malloc(bytes); }
+  void free(void *ptr) { ::free(ptr); }
+};
+
 struct DebugAllocInfo {
   const char *file;
   i32 line;
@@ -33,20 +61,17 @@ struct DebugAllocInfo {
   DebugAllocInfo *next;
 };
 
-struct Allocator {
-  virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
-  virtual void free(void *ptr) = 0;
-};
-
-struct HeapAllocator : Allocator {
-  void *alloc(size_t bytes, const char *, i32) { return malloc(bytes); }
-  void free(void *ptr) { ::free(ptr); }
-};
-
 struct DebugAllocator : Allocator {
   DebugAllocInfo *head = nullptr;
+  cute_mutex_t mtx = {};
+
+  DebugAllocator() { mtx = cute_mutex_create(); }
+  ~DebugAllocator() { cute_mutex_destroy(&mtx); }
 
   void *alloc(size_t bytes, const char *file, i32 line) {
+    cute_lock(&mtx);
+    defer(cute_unlock(&mtx));
+
     DebugAllocInfo *info =
         (DebugAllocInfo *)malloc(sizeof(DebugAllocInfo) + bytes);
     info->file = file;
@@ -65,6 +90,9 @@ struct DebugAllocator : Allocator {
     if (ptr == nullptr) {
       return;
     }
+
+    cute_lock(&mtx);
+    defer(cute_unlock(&mtx));
 
     DebugAllocInfo *info = (DebugAllocInfo *)ptr - 1;
 
@@ -145,17 +173,3 @@ inline bool operator==(String lhs, String rhs) {
 }
 
 inline bool operator!=(String lhs, String rhs) { return !(lhs == rhs); }
-
-#define JOIN_1(x, y) x##y
-#define JOIN_2(x, y) JOIN_1(x, y)
-
-template <typename F> struct Defer {
-  F f;
-  Defer(F f) : f(f) {}
-  ~Defer() { f(); }
-};
-
-template <typename F> Defer<F> defer_func(F f) { return Defer<F>(f); }
-
-#define defer(code)                                                            \
-  auto JOIN_2(_defer_, __COUNTER__) = defer_func([&]() { code; })
