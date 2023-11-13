@@ -180,8 +180,6 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Arena *arena,
 bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   PROFILE_FUNC();
 
-  Arena arena = {};
-
   String contents = {};
   bool ok = ar->read_entire_file(&contents, filepath);
   if (!ok) {
@@ -197,8 +195,18 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
     return false;
   }
 
+  Arena arena = {};
   HashMap<Image> images = {};
-  Tilemap tilemap = {};
+  bool success = false;
+  defer({
+    if (!success) {
+      for (auto [k, v] : images) {
+        image_trash(v);
+      }
+      hashmap_trash(&images);
+      arena_trash(&arena);
+    }
+  });
 
   JSONArray *arr_levels = json_array(json_lookup(&doc.root, "levels"));
 
@@ -217,6 +225,7 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
     }
   }
 
+  Tilemap tilemap = {};
   tilemap.arena = arena;
   tilemap.levels = levels;
   tilemap.images = images;
@@ -228,6 +237,7 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
   printf("loaded tilemap with %llu levels\n",
          (unsigned long long)tilemap.levels.len);
   *tm = tilemap;
+  success = true;
   return true;
 }
 

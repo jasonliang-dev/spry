@@ -61,90 +61,6 @@ static void sokol_free(void *ptr, void *) {
   mem_free(mem);
 }
 
-static void init() {
-  PROFILE_FUNC();
-
-  {
-    PROFILE_BLOCK("sokol");
-
-    sg_desc sg = {};
-    sg.logger.func = slog_func;
-    sg.context = sapp_sgcontext();
-    sg.allocator.alloc_fn = sokol_alloc;
-    sg.allocator.free_fn = sokol_free;
-    sg_setup(sg);
-
-    sgl_desc_t sgl = {};
-    sgl.logger.func = slog_func;
-    sgl.allocator.alloc_fn = sokol_alloc;
-    sgl.allocator.free_fn = sokol_free;
-    sgl_setup(sgl);
-
-    sg_pipeline_desc sg_pipline = {};
-    sg_pipline.depth.write_enabled = true;
-    sg_pipline.colors[0].blend.enabled = true;
-    sg_pipline.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
-    sg_pipline.colors[0].blend.dst_factor_rgb =
-        SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    g_pipeline = sgl_make_pipeline(sg_pipline);
-  }
-
-  {
-    PROFILE_BLOCK("miniaudio");
-
-    ma_engine_config ma_config = {};
-    ma_config.channels = 2;
-    ma_config.sampleRate = 44100;
-    ma_result res = ma_engine_init(&ma_config, &g_app->audio_engine);
-    if (res != MA_SUCCESS) {
-      fatal_error("failed to initialize audio engine");
-    }
-  }
-
-  renderer_setup(&g_app->renderer);
-
-  g_app->time.last = stm_now();
-
-  {
-    PROFILE_BLOCK("spry.start");
-
-    if (!g_app->error_mode) {
-      lua_getglobal(L, "spry");
-      lua_getfield(L, -1, "start");
-      lua_remove(L, -2);
-      if (lua_pcall(L, 0, 0, 1) != LUA_OK) {
-        lua_pop(L, 1);
-      }
-    }
-  }
-
-#ifdef DEBUG
-  printf("end of init\n");
-#endif
-}
-
-static void event(const sapp_event *e) {
-  switch (e->type) {
-  case SAPP_EVENTTYPE_KEY_DOWN: g_app->key_state[e->key_code] = true; break;
-  case SAPP_EVENTTYPE_KEY_UP: g_app->key_state[e->key_code] = false; break;
-  case SAPP_EVENTTYPE_MOUSE_DOWN:
-    g_app->mouse_state[e->mouse_button] = true;
-    break;
-  case SAPP_EVENTTYPE_MOUSE_UP:
-    g_app->mouse_state[e->mouse_button] = false;
-    break;
-  case SAPP_EVENTTYPE_MOUSE_MOVE:
-    g_app->mouse_x = e->mouse_x;
-    g_app->mouse_y = e->mouse_y;
-    break;
-  case SAPP_EVENTTYPE_MOUSE_SCROLL:
-    g_app->scroll_x = e->scroll_x;
-    g_app->scroll_y = e->scroll_y;
-    break;
-  default: break;
-  }
-}
-
 static i32 require_lua_script(Archive *ar, String filepath) {
   PROFILE_FUNC();
 
@@ -227,8 +143,159 @@ static i32 require_lua_script(Archive *ar, String filepath) {
   }
 }
 
+static i32 hot_reload_thread(void *) {
+  u32 reload_interval = g_app->reload_interval * 1000;
+
+  while (cute_atomic_get(&g_app->hot_reload.shutdown_request) == 0) {
+    PROFILE_BLOCK("hot reload");
+
+    os_sleep(reload_interval);
+
+    cute_lock(&g_app->mtx);
+    defer(cute_unlock(&g_app->mtx));
+
+    {
+      PROFILE_BLOCK("reload lua scripts");
+
+      for (auto [k, v] : g_app->modules) {
+        require_lua_script(g_app->archive, v->name);
+      }
+    }
+
+    for (auto [k, v] : g_app->assets) {
+      PROFILE_BLOCK("reload file asset");
+
+      u64 modtime = os_file_modtime(v->name);
+      if (modtime <= v->modtime) {
+        continue;
+      }
+      v->modtime = modtime;
+
+      bool ok = false;
+      switch (v->kind) {
+      case AssetKind_Image:
+        image_trash(&v->image);
+        ok = image_load(&v->image, g_app->archive, v->name);
+        break;
+      case AssetKind_Sprite:
+        sprite_data_trash(&v->sprite);
+        ok = sprite_data_load(&v->sprite, g_app->archive, v->name);
+        break;
+      case AssetKind_Tilemap:
+        tilemap_trash(&v->tilemap);
+        ok = tilemap_load(&v->tilemap, g_app->archive, v->name);
+        break;
+      case AssetKind_None:
+      default: ok = true; break;
+      }
+
+      if (!ok) {
+        fatal_error(tmp_fmt("failed to hot reload: %s", v->name));
+      } else {
+        printf("reloaded: %s\n", v->name);
+      }
+    }
+  }
+
+  return 0;
+}
+
+static void init() {
+  PROFILE_FUNC();
+
+  {
+    PROFILE_BLOCK("sokol");
+
+    sg_desc sg = {};
+    sg.logger.func = slog_func;
+    sg.context = sapp_sgcontext();
+    sg.allocator.alloc_fn = sokol_alloc;
+    sg.allocator.free_fn = sokol_free;
+    sg_setup(sg);
+
+    sgl_desc_t sgl = {};
+    sgl.logger.func = slog_func;
+    sgl.allocator.alloc_fn = sokol_alloc;
+    sgl.allocator.free_fn = sokol_free;
+    sgl_setup(sgl);
+
+    sg_pipeline_desc sg_pipline = {};
+    sg_pipline.depth.write_enabled = true;
+    sg_pipline.colors[0].blend.enabled = true;
+    sg_pipline.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
+    sg_pipline.colors[0].blend.dst_factor_rgb =
+        SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    g_pipeline = sgl_make_pipeline(sg_pipline);
+  }
+
+  {
+    PROFILE_BLOCK("miniaudio");
+
+    ma_engine_config ma_config = {};
+    ma_config.channels = 2;
+    ma_config.sampleRate = 44100;
+    ma_result res = ma_engine_init(&ma_config, &g_app->audio_engine);
+    if (res != MA_SUCCESS) {
+      fatal_error("failed to initialize audio engine");
+    }
+  }
+
+  renderer_setup(&g_app->renderer);
+
+  g_app->time.last = stm_now();
+
+  {
+    PROFILE_BLOCK("spry.start");
+
+    if (!g_app->error_mode) {
+      lua_getglobal(L, "spry");
+      lua_getfield(L, -1, "start");
+      lua_remove(L, -2);
+      if (lua_pcall(L, 0, 0, 1) != LUA_OK) {
+        lua_pop(L, 1);
+      }
+    }
+  }
+
+  g_app->mtx = cute_mutex_create();
+
+  if (g_app->hot_reload_enabled) {
+    g_app->hot_reload.thread =
+        cute_thread_create(hot_reload_thread, "hot reload", nullptr);
+  }
+
+#ifdef DEBUG
+  printf("end of init\n");
+#endif
+}
+
+static void event(const sapp_event *e) {
+  switch (e->type) {
+  case SAPP_EVENTTYPE_KEY_DOWN: g_app->key_state[e->key_code] = true; break;
+  case SAPP_EVENTTYPE_KEY_UP: g_app->key_state[e->key_code] = false; break;
+  case SAPP_EVENTTYPE_MOUSE_DOWN:
+    g_app->mouse_state[e->mouse_button] = true;
+    break;
+  case SAPP_EVENTTYPE_MOUSE_UP:
+    g_app->mouse_state[e->mouse_button] = false;
+    break;
+  case SAPP_EVENTTYPE_MOUSE_MOVE:
+    g_app->mouse_x = e->mouse_x;
+    g_app->mouse_y = e->mouse_y;
+    break;
+  case SAPP_EVENTTYPE_MOUSE_SCROLL:
+    g_app->scroll_x = e->scroll_x;
+    g_app->scroll_y = e->scroll_y;
+    break;
+  default: break;
+  }
+}
+
 static void frame() {
   PROFILE_FUNC();
+
+  cute_lock(&g_app->mtx);
+  defer(cute_unlock(&g_app->mtx));
 
   {
     AppTime *time = &g_app->time;
@@ -395,62 +462,14 @@ static void frame() {
       i++;
     }
   }
-
-  {
-    PROFILE_BLOCK("hot reload");
-
-    g_app->reload_time_elapsed += g_app->time.delta;
-    if (g_app->hot_reload_enabled &&
-        g_app->reload_time_elapsed > g_app->reload_interval) {
-      g_app->reload_time_elapsed -= g_app->reload_interval;
-
-      {
-        PROFILE_BLOCK("reload lua scripts");
-
-        for (auto [k, v] : g_app->modules) {
-          require_lua_script(g_app->archive, v->name);
-        }
-      }
-
-      for (auto [k, v] : g_app->assets) {
-        PROFILE_BLOCK("reload file asset");
-
-        u64 modtime = os_file_modtime(v->name);
-        if (modtime <= v->modtime) {
-          continue;
-        }
-        v->modtime = modtime;
-
-        bool ok = false;
-        switch (v->kind) {
-        case AssetKind_Image:
-          image_trash(&v->image);
-          ok = image_load(&v->image, g_app->archive, v->name);
-          break;
-        case AssetKind_Sprite:
-          sprite_data_trash(&v->sprite);
-          ok = sprite_data_load(&v->sprite, g_app->archive, v->name);
-          break;
-        case AssetKind_Tilemap:
-          tilemap_trash(&v->tilemap);
-          ok = tilemap_load(&v->tilemap, g_app->archive, v->name);
-          break;
-        case AssetKind_None:
-        default: ok = true; break;
-        }
-
-        if (!ok) {
-          fatal_error(tmp_fmt("failed to hot reload: %s", v->name));
-        } else {
-          printf("reloaded: %s\n", v->name);
-        }
-      }
-    }
-  }
 }
 
 static void actually_cleanup() {
   PROFILE_FUNC();
+
+  cute_atomic_set(&g_app->hot_reload.shutdown_request, 1);
+  cute_thread_wait(g_app->hot_reload.thread);
+  cute_mutex_destroy(&g_app->mtx);
 
   for (auto [k, v] : g_app->modules) {
     mem_free(v->name);
@@ -527,6 +546,10 @@ static void cleanup() {
 #endif
 
   operator delete(g_allocator);
+
+#ifdef DEBUG
+  printf("bye\n");
+#endif
 }
 
 static int spry_require_lua_script(lua_State *L) {

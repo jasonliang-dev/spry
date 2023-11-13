@@ -1,6 +1,7 @@
 #pragma once
 
 #include "audio.h"
+#include "deps/cute_sync.h"
 #include "draw.h"
 
 struct Module {
@@ -42,8 +43,15 @@ struct App {
   float reload_time_elapsed;
   float reload_interval;
 
+  cute_mutex_t mtx;
   Archive *archive;
+  HashMap<Asset> assets;
   HashMap<Module> modules;
+
+  struct {
+    cute_atomic_int_t shutdown_request;
+    cute_thread_t *thread;
+  } hot_reload;
 
   FontFamily *default_font;
   bool default_font_loaded;
@@ -68,8 +76,6 @@ struct App {
 
   ma_engine audio_engine;
   Array<Sound *> garbage_sounds;
-
-  HashMap<Asset> assets;
 };
 
 extern App *g_app;

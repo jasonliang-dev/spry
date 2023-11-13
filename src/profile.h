@@ -28,6 +28,7 @@ struct TraceEvent {
 struct Profile {
   TraceEvent events[256];
   cute_semaphore_t send;
+  cute_semaphore_t recv;
   cute_atomic_int_t front;
   cute_atomic_int_t back;
   cute_atomic_int_t len;
@@ -53,9 +54,6 @@ inline i32 profile_recv_thread(void *) {
       return 1;
     }
 
-    i32 len = cute_atomic_add(&g_profile.len, -1);
-    assert(len != 0);
-
     i32 front = cute_atomic_add(&g_profile.front, 1);
     front &= array_size(Profile::events) - 1;
 
@@ -67,27 +65,33 @@ inline i32 profile_recv_thread(void *) {
         "\n",
         e.name, e.cat, stm_us(e.start), stm_us(stm_diff(e.end, e.start)),
         e.tid);
+
+    i32 len = cute_atomic_add(&g_profile.len, -1);
+    assert(len != 0);
+    if (len == array_size(Profile::events)) {
+      cute_semaphore_post(&g_profile.recv);
+    }
   }
 }
 
 inline void profile_setup() {
   g_profile.send = cute_semaphore_create(0);
+  g_profile.recv = cute_semaphore_create(0);
   g_profile.recv_thread =
       cute_thread_create(profile_recv_thread, "profile", nullptr);
 }
 
 inline void profile_shutdown() {
   cute_semaphore_destroy(&g_profile.send);
+  cute_semaphore_destroy(&g_profile.recv);
   cute_thread_wait(g_profile.recv_thread);
 }
 
 inline void profile_send(TraceEvent e) {
-  i32 len = cute_atomic_add(&g_profile.len, 1);
-  if (len == array_size(Profile::events)) {
-    printf("dropping event because profile queue is full\n");
-    cute_atomic_add(&g_profile.len, -1);
-    return;
+  if (cute_atomic_get(&g_profile.len) == array_size(Profile::events)) {
+    cute_semaphore_wait(&g_profile.recv);
   }
+  cute_atomic_add(&g_profile.len, 1);
 
   i32 back = cute_atomic_add(&g_profile.back, 1);
   back &= array_size(Profile::events) - 1;
