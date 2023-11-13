@@ -1,6 +1,3 @@
-#define MAKE_LIB
-#include "deps/lua/onelua.c"
-
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -59,7 +56,19 @@
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "deps/cute_aseprite.h"
 
+#define CUTE_SYNC_IMPLEMENTATION
+#if defined(_WIN32)
+#define CUTE_SYNC_WINDOWS
+#else
+#define CUTE_SYNC_POSIX
+#endif
+#include "deps/cute_sync.h"
+
 #include "deps/luaalloc.c"
+
+#define MAKE_LIB
+#include "deps/lua/onelua.c"
+
 #include "deps/miniz.c"
 
 #define SOKOL_IMPL
