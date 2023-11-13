@@ -17,8 +17,7 @@ template <typename T> void array_trash(Array<T> *arr) { mem_free(arr->data); }
 
 template <typename T> void array_reserve(Array<T> *arr, u64 capacity) {
   if (capacity > arr->capacity) {
-    size_t bytes = sizeof(T) * capacity;
-    T *buf = (T *)mem_alloc(bytes);
+    T *buf = (T *)mem_alloc(sizeof(T) * capacity);
     memcpy(buf, arr->data, sizeof(T) * arr->len);
     mem_free(arr->data);
     arr->data = buf;
@@ -39,11 +38,6 @@ template <typename T> void array_push(Array<T> *arr, T item) {
   }
   arr->data[len] = item;
   arr->len++;
-}
-
-template <typename T> void array_pop(Array<T> *arr) {
-  assert(arr->len != 0);
-  arr->len--;
 }
 
 template <typename T> T *begin(Array<T> &arr) { return arr.data; }
