@@ -748,7 +748,12 @@ sapp_desc sokol_main(int argc, char **argv) {
     }
   }
 
-  bool console_attach = luax_boolean_field(L, "console_attach", false);
+#ifdef DEBUG
+  bool win_console = luax_boolean_field(L, "win_console", true);
+#else
+  bool win_console = luax_boolean_field(L, "win_console", false);
+#endif
+
   bool hot_reload = luax_boolean_field(L, "hot_reload", true);
   bool startup_load_scripts =
       luax_boolean_field(L, "startup_load_scripts", true);
@@ -773,6 +778,12 @@ sapp_desc sokol_main(int argc, char **argv) {
     g_app->time.target_ticks = 1000000000 / target_fps;
   }
 
+#ifdef IS_WIN32
+  if (!win_console) {
+    FreeConsole();
+  }
+#endif
+
   sapp_desc sapp = {};
   sapp.init_cb = init;
   sapp.frame_cb = frame;
@@ -782,7 +793,6 @@ sapp_desc sokol_main(int argc, char **argv) {
   sapp.height = (i32)height;
   sapp.window_title = title.data;
   sapp.logger.func = slog_func;
-  sapp.win32_console_attach = console_attach;
   sapp.swap_interval = (i32)swap_interval;
   sapp.fullscreen = fullscreen;
   sapp.allocator.alloc_fn = sokol_alloc;

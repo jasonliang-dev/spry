@@ -56,7 +56,7 @@ $api_reference = [
       ",
       "args" => [
         "t" => ["table", "The table to edit options with."],
-        " .console_attach" => ["boolean", "Windows only. If true, attach a console to the program.", "false"],
+        " .win_console" => ["boolean", "Windows only. If true, use console output.", "false"],
         " .hot_reload" => ["boolean", "Enable/disable hot reloading of scripts and assets.", "true"],
         " .startup_load_scripts" => ["boolean", "Enable/disable loading all lua scripts in the project", "true"],
         " .fullscreen" => ["boolean", "If true, start the program in fullscreen mode.", "false"],

@@ -74,8 +74,8 @@
 #define SOKOL_IMPL
 #if defined(_WIN32)
 #define SOKOL_D3D11
-#ifdef DEBUG
 #define SOKOL_WIN32_FORCE_MAIN
+#ifdef DEBUG
 #define SOKOL_DEBUG
 #endif
 #elif defined(__linux__)
