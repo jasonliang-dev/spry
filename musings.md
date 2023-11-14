@@ -38,6 +38,9 @@ Sometimes I want to just forget about a buffer I allocated when the scope
 exits, and sometimes I don't! `defer` makes destruction obvious, and I like
 that.
 
+The one exception to this is `Instrument` in `profile.h`. It uses its
+constructor and destructor to write trace events.
+
 ## Memory
 
 - General allocation with malloc/free
@@ -58,6 +61,7 @@ that.
 - Dynamic array
 - Open addressing hash map
 - Min heap priority queue
+- Queue backed by a ring buffer
 
 STL exists, yes, but I would like to compile my program in a reasonable time
 please. Also, the STL containers hits debug performance pretty hard.
@@ -89,11 +93,9 @@ they were located in a regular folder. This is also the reason why the
 ## Profiling
 
 For debug builds, or if `USE_PROFILER` was defined when building, a
-`profile.json` file is produced on program exit. This file can be loaded in a
-profiler such as `chrome://tracing/` or https://gravitymoth.com/spall/.
-
-When the program runs for a while, it takes a second to write the events into
-`profile.json`. Maybe the file should be written to in a different thread?
+`profile.json` file is produced while running the program. This file can be
+loaded in a profiler such as `chrome://tracing/` or
+https://gravitymoth.com/spall/.
 
 ## FPS limiting
 
@@ -110,9 +112,11 @@ decent on Linux, but it takes about 100-200us per file on Windows with a
 mid-range Windows PC. 100 microseconds adds up fast with a decent number of
 files.
 
-Eventually I want to do something different.
-- Maybe use `ReadDirectoryChangesW`?
-- Compare mod time in a different thread?
+~~Eventually I want to do something different.~~
+- ~~Maybe use `ReadDirectoryChangesW`?~~
+- ~~Compare mod time in a different thread?~~
+
+Update: Hot reloading is now done on a separate thread.
 
 ## Hot reloading classes
 
