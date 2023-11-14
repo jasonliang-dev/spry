@@ -1,5 +1,6 @@
 function spry.conf(t)
   t.swap_interval = 0
+  t.reload_interval = 0.001
   t.window_width = 1366
   t.window_height = 768
   t.window_title = "Plane Game"
