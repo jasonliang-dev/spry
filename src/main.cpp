@@ -141,8 +141,8 @@ static i32 hot_reload_thread(void *) {
     if (g_app->hot_reload.changes.len > 0) {
       PROFILE_BLOCK("perform hot reload");
 
-      cute_lock(&g_app->lua_mtx);
-      defer(cute_unlock(&g_app->lua_mtx));
+      cute_lock(&g_app->frame_mtx);
+      defer(cute_unlock(&g_app->frame_mtx));
 
       cute_write_lock(&g_app->assets.rw_lock);
       defer(cute_write_unlock(&g_app->assets.rw_lock));
@@ -156,12 +156,11 @@ static i32 hot_reload_thread(void *) {
 
         bool ok = false;
         switch (a->kind) {
-        case AssetKind_LuaRef: {
-
+        case AssetKind_LuaRef:
+          luaL_unref(g_app->L, LUA_REGISTRYINDEX, a->lua_ref);
           a->lua_ref = require_lua_script(g_app->L, g_app->archive, a->name);
           ok = true;
           break;
-        }
         case AssetKind_Image:
           image_trash(&a->image);
           ok = image_load(&a->image, g_app->archive, a->name);
@@ -249,7 +248,7 @@ static void init() {
     }
   }
 
-  g_app->lua_mtx = cute_mutex_create();
+  g_app->frame_mtx = cute_mutex_create();
 
   if (g_app->hot_reload_enabled) {
     g_app->hot_reload.thread =
@@ -285,6 +284,9 @@ static void event(const sapp_event *e) {
 
 static void frame() {
   PROFILE_FUNC();
+
+  cute_lock(&g_app->frame_mtx);
+  defer(cute_unlock(&g_app->frame_mtx));
 
   {
     AppTime *time = &g_app->time;
@@ -384,10 +386,7 @@ static void frame() {
                 g_app->traceback);
     }
   } else {
-    cute_lock(&g_app->lua_mtx);
-    defer(cute_unlock(&g_app->lua_mtx));
     lua_State *L = g_app->L;
-
     lua_getglobal(L, "spry");
 
     lua_getfield(L, -1, "_timer_update");
@@ -457,9 +456,10 @@ static void actually_cleanup() {
 
     cute_atomic_set(&g_app->hot_reload.shutdown_request, 1);
     cute_thread_wait(g_app->hot_reload.thread);
-    cute_mutex_destroy(&g_app->lua_mtx);
   }
+  array_trash(&g_app->hot_reload.changes);
 
+  cute_mutex_destroy(&g_app->frame_mtx);
   lua_close(g_app->L);
   luaalloc_delete(g_app->LA);
 

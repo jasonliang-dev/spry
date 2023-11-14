@@ -250,27 +250,25 @@ static int open_mt_sampler(lua_State *L) {
 // mt_image
 
 static int mt_image_draw(lua_State *L) {
-  Image img = check_asset_mt(L, &g_app->assets, "mt_image")->image;
+  const Image *img = &check_asset_mt(L, &g_app->assets, "mt_image")->image;
   defer(cute_read_unlock(&g_app->assets.rw_lock));
 
   DrawDescription dd = draw_description_args(L, 2);
-  draw_image(&g_app->renderer, &img, &dd);
+  draw_image(&g_app->renderer, img, &dd);
   return 0;
 }
 
 static int mt_image_width(lua_State *L) {
-  Image img = check_asset_mt(L, &g_app->assets, "mt_image")->image;
+  const Image *img = &check_asset_mt(L, &g_app->assets, "mt_image")->image;
   defer(cute_read_unlock(&g_app->assets.rw_lock));
-
-  lua_pushnumber(L, img.width);
+  lua_pushnumber(L, img->width);
   return 1;
 }
 
 static int mt_image_height(lua_State *L) {
-  Image img = check_asset_mt(L, &g_app->assets, "mt_image")->image;
+  const Image *img = &check_asset_mt(L, &g_app->assets, "mt_image")->image;
   defer(cute_read_unlock(&g_app->assets.rw_lock));
-
-  lua_pushnumber(L, img.height);
+  lua_pushnumber(L, img->height);
   return 1;
 }
 

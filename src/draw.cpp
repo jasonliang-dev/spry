@@ -159,7 +159,7 @@ void renderer_push_xy(Renderer2D *ren, float x, float y) {
   sgl_v2f(v.x, v.y);
 }
 
-void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc) {
+void draw_image(Renderer2D *ren, const Image *img, DrawDescription *desc) {
   bool ok = renderer_push_matrix(ren);
   if (!ok) {
     return;

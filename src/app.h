@@ -24,13 +24,14 @@ struct App {
   Archive *archive;
   Assets assets;
 
+  cute_mutex_t frame_mtx;
+
   struct {
     cute_atomic_int_t shutdown_request;
     cute_thread_t *thread;
     Array<FileChange> changes;
   } hot_reload;
 
-  cute_mutex_t lua_mtx;
   LuaAlloc *LA;
   lua_State *L;
 
