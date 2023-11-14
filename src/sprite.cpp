@@ -1,6 +1,7 @@
 #include "sprite.h"
 #include "app.h"
 #include "arena.h"
+#include "assets.h"
 #include "deps/cute_aseprite.h"
 #include "deps/sokol_gfx.h"
 #include "profile.h"
@@ -114,13 +115,12 @@ bool sprite_play(Sprite *spr, String tag) {
 void sprite_update(Sprite *spr, float dt) {
   SpriteView view = {};
   bool ok = sprite_view(&view, spr);
-  defer(sprite_view_unlock());
   if (!ok) {
     return;
   }
 
   i32 index = sprite_view_frame(&view);
-  SpriteFrame frame = view.data->frames[index];
+  SpriteFrame frame = view.data.frames[index];
 
   spr->elapsed += dt * 1000;
   if (spr->elapsed > frame.duration) {
@@ -137,7 +137,6 @@ void sprite_update(Sprite *spr, float dt) {
 void sprite_set_frame(Sprite *spr, i32 frame) {
   SpriteView view = {};
   bool ok = sprite_view(&view, spr);
-  defer(sprite_view_unlock());
   if (!ok) {
     return;
   }
@@ -149,42 +148,39 @@ void sprite_set_frame(Sprite *spr, i32 frame) {
 }
 
 bool sprite_view(SpriteView *out, Sprite *spr) {
-  cute_read_lock(&g_app->assets.rw_lock);
-  const Asset *a = hashmap_get(&g_app->assets.table, spr->sprite);
-
-  if (a == nullptr) {
+  Asset a = {};
+  bool ok = asset_read(spr->sprite, &a);
+  if (!ok) {
     return false;
   }
 
-  const SpriteData *data = &a->sprite;
-  if (data == nullptr) {
-    return false;
-  }
-
-  SpriteLoop *loop = hashmap_get(&data->by_tag, spr->loop);
+  SpriteData data = a.sprite;
+  const SpriteLoop *res = hashmap_get(&data.by_tag, spr->loop);
 
   SpriteView view = {};
   view.sprite = spr;
   view.data = data;
-  view.loop = loop;
+
+  if (res != nullptr) {
+    view.loop = *res;
+  }
+
   *out = view;
   return true;
 }
 
-void sprite_view_unlock() { cute_read_unlock(&g_app->assets.rw_lock); }
-
 i32 sprite_view_frame(SpriteView *view) {
-  if (view->loop != nullptr) {
-    return view->loop->indices[view->sprite->current_frame];
+  if (view->loop.indices.data != nullptr) {
+    return view->loop.indices[view->sprite->current_frame];
   } else {
     return view->sprite->current_frame;
   }
 }
 
 u64 sprite_view_len(SpriteView *view) {
-  if (view->loop != nullptr) {
-    return view->loop->indices.len;
+  if (view->loop.indices.data != nullptr) {
+    return view->loop.indices.len;
   } else {
-    return view->data->frames.len;
+    return view->data.frames.len;
   }
 }

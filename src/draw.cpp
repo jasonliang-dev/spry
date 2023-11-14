@@ -196,7 +196,6 @@ void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
 
   SpriteView view = {};
   ok = sprite_view(&view, spr);
-  defer(sprite_view_unlock());
   if (!ok) {
     return;
   }
@@ -206,16 +205,16 @@ void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
   renderer_scale(ren, desc->sx, desc->sy);
 
   sgl_enable_texture();
-  sgl_texture({view.data->img.id}, {ren->sampler});
+  sgl_texture({view.data.img.id}, {ren->sampler});
   sgl_begin_quads();
 
   float x0 = -desc->ox;
   float y0 = -desc->oy;
-  float x1 = (float)view.data->width - desc->ox;
-  float y1 = (float)view.data->height - desc->oy;
+  float x1 = (float)view.data.width - desc->ox;
+  float y1 = (float)view.data.height - desc->oy;
 
   i32 frame = sprite_view_frame(&view);
-  SpriteFrame f = view.data->frames[frame];
+  SpriteFrame f = view.data.frames[frame];
 
   renderer_apply_color(ren);
   renderer_push_quad(ren, vec4(x0, y0, x1, y1), vec4(f.u0, f.v0, f.u1, f.v1));

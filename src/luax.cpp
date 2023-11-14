@@ -3,6 +3,61 @@
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "strings.h"
+#include "profile.h"
+
+i32 require_lua_script(lua_State *L, Archive *ar, String filepath) {
+  PROFILE_FUNC();
+
+  if (g_app->error_mode) {
+    return LUA_REFNIL;
+  }
+
+  String path = to_cstr(filepath);
+  defer(mem_free(path.data));
+
+  String contents;
+  bool ok = ar->read_entire_file(&contents, filepath);
+  if (!ok) {
+    StringBuilder sb = string_builder_make();
+    defer(string_builder_trash(&sb));
+
+    string_builder_concat(&sb, "failed to read file: ");
+    string_builder_concat(&sb, filepath);
+
+    fatal_error(string_builder_as_string(&sb));
+    return LUA_REFNIL;
+  }
+  defer(mem_free(contents.data));
+
+  // [1] {}
+  lua_newtable(L);
+  i32 table_index = lua_gettop(L);
+
+  {
+    PROFILE_BLOCK("load lua script");
+
+    if (luaL_loadbuffer(L, contents.data, contents.len, path.data) != LUA_OK) {
+      fatal_error(luax_check_string(L, -1));
+      return LUA_REFNIL;
+    }
+  }
+
+  // [1] {}
+  // ...
+  // [n] any
+  if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {
+    lua_pop(L, 2);
+    return LUA_REFNIL;
+  }
+
+  // [1] {...}
+  i32 top = lua_gettop(L);
+  for (i32 i = 1; i <= top - table_index; i++) {
+    lua_seti(L, table_index, i);
+  }
+
+  return luaL_ref(L, LUA_REGISTRYINDEX);
+}
 
 void luax_stack_dump(lua_State *L) {
   i32 top = lua_gettop(L);
@@ -21,6 +76,10 @@ void luax_stack_dump(lua_State *L) {
 }
 
 int luax_msgh(lua_State *L) {
+  if (g_app->error_mode) {
+    return 0;
+  }
+
   String err = luax_check_string(L, -1);
   g_app->fatal_error = to_cstr(err);
 

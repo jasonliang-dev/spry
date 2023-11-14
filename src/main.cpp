@@ -2,6 +2,7 @@
 #include "app.h"
 #include "archive.h"
 #include "array.h"
+#include "assets.h"
 #include "deps/cute_sync.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
@@ -27,14 +28,6 @@
 #include <emscripten.h>
 #endif
 
-static void fatal_error(String str) {
-  if (!g_app->error_mode) {
-    g_app->fatal_error = to_cstr(str);
-    fprintf(stderr, "%s\n", g_app->fatal_error.data);
-    g_app->error_mode = true;
-  }
-}
-
 FORMAT_ARGS(1)
 static void panic(const char *fmt, ...) {
   va_list args = {};
@@ -55,138 +48,6 @@ static void *sokol_alloc(size_t size, void *) {
 static void sokol_free(void *ptr, void *) {
   void *mem = ptr;
   mem_free(mem);
-}
-
-static i32 require_lua_script(lua_State *L, Archive *ar, String filepath) {
-  PROFILE_FUNC();
-
-  if (g_app->error_mode) {
-    return LUA_REFNIL;
-  }
-
-  String path = to_cstr(filepath);
-  defer(mem_free(path.data));
-
-  String contents;
-  bool ok = ar->read_entire_file(&contents, filepath);
-  if (!ok) {
-    StringBuilder sb = string_builder_make();
-    defer(string_builder_trash(&sb));
-    string_builder_concat(&sb, "failed to read file: ");
-    string_builder_concat(&sb, filepath);
-    fatal_error(string_builder_as_string(&sb));
-    return LUA_REFNIL;
-  }
-  defer(mem_free(contents.data));
-
-  // [1] {}
-  lua_newtable(L);
-  i32 table_index = lua_gettop(L);
-
-  {
-    PROFILE_BLOCK("load lua script");
-
-    if (luaL_loadbuffer(L, contents.data, contents.len, path.data) != LUA_OK) {
-      fatal_error(luax_check_string(L, -1));
-      return LUA_REFNIL;
-    }
-  }
-
-  // [1] {}
-  // ...
-  // [n] any
-  if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {
-    lua_pop(L, 2);
-    return LUA_REFNIL;
-  }
-
-  // [1] {...}
-  i32 top = lua_gettop(L);
-  for (i32 i = 1; i <= top - table_index; i++) {
-    lua_seti(L, table_index, i);
-  }
-
-  return luaL_ref(L, LUA_REGISTRYINDEX);
-}
-
-static i32 hot_reload_thread(void *) {
-  u32 reload_interval = g_app->reload_interval * 1000;
-
-  while (cute_atomic_get(&g_app->hot_reload.shutdown_request) == 0) {
-    PROFILE_BLOCK("hot reload");
-
-    os_sleep(reload_interval);
-
-    g_app->hot_reload.changes.len = 0;
-
-    {
-      PROFILE_BLOCK("check for updates");
-
-      cute_read_lock(&g_app->assets.rw_lock);
-      defer(cute_read_unlock(&g_app->assets.rw_lock));
-
-      for (auto [k, v] : g_app->assets.table) {
-        PROFILE_BLOCK("reload file asset");
-
-        u64 modtime = os_file_modtime(v->name);
-        if (modtime > v->modtime) {
-          FileChange change = {};
-          change.key = v->hash;
-          change.modtime = modtime;
-          array_push(&g_app->hot_reload.changes, change);
-        }
-      }
-    }
-
-    if (g_app->hot_reload.changes.len > 0) {
-      PROFILE_BLOCK("perform hot reload");
-
-      cute_lock(&g_app->frame_mtx);
-      defer(cute_unlock(&g_app->frame_mtx));
-
-      cute_write_lock(&g_app->assets.rw_lock);
-      defer(cute_write_unlock(&g_app->assets.rw_lock));
-
-      for (FileChange change : g_app->hot_reload.changes) {
-        Asset *a = nullptr;
-        bool exists = hashmap_index(&g_app->assets.table, change.key, &a);
-        assert(exists);
-
-        a->modtime = change.modtime;
-
-        bool ok = false;
-        switch (a->kind) {
-        case AssetKind_LuaRef:
-          luaL_unref(g_app->L, LUA_REGISTRYINDEX, a->lua_ref);
-          a->lua_ref = require_lua_script(g_app->L, g_app->archive, a->name);
-          ok = true;
-          break;
-        case AssetKind_Image:
-          image_trash(&a->image);
-          ok = image_load(&a->image, g_app->archive, a->name);
-          break;
-        case AssetKind_Sprite:
-          sprite_data_trash(&a->sprite);
-          ok = sprite_data_load(&a->sprite, g_app->archive, a->name);
-          break;
-        case AssetKind_Tilemap:
-          tilemap_trash(&a->tilemap);
-          ok = tilemap_load(&a->tilemap, g_app->archive, a->name);
-          break;
-        case AssetKind_None:
-        default: ok = true; break;
-        }
-
-        if (!ok) {
-          fatal_error(tmp_fmt("failed to hot reload: %s", a->name));
-        } else {
-          printf("reloaded: %s\n", a->name);
-        }
-      }
-    }
-  }
-
-  return 0;
 }
 
 static void init() {
@@ -250,10 +111,7 @@ static void init() {
 
   g_app->frame_mtx = cute_mutex_create();
 
-  if (g_app->hot_reload_enabled) {
-    g_app->hot_reload.thread =
-        cute_thread_create(hot_reload_thread, "hot reload", nullptr);
-  }
+  assets_start_hot_reload();
 
 #ifdef DEBUG
   printf("end of init\n");
@@ -451,15 +309,6 @@ static void frame() {
 static void actually_cleanup() {
   PROFILE_FUNC();
 
-  {
-    PROFILE_BLOCK("wait for hot reload");
-
-    cute_atomic_set(&g_app->hot_reload.shutdown_request, 1);
-    cute_thread_wait(g_app->hot_reload.thread);
-  }
-  array_trash(&g_app->hot_reload.changes);
-
-  cute_mutex_destroy(&g_app->frame_mtx);
   lua_close(g_app->L);
   luaalloc_delete(g_app->LA);
 
@@ -474,7 +323,8 @@ static void actually_cleanup() {
   }
   array_trash(&g_app->garbage_sounds);
 
-  assets_trash(&g_app->assets);
+  assets_shutdown();
+  cute_mutex_destroy(&g_app->frame_mtx);
 
   ma_engine_uninit(&g_app->audio_engine);
 
@@ -526,13 +376,13 @@ static int spry_require_lua_script(lua_State *L) {
 
   String path = luax_check_string(L, 1);
 
-  AssetLoad load = asset_load(&g_app->assets, AssetKind_LuaRef, path);
-  defer(asset_load_unlock(&g_app->assets, &load));
-  if (!load.found) {
-    load.data->lua_ref = require_lua_script(L, g_app->archive, path);
+  Asset asset = {};
+  bool ok = asset_load(AssetKind_LuaRef, g_app->archive, path, &asset);
+  if (!ok) {
+    return 0;
   }
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, load.data->lua_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, asset.lua_ref);
   return 1;
 }
 
@@ -688,11 +538,7 @@ static void load_all_lua_scripts(lua_State *L) {
 
   for (String file : files) {
     if (file != "main.lua" && ends_with(file, ".lua")) {
-      AssetLoad load = asset_load(&g_app->assets, AssetKind_LuaRef, file);
-      defer(asset_load_unlock(&g_app->assets, &load));
-      if (!load.found) {
-        load.data->lua_ref = require_lua_script(L, g_app->archive, file);
-      }
+      asset_load(AssetKind_LuaRef, g_app->archive, file, nullptr);
     }
   }
 }
@@ -716,7 +562,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   setup_lua();
   lua_State *L = g_app->L;
 
-  assets_make(&g_app->assets);
+  assets_setup();
 
   bool can_hot_reload = false;
   mount_files(argc, argv, &can_hot_reload);
@@ -724,10 +570,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   if (argc == 2 && g_app->archive == nullptr) {
     fatal_error(tmp_fmt("failed to load: %s", argv[1]));
   } else if (g_app->archive != nullptr) {
-    AssetLoad load = asset_load(&g_app->assets, AssetKind_LuaRef, "main.lua");
-    defer(asset_load_unlock(&g_app->assets, &load));
-    assert(!load.found);
-    load.data->lua_ref = require_lua_script(L, g_app->archive, "main.lua");
+    asset_load(AssetKind_LuaRef, g_app->archive, "main.lua", nullptr);
   }
 
   lua_newtable(L);
@@ -765,8 +608,8 @@ sapp_desc sokol_main(int argc, char **argv) {
     load_all_lua_scripts(L);
   }
 
-  g_app->hot_reload_enabled = can_hot_reload && hot_reload;
-  g_app->reload_interval = reload_interval;
+  cute_atomic_set(&g_app->hot_reload_enabled, can_hot_reload && hot_reload);
+  cute_atomic_set(&g_app->reload_interval, (u32)(reload_interval * 1000));
 
   if (target_fps != 0) {
     g_app->time.target_ticks = 1000000000 / target_fps;

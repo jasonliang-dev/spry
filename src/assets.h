@@ -1,11 +1,12 @@
 #pragma once
 
+#include "deps/cute_sync.h"
 #include "deps/lua/lua.h"
 #include "image.h"
 #include "sprite.h"
 #include "tilemap.h"
 
-enum AssetKind : u64 {
+enum AssetKind : i32 {
   AssetKind_None,
   AssetKind_LuaRef,
   AssetKind_Image,
@@ -26,22 +27,14 @@ struct Asset {
   };
 };
 
-struct Assets {
-  HashMap<Asset> table;
-  cute_rw_lock_t rw_lock;
-};
+void assets_setup();
+void assets_shutdown();
+void assets_start_hot_reload();
 
-void assets_make(Assets *assets);
-void assets_trash(Assets *assets);
+bool asset_load(AssetKind kind, Archive *ar, String filepath, Asset *out);
 
-struct AssetLoad {
-  Asset *data;
-  bool found;
-};
+bool asset_read(u64 key, Asset *out);
+void asset_write(Asset asset);
 
-AssetLoad asset_load(Assets *assets, AssetKind kind, String filepath);
-void asset_load_unlock(Assets *assets, AssetLoad *load);
-
-const Asset *check_asset(lua_State *L, Assets *assets, u64 key);
-const Asset *check_asset_mt(lua_State *L, Assets *assets, const char *mt);
-Asset *write_asset_mt(lua_State *L, Assets *assets, const char *mt);
+Asset check_asset(lua_State *L, u64 key);
+Asset check_asset_mt(lua_State *L, i32 arg, const char *mt);

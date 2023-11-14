@@ -6,6 +6,8 @@
 #include "prelude.h"
 #include <initializer_list>
 
+i32 require_lua_script(lua_State *L, Archive *ar, String filepath);
+
 void luax_stack_dump(lua_State *L);
 
 // message handler. prints error and traceback

@@ -100,7 +100,16 @@ template <typename T> void hashmap_reserve(HashMap<T> *old, u64 capacity) {
   hashmap_real_reserve(old, capacity);
 }
 
-template <typename T> T *hashmap_get(const HashMap<T> *map, u64 key) {
+template <typename T> T *hashmap_get(HashMap<T> *map, u64 key) {
+  if (map->load == 0) {
+    return nullptr;
+  }
+
+  u64 index = hashmap_find_entry(map, key);
+  return map->kinds[index] == HashMapKind_Some ? &map->values[index] : nullptr;
+}
+
+template <typename T> const T *hashmap_get(const HashMap<T> *map, u64 key) {
   if (map->load == 0) {
     return nullptr;
   }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "assets.h"
 #include "audio.h"
 #include "deps/lua/lua.h"
 #include "deps/luaalloc.h"
@@ -15,22 +14,10 @@ struct AppTime {
   double delta;
 };
 
-struct FileChange {
-  u64 key;
-  u64 modtime;
-};
-
 struct App {
   Archive *archive;
-  Assets assets;
 
   cute_mutex_t frame_mtx;
-
-  struct {
-    cute_atomic_int_t shutdown_request;
-    cute_thread_t *thread;
-    Array<FileChange> changes;
-  } hot_reload;
 
   LuaAlloc *LA;
   lua_State *L;
@@ -39,9 +26,8 @@ struct App {
 
   AppTime time;
 
-  bool hot_reload_enabled;
-  float reload_time_elapsed;
-  float reload_interval;
+  cute_atomic_int_t hot_reload_enabled;
+  cute_atomic_int_t reload_interval;
 
   FontFamily *default_font;
 
@@ -68,3 +54,11 @@ struct App {
 };
 
 extern App *g_app;
+
+inline void fatal_error(String str) {
+  if (!g_app->error_mode) {
+    g_app->fatal_error = to_cstr(str);
+    fprintf(stderr, "%s\n", g_app->fatal_error.data);
+    g_app->error_mode = true;
+  }
+}

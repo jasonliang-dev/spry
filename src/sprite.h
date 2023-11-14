@@ -31,8 +31,8 @@ struct Sprite {
 
 struct SpriteView {
   Sprite *sprite;
-  const SpriteData *data;
-  SpriteLoop *loop;
+  SpriteData data;
+  SpriteLoop loop;
 };
 
 bool sprite_data_load(SpriteData *spr, Archive *ar, String filepath);
@@ -43,6 +43,5 @@ void sprite_update(Sprite *spr, float dt);
 void sprite_set_frame(Sprite *spr, i32 frame);
 
 bool sprite_view(SpriteView *out, Sprite *spr);
-void sprite_view_unlock();
 i32 sprite_view_frame(SpriteView *view);
 u64 sprite_view_len(SpriteView *view);

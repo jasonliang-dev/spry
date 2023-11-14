@@ -1,5 +1,6 @@
 #include "api.h"
 #include "app.h"
+#include "assets.h"
 #include "atlas.h"
 #include "audio.h"
 #include "deps/lua/lauxlib.h"
@@ -13,6 +14,7 @@
 #include "luax.h"
 #include "os.h"
 #include "prelude.h"
+#include "profile.h"
 #include "sprite.h"
 #include "tilemap.h"
 #include <box2d/b2_body.h>
@@ -250,25 +252,22 @@ static int open_mt_sampler(lua_State *L) {
 // mt_image
 
 static int mt_image_draw(lua_State *L) {
-  const Image *img = &check_asset_mt(L, &g_app->assets, "mt_image")->image;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
+  Image img = check_asset_mt(L, 1, "mt_image").image;
 
   DrawDescription dd = draw_description_args(L, 2);
-  draw_image(&g_app->renderer, img, &dd);
+  draw_image(&g_app->renderer, &img, &dd);
   return 0;
 }
 
 static int mt_image_width(lua_State *L) {
-  const Image *img = &check_asset_mt(L, &g_app->assets, "mt_image")->image;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
-  lua_pushnumber(L, img->width);
+  Image img = check_asset_mt(L, 1, "mt_image").image;
+  lua_pushnumber(L, img.width);
   return 1;
 }
 
 static int mt_image_height(lua_State *L) {
-  const Image *img = &check_asset_mt(L, &g_app->assets, "mt_image")->image;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
-  lua_pushnumber(L, img->height);
+  Image img = check_asset_mt(L, 1, "mt_image").image;
+  lua_pushnumber(L, img.height);
   return 1;
 }
 
@@ -582,19 +581,17 @@ static int mt_sprite_draw(lua_State *L) {
 
 static int mt_sprite_width(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
-  const SpriteData *data = &check_asset(L, &g_app->assets, spr->sprite)->sprite;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
+  SpriteData data = check_asset(L, spr->sprite).sprite;
 
-  lua_pushnumber(L, (lua_Number)data->width);
+  lua_pushnumber(L, (lua_Number)data.width);
   return 1;
 }
 
 static int mt_sprite_height(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
-  const SpriteData *data = &check_asset(L, &g_app->assets, spr->sprite)->sprite;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
+  SpriteData data = check_asset(L, spr->sprite).sprite;
 
-  lua_pushnumber(L, (lua_Number)data->height);
+  lua_pushnumber(L, (lua_Number)data.height);
   return 1;
 }
 
@@ -608,10 +605,9 @@ static int mt_sprite_set_frame(lua_State *L) {
 
 static int mt_sprite_total_frames(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
-  const SpriteData *data = &check_asset(L, &g_app->assets, spr->sprite)->sprite;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
+  SpriteData data = check_asset(L, spr->sprite).sprite;
 
-  lua_pushinteger(L, data->frames.len);
+  lua_pushinteger(L, data.frames.len);
   return 1;
 }
 
@@ -705,20 +701,17 @@ static int open_mt_atlas(lua_State *L) {
 // mt_tilemap
 
 static int mt_tilemap_draw(lua_State *L) {
-  const Tilemap *tm = &check_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
-
-  draw_tilemap(&g_app->renderer, tm);
+  Tilemap tm = check_asset_mt(L, 1, "mt_tilemap").tilemap;
+  draw_tilemap(&g_app->renderer, &tm);
   return 0;
 }
 
 static int mt_tilemap_entities(lua_State *L) {
-  const Tilemap *tm = &check_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
-  defer(cute_read_unlock(&g_app->assets.rw_lock));
+  Tilemap tm = check_asset_mt(L, 1, "mt_tilemap").tilemap;
 
   u64 entities = 0;
-  for (const TilemapLevel &level : tm->levels) {
-    for (const TilemapLayer &layer : level.layers) {
+  for (TilemapLevel &level : tm.levels) {
+    for (TilemapLayer &layer : level.layers) {
       entities += layer.entities.len;
     }
   }
@@ -726,9 +719,9 @@ static int mt_tilemap_entities(lua_State *L) {
   lua_createtable(L, (i32)entities, 0);
 
   i32 i = 1;
-  for (const TilemapLevel &level : tm->levels) {
-    for (const TilemapLayer &layer : level.layers) {
-      for (const TilemapEntity &entity : layer.entities) {
+  for (TilemapLevel &level : tm.levels) {
+    for (TilemapLayer &layer : level.layers) {
+      for (TilemapEntity &entity : layer.entities) {
         lua_createtable(L, 0, 3);
 
         luax_set_field(L, "id", entity.identifier.data);
@@ -745,6 +738,9 @@ static int mt_tilemap_entities(lua_State *L) {
 }
 
 static int mt_tilemap_make_collision(lua_State *L) {
+  Asset asset = check_asset_mt(L, 1, "mt_tilemap");
+  defer(asset_write(asset));
+
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
 
@@ -759,21 +755,17 @@ static int mt_tilemap_make_collision(lua_State *L) {
     lua_pop(L, 1);
   }
 
-  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
-  defer(cute_write_unlock(&g_app->assets.rw_lock));
-
-  tilemap_make_collision(tm, physics->world, physics->meter, name, walls);
+  tilemap_make_collision(&asset.tilemap, physics->world, physics->meter, name,
+                         walls);
   return 0;
 }
 
 static int mt_tilemap_draw_fixtures(lua_State *L) {
+  Tilemap tm = check_asset_mt(L, 1, "mt_tilemap").tilemap;
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
 
-  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
-  defer(cute_write_unlock(&g_app->assets.rw_lock));
-
-  b2Body **body = hashmap_get(&tm->bodies, fnv1a(name));
+  b2Body **body = hashmap_get(&tm.bodies, fnv1a(name));
   if (body != nullptr) {
     draw_fixtures_for_body(*body, physics->meter);
   }
@@ -782,6 +774,9 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
 }
 
 static int mt_tilemap_make_graph(lua_State *L) {
+  Asset asset = check_asset_mt(L, 1, "mt_tilemap");
+  defer(asset_write(asset));
+
   String name = luax_check_string(L, 2);
   i32 bloom = (i32)luaL_optnumber(L, 4, 1);
 
@@ -804,15 +799,16 @@ static int mt_tilemap_make_graph(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
-  defer(cute_write_unlock(&g_app->assets.rw_lock));
-
-  tilemap_make_graph(tm, bloom, name, costs);
-
+  tilemap_make_graph(&asset.tilemap, bloom, name, costs);
   return 0;
 }
 
 static int mt_tilemap_astar(lua_State *L) {
+  PROFILE_FUNC();
+
+  Asset asset = check_asset_mt(L, 1, "mt_tilemap");
+  defer(asset_write(asset));
+
   lua_Number sx = luaL_checknumber(L, 2);
   lua_Number sy = luaL_checknumber(L, 3);
   lua_Number ex = luaL_checknumber(L, 4);
@@ -826,22 +822,23 @@ static int mt_tilemap_astar(lua_State *L) {
   goal.x = (i32)ex;
   goal.y = (i32)ey;
 
-  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
-  defer(cute_write_unlock(&g_app->assets.rw_lock));
+  TileNode *end = tilemap_astar(&asset.tilemap, goal, start);
 
-  TileNode *end = tilemap_astar(tm, goal, start);
+  {
+    PROFILE_BLOCK("construct path");
 
-  lua_newtable(L);
+    lua_newtable(L);
 
-  i32 i = 1;
-  for (TileNode *n = end; n != nullptr; n = n->prev) {
-    lua_createtable(L, 0, 2);
+    i32 i = 1;
+    for (TileNode *n = end; n != nullptr; n = n->prev) {
+      lua_createtable(L, 0, 2);
 
-    luax_set_field(L, "x", n->x * tm->graph_grid_size);
-    luax_set_field(L, "y", n->y * tm->graph_grid_size);
+      luax_set_field(L, "x", n->x * asset.tilemap.graph_grid_size);
+      luax_set_field(L, "y", n->y * asset.tilemap.graph_grid_size);
 
-    lua_rawseti(L, -2, i);
-    i++;
+      lua_rawseti(L, -2, i);
+      i++;
+    }
   }
 
   return 1;
@@ -1789,16 +1786,13 @@ static int spry_default_sampler(lua_State *L) {
 static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  AssetLoad load = asset_load(&g_app->assets, AssetKind_Image, str);
-  defer(asset_load_unlock(&g_app->assets, &load));
-  if (!load.found) {
-    bool ok = image_load(&load.data->image, g_app->archive, str);
-    if (!ok) {
-      return 0;
-    }
+  Asset asset = {};
+  bool ok = asset_load(AssetKind_Image, g_app->archive, str, &asset);
+  if (!ok) {
+    return 0;
   }
 
-  luax_new_userdata(L, load.data->hash, "mt_image");
+  luax_new_userdata(L, asset.hash, "mt_image");
   return 1;
 }
 
@@ -1833,17 +1827,14 @@ static int spry_audio_load(lua_State *L) {
 static int spry_sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  AssetLoad load = asset_load(&g_app->assets, AssetKind_Sprite, str);
-  defer(asset_load_unlock(&g_app->assets, &load));
-  if (!load.found) {
-    bool ok = sprite_data_load(&load.data->sprite, g_app->archive, str);
-    if (!ok) {
-      return 0;
-    }
+  Asset asset = {};
+  bool ok = asset_load(AssetKind_Sprite, g_app->archive, str, &asset);
+  if (!ok) {
+    return 0;
   }
 
   Sprite spr = {};
-  spr.sprite = load.data->hash;
+  spr.sprite = asset.hash;
 
   luax_new_userdata(L, spr, "mt_sprite");
   return 1;
@@ -1865,16 +1856,13 @@ static int spry_atlas_load(lua_State *L) {
 static int spry_tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  AssetLoad load = asset_load(&g_app->assets, AssetKind_Tilemap, str);
-  defer(asset_load_unlock(&g_app->assets, &load));
-  if (!load.found) {
-    bool ok = tilemap_load(&load.data->tilemap, g_app->archive, str);
-    if (!ok) {
-      return 0;
-    }
+  Asset asset = {};
+  bool ok = asset_load(AssetKind_Tilemap, g_app->archive, str, &asset);
+  if (!ok) {
+    return 0;
   }
 
-  luax_new_userdata(L, load.data->hash, "mt_tilemap");
+  luax_new_userdata(L, asset.hash, "mt_tilemap");
   return 1;
 }
 
