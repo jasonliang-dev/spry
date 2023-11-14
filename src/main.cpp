@@ -700,10 +700,6 @@ static void load_all_lua_scripts(lua_State *L) {
 /* extern(app.h) */ App *g_app;
 /* extern(prelude.h) */ Allocator *g_allocator;
 
-#ifdef USE_PROFILER
-/* extern(profile.h) */ Profile g_profile;
-#endif
-
 sapp_desc sokol_main(int argc, char **argv) {
 #ifdef DEBUG
   g_allocator = new DebugAllocator();
@@ -711,13 +707,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   g_allocator = new HeapAllocator();
 #endif
 
-  os_high_timer_resolution();
-  stm_setup();
-
-#ifdef USE_PROFILER
   profile_setup();
-#endif
-
   PROFILE_FUNC();
 
   g_app = (App *)mem_alloc(sizeof(App));

@@ -10,6 +10,7 @@
 #include "json.cpp"
 #include "luax.cpp"
 #include "os.cpp"
+#include "profile.cpp"
 #include "scanner.cpp"
 #include "sprite.cpp"
 #include "strings.cpp"
