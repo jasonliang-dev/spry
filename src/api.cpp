@@ -250,23 +250,26 @@ static int open_mt_sampler(lua_State *L) {
 // mt_image
 
 static int mt_image_draw(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
-  Image img = g_app->assets[*udata].image;
-  DrawDescription dd = luax_draw_description(L, 2);
+  Image img = check_asset_mt(L, &g_app->assets, "mt_image")->image;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
+
+  DrawDescription dd = draw_description_args(L, 2);
   draw_image(&g_app->renderer, &img, &dd);
   return 0;
 }
 
 static int mt_image_width(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
-  Image img = g_app->assets[*udata].image;
+  Image img = check_asset_mt(L, &g_app->assets, "mt_image")->image;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
+
   lua_pushnumber(L, img.width);
   return 1;
 }
 
 static int mt_image_height(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_image");
-  Image img = g_app->assets[*udata].image;
+  Image img = check_asset_mt(L, &g_app->assets, "mt_image")->image;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
+
   lua_pushnumber(L, img.height);
   return 1;
 }
@@ -573,7 +576,7 @@ static int mt_sprite_update(lua_State *L) {
 
 static int mt_sprite_draw(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
-  DrawDescription dd = luax_draw_description(L, 2);
+  DrawDescription dd = draw_description_args(L, 2);
 
   draw_sprite(&g_app->renderer, spr, &dd);
   return 0;
@@ -581,14 +584,18 @@ static int mt_sprite_draw(lua_State *L) {
 
 static int mt_sprite_width(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
-  SpriteData *data = &g_app->assets[spr->sprite].sprite;
+  const SpriteData *data = &check_asset(L, &g_app->assets, spr->sprite)->sprite;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
+
   lua_pushnumber(L, (lua_Number)data->width);
   return 1;
 }
 
 static int mt_sprite_height(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
-  SpriteData *data = &g_app->assets[spr->sprite].sprite;
+  const SpriteData *data = &check_asset(L, &g_app->assets, spr->sprite)->sprite;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
+
   lua_pushnumber(L, (lua_Number)data->height);
   return 1;
 }
@@ -603,8 +610,10 @@ static int mt_sprite_set_frame(lua_State *L) {
 
 static int mt_sprite_total_frames(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
-  SpriteData *sprite = &g_app->assets[spr->sprite].sprite;
-  lua_pushinteger(L, sprite->frames.len);
+  const SpriteData *data = &check_asset(L, &g_app->assets, spr->sprite)->sprite;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
+
+  lua_pushinteger(L, data->frames.len);
   return 1;
 }
 
@@ -628,7 +637,7 @@ static int open_mt_sprite(lua_State *L) {
 
 static int mt_atlas_image_draw(lua_State *L) {
   AtlasImage *atlas_img = (AtlasImage *)luaL_checkudata(L, 1, "mt_atlas_image");
-  DrawDescription dd = luax_draw_description(L, 2);
+  DrawDescription dd = draw_description_args(L, 2);
 
   dd.u0 = atlas_img->u0;
   dd.v0 = atlas_img->v0;
@@ -698,19 +707,20 @@ static int open_mt_atlas(lua_State *L) {
 // mt_tilemap
 
 static int mt_tilemap_draw(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
-  Tilemap *tm = &g_app->assets[*udata].tilemap;
+  const Tilemap *tm = &check_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
+
   draw_tilemap(&g_app->renderer, tm);
   return 0;
 }
 
 static int mt_tilemap_entities(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
-  Tilemap *tm = &g_app->assets[*udata].tilemap;
+  const Tilemap *tm = &check_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
+  defer(cute_read_unlock(&g_app->assets.rw_lock));
 
   u64 entities = 0;
-  for (TilemapLevel &level : tm->levels) {
-    for (TilemapLayer &layer : level.layers) {
+  for (const TilemapLevel &level : tm->levels) {
+    for (const TilemapLayer &layer : level.layers) {
       entities += layer.entities.len;
     }
   }
@@ -718,9 +728,9 @@ static int mt_tilemap_entities(lua_State *L) {
   lua_createtable(L, (i32)entities, 0);
 
   i32 i = 1;
-  for (TilemapLevel &level : tm->levels) {
-    for (TilemapLayer &layer : level.layers) {
-      for (TilemapEntity &entity : layer.entities) {
+  for (const TilemapLevel &level : tm->levels) {
+    for (const TilemapLayer &layer : level.layers) {
+      for (const TilemapEntity &entity : layer.entities) {
         lua_createtable(L, 0, 3);
 
         luax_set_field(L, "id", entity.identifier.data);
@@ -737,11 +747,8 @@ static int mt_tilemap_entities(lua_State *L) {
 }
 
 static int mt_tilemap_make_collision(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
-
-  Tilemap *tm = &g_app->assets[*udata].tilemap;
 
   Array<TilemapInt> walls = {};
   defer(array_trash(&walls));
@@ -754,16 +761,19 @@ static int mt_tilemap_make_collision(lua_State *L) {
     lua_pop(L, 1);
   }
 
+  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
+  defer(cute_write_unlock(&g_app->assets.rw_lock));
+
   tilemap_make_collision(tm, physics->world, physics->meter, name, walls);
   return 0;
 }
 
 static int mt_tilemap_draw_fixtures(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
 
-  Tilemap *tm = &g_app->assets[*udata].tilemap;
+  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
+  defer(cute_write_unlock(&g_app->assets.rw_lock));
 
   b2Body **body = hashmap_get(&tm->bodies, fnv1a(name));
   if (body != nullptr) {
@@ -774,11 +784,8 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
 }
 
 static int mt_tilemap_make_graph(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   String name = luax_check_string(L, 2);
   i32 bloom = (i32)luaL_optnumber(L, 4, 1);
-
-  Tilemap *tm = &g_app->assets[*udata].tilemap;
 
   Array<TileCost> costs = {};
   defer(array_trash(&costs));
@@ -799,19 +806,19 @@ static int mt_tilemap_make_graph(lua_State *L) {
   }
   lua_pop(L, 1);
 
+  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
+  defer(cute_write_unlock(&g_app->assets.rw_lock));
+
   tilemap_make_graph(tm, bloom, name, costs);
 
   return 0;
 }
 
 static int mt_tilemap_astar(lua_State *L) {
-  u64 *udata = (u64 *)luaL_checkudata(L, 1, "mt_tilemap");
   lua_Number sx = luaL_checknumber(L, 2);
   lua_Number sy = luaL_checknumber(L, 3);
   lua_Number ex = luaL_checknumber(L, 4);
   lua_Number ey = luaL_checknumber(L, 5);
-
-  Tilemap *tm = &g_app->assets[*udata].tilemap;
 
   TilePoint start = {};
   start.x = (i32)sx;
@@ -820,6 +827,9 @@ static int mt_tilemap_astar(lua_State *L) {
   TilePoint goal = {};
   goal.x = (i32)ex;
   goal.y = (i32)ey;
+
+  Tilemap *tm = &write_asset_mt(L, &g_app->assets, "mt_tilemap")->tilemap;
+  defer(cute_write_unlock(&g_app->assets.rw_lock));
 
   TileNode *end = tilemap_astar(tm, goal, start);
 
@@ -1687,10 +1697,9 @@ static int spry_pop_color(lua_State *L) {
 }
 
 static int spry_default_font(lua_State *L) {
-  if (!g_app->default_font_loaded) {
+  if (g_app->default_font == nullptr) {
     g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
     font_load_default(g_app->default_font);
-    g_app->default_font_loaded = true;
   }
 
   luax_ptr_userdata(L, g_app->default_font, "mt_font");
@@ -1698,13 +1707,13 @@ static int spry_default_font(lua_State *L) {
 }
 
 static int spry_draw_filled_rect(lua_State *L) {
-  RectDescription rd = luax_rect_description(L, 1);
+  RectDescription rd = rect_description_args(L, 1);
   draw_filled_rect(&g_app->renderer, &rd);
   return 0;
 }
 
 static int spry_draw_line_rect(lua_State *L) {
-  RectDescription rd = luax_rect_description(L, 1);
+  RectDescription rd = rect_description_args(L, 1);
   draw_line_rect(&g_app->renderer, &rd);
   return 0;
 }
@@ -1782,16 +1791,16 @@ static int spry_default_sampler(lua_State *L) {
 static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Asset *asset = nullptr;
-  bool loaded = get_asset(&g_app->assets, AssetKind_Image, str, &asset);
-  if (!loaded) {
-    bool ok = image_load(&asset->image, g_app->archive, str);
+  AssetLoad load = asset_load(&g_app->assets, AssetKind_Image, str);
+  defer(asset_load_unlock(&g_app->assets, &load));
+  if (!load.found) {
+    bool ok = image_load(&load.data->image, g_app->archive, str);
     if (!ok) {
       return 0;
     }
   }
 
-  luax_new_userdata(L, asset->hash, "mt_image");
+  luax_new_userdata(L, load.data->hash, "mt_image");
   return 1;
 }
 
@@ -1826,17 +1835,17 @@ static int spry_audio_load(lua_State *L) {
 static int spry_sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Asset *asset = nullptr;
-  bool loaded = get_asset(&g_app->assets, AssetKind_Sprite, str, &asset);
-  if (!loaded) {
-    bool ok = sprite_data_load(&asset->sprite, g_app->archive, str);
+  AssetLoad load = asset_load(&g_app->assets, AssetKind_Sprite, str);
+  defer(asset_load_unlock(&g_app->assets, &load));
+  if (!load.found) {
+    bool ok = sprite_data_load(&load.data->sprite, g_app->archive, str);
     if (!ok) {
       return 0;
     }
   }
 
   Sprite spr = {};
-  spr.sprite = asset->hash;
+  spr.sprite = load.data->hash;
 
   luax_new_userdata(L, spr, "mt_sprite");
   return 1;
@@ -1858,16 +1867,16 @@ static int spry_atlas_load(lua_State *L) {
 static int spry_tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Asset *asset = nullptr;
-  bool loaded = get_asset(&g_app->assets, AssetKind_Tilemap, str, &asset);
-  if (!loaded) {
-    bool ok = tilemap_load(&asset->tilemap, g_app->archive, str);
+  AssetLoad load = asset_load(&g_app->assets, AssetKind_Tilemap, str);
+  defer(asset_load_unlock(&g_app->assets, &load));
+  if (!load.found) {
+    bool ok = tilemap_load(&load.data->tilemap, g_app->archive, str);
     if (!ok) {
       return 0;
     }
   }
 
-  luax_new_userdata(L, asset->hash, "mt_tilemap");
+  luax_new_userdata(L, load.data->hash, "mt_tilemap");
   return 1;
 }
 

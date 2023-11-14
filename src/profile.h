@@ -20,16 +20,16 @@
 struct TraceEvent {
   const char *cat;
   const char *name;
-  u64 start;
-  u64 end;
+  char ph;
+  u64 ts;
   i32 tid;
 };
 
 struct Profile {
   cute_semaphore_t send;
-  cute_mutex_t mtx;
   cute_thread_t *recv_thread;
 
+  cute_mutex_t mtx;
   Queue<TraceEvent> events;
 };
 
@@ -52,16 +52,17 @@ inline i32 profile_recv_thread(void *) {
     }
 
     TraceEvent e = {};
-    cute_lock(&g_profile.mtx);
-    queue_pop(&g_profile.events, &e);
-    cute_unlock(&g_profile.mtx);
+    {
+      cute_lock(&g_profile.mtx);
+      queue_pop(&g_profile.events, &e);
+      cute_unlock(&g_profile.mtx);
+    }
 
     fprintf(
         f,
-        R"({"name":"%s","cat":"%s","ph":"X","ts":%.3f,"dur":%.3f,"pid":0,"tid":%d},)"
+        R"({"name":"%s","cat":"%s","ph":"%c","ts":%.3f,"pid":0,"tid":%d},)"
         "\n",
-        e.name, e.cat, stm_us(e.start), stm_us(stm_diff(e.end, e.start)),
-        e.tid);
+        e.name, e.cat, e.ph, stm_us(e.ts), e.tid);
   }
 }
 
@@ -85,30 +86,40 @@ inline void profile_shutdown() {
   queue_trash(&g_profile.events);
 }
 
+inline void profile_send(TraceEvent e) {
+  cute_lock(&g_profile.mtx);
+  queue_push(&g_profile.events, e);
+  cute_unlock(&g_profile.mtx);
+
+  cute_semaphore_post(&g_profile.send);
+}
+
 struct Instrument {
   const char *cat;
   const char *name;
-  u64 start;
+  i32 tid;
 
   Instrument(const char *cat, const char *name)
-      : cat(cat), name(name), start(stm_now()) {}
-
-  ~Instrument() {
-    i32 tid = os_thread_id();
-    u64 end = stm_now();
-
+      : cat(cat), name(name), tid(os_thread_id()) {
     TraceEvent e = {};
     e.cat = cat;
     e.name = name;
-    e.start = start;
-    e.end = end;
+    e.ph = 'B';
+    e.ts = stm_now();
     e.tid = tid;
 
-    cute_lock(&g_profile.mtx);
-    queue_push(&g_profile.events, e);
-    cute_unlock(&g_profile.mtx);
+    profile_send(e);
+  }
 
-    cute_semaphore_post(&g_profile.send);
+  ~Instrument() {
+    TraceEvent e = {};
+    e.cat = cat;
+    e.name = name;
+    e.ph = 'E';
+    e.ts = stm_now();
+    e.tid = tid;
+
+    profile_send(e);
   }
 };
 

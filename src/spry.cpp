@@ -1,8 +1,7 @@
-#include "app.h"
-
 #include "api.cpp"
 #include "archive.cpp"
 #include "arena.cpp"
+#include "assets.cpp"
 #include "atlas.cpp"
 #include "audio.cpp"
 #include "draw.cpp"

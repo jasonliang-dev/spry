@@ -14,6 +14,11 @@ template <typename T> struct Slice {
     assert(i >= 0 && i < len);
     return data[i];
   }
+
+  const T &operator[](size_t i) const {
+    assert(i >= 0 && i < len);
+    return data[i];
+  }
 };
 
 template <typename T>
@@ -34,5 +39,7 @@ template <typename T> u64 slice_resize(Slice<T> *s, Arena *arena, u64 len) {
   return len;
 }
 
-template <typename T> T *begin(const Slice<T> &s) { return s.data; }
-template <typename T> T *end(const Slice<T> &s) { return &s.data[s.len]; }
+template <typename T> T *begin(Slice<T> &s) { return s.data; }
+template <typename T> T *end(Slice<T> &s) { return &s.data[s.len]; }
+template <typename T> const T *begin(const Slice<T> &s) { return s.data; }
+template <typename T> const T *end(const Slice<T> &s) { return &s.data[s.len]; }

@@ -114,47 +114,6 @@ String luax_opt_string(lua_State *L, i32 arg, String def) {
   return lua_isstring(L, arg) ? luax_check_string(L, arg) : def;
 }
 
-DrawDescription luax_draw_description(lua_State *L, i32 arg_start) {
-  DrawDescription dd;
-
-  dd.x = (float)luaL_optnumber(L, arg_start + 0, 0);
-  dd.y = (float)luaL_optnumber(L, arg_start + 1, 0);
-
-  dd.rotation = (float)luaL_optnumber(L, arg_start + 2, 0);
-
-  dd.sx = (float)luaL_optnumber(L, arg_start + 3, 1);
-  dd.sy = (float)luaL_optnumber(L, arg_start + 4, 1);
-
-  dd.ox = (float)luaL_optnumber(L, arg_start + 5, 0);
-  dd.oy = (float)luaL_optnumber(L, arg_start + 6, 0);
-
-  dd.u0 = (float)luaL_optnumber(L, arg_start + 7, 0);
-  dd.v0 = (float)luaL_optnumber(L, arg_start + 8, 0);
-  dd.u1 = (float)luaL_optnumber(L, arg_start + 9, 1);
-  dd.v1 = (float)luaL_optnumber(L, arg_start + 10, 1);
-
-  return dd;
-}
-
-RectDescription luax_rect_description(lua_State *L, i32 arg_start) {
-  RectDescription rd;
-
-  rd.x = (float)luaL_optnumber(L, arg_start + 0, 0);
-  rd.y = (float)luaL_optnumber(L, arg_start + 1, 0);
-  rd.w = (float)luaL_optnumber(L, arg_start + 2, 0);
-  rd.h = (float)luaL_optnumber(L, arg_start + 3, 0);
-
-  rd.rotation = (float)luaL_optnumber(L, arg_start + 4, 0);
-
-  rd.sx = (float)luaL_optnumber(L, arg_start + 5, 1);
-  rd.sy = (float)luaL_optnumber(L, arg_start + 6, 1);
-
-  rd.ox = (float)luaL_optnumber(L, arg_start + 7, 0);
-  rd.oy = (float)luaL_optnumber(L, arg_start + 8, 0);
-
-  return rd;
-}
-
 int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
                        String needle) {
   StringBuilder sb = string_builder_make();

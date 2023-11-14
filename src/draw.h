@@ -1,6 +1,7 @@
 #pragma once
 
 #include "algebra.h"
+#include "deps/lua/lua.h"
 #include "font.h"
 #include "image.h"
 #include "sprite.h"
@@ -71,8 +72,11 @@ void draw_image(Renderer2D *ren, Image *img, DrawDescription *desc);
 void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc);
 void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
                String text);
-void draw_tilemap(Renderer2D *ren, Tilemap *tm);
+void draw_tilemap(Renderer2D *ren, const Tilemap *tm);
 void draw_filled_rect(Renderer2D *ren, RectDescription *desc);
 void draw_line_rect(Renderer2D *ren, RectDescription *desc);
 void draw_line_circle(Renderer2D *ren, float x, float y, float radius);
 void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1);
+
+DrawDescription draw_description_args(lua_State *L, i32 arg_start);
+RectDescription rect_description_args(lua_State *L, i32 arg_start);

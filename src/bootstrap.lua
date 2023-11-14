@@ -602,7 +602,9 @@ function require(name)
   end
 
   local ret = spry._require_lua_script(path)
-  return table.unpack(ret)
+  if ret ~= nil then
+    return table.unpack(ret)
+  end
 end
 
 --)lua"--"

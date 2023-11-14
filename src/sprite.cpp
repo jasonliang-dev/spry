@@ -114,6 +114,7 @@ bool sprite_play(Sprite *spr, String tag) {
 void sprite_update(Sprite *spr, float dt) {
   SpriteView view = {};
   bool ok = sprite_view(&view, spr);
+  defer(sprite_view_unlock());
   if (!ok) {
     return;
   }
@@ -136,6 +137,7 @@ void sprite_update(Sprite *spr, float dt) {
 void sprite_set_frame(Sprite *spr, i32 frame) {
   SpriteView view = {};
   bool ok = sprite_view(&view, spr);
+  defer(sprite_view_unlock());
   if (!ok) {
     return;
   }
@@ -147,7 +149,14 @@ void sprite_set_frame(Sprite *spr, i32 frame) {
 }
 
 bool sprite_view(SpriteView *out, Sprite *spr) {
-  SpriteData *data = &g_app->assets[spr->sprite].sprite;
+  cute_read_lock(&g_app->assets.rw_lock);
+  const Asset *a = hashmap_get(&g_app->assets.table, spr->sprite);
+
+  if (a == nullptr) {
+    return false;
+  }
+
+  const SpriteData *data = &a->sprite;
   if (data == nullptr) {
     return false;
   }
@@ -161,6 +170,8 @@ bool sprite_view(SpriteView *out, Sprite *spr) {
   *out = view;
   return true;
 }
+
+void sprite_view_unlock() { cute_read_unlock(&g_app->assets.rw_lock); }
 
 i32 sprite_view_frame(SpriteView *view) {
   if (view->loop != nullptr) {

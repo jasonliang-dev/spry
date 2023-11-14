@@ -1,6 +1,5 @@
 #pragma once
 
-#include "audio.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "draw.h"
@@ -26,8 +25,6 @@ bool luax_boolean_field(lua_State *L, const char *key, bool fallback = false);
 
 String luax_check_string(lua_State *L, i32 arg);
 String luax_opt_string(lua_State *L, i32 arg, String def);
-DrawDescription luax_draw_description(lua_State *L, i32 arg_start);
-RectDescription luax_rect_description(lua_State *L, i32 arg_start);
 
 int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
                       String needle);

@@ -1,5 +1,6 @@
 #include "draw.h"
 #include "algebra.h"
+#include "deps/lua/lauxlib.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "prelude.h"
@@ -195,6 +196,7 @@ void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
 
   SpriteView view = {};
   ok = sprite_view(&view, spr);
+  defer(sprite_view_unlock());
   if (!ok) {
     return;
   }
@@ -255,12 +257,12 @@ void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
   }
 }
 
-void draw_tilemap(Renderer2D *ren, Tilemap *tm) {
+void draw_tilemap(Renderer2D *ren, const Tilemap *tm) {
   PROFILE_FUNC();
 
   sgl_enable_texture();
   renderer_apply_color(ren);
-  for (TilemapLevel &level : tm->levels) {
+  for (const TilemapLevel &level : tm->levels) {
     bool ok = renderer_push_matrix(ren);
     if (!ok) {
       return;
@@ -268,7 +270,7 @@ void draw_tilemap(Renderer2D *ren, Tilemap *tm) {
 
     renderer_translate(ren, level.world_x, level.world_y);
     for (i32 i = level.layers.len - 1; i >= 0; i--) {
-      TilemapLayer &layer = level.layers[i];
+      const TilemapLayer &layer = level.layers[i];
       sgl_texture({layer.image.id}, {ren->sampler});
       sgl_begin_quads();
       for (Tile tile : layer.tiles) {
@@ -379,4 +381,45 @@ void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1) {
   renderer_push_xy(ren, x1, y1);
 
   sgl_end();
+}
+
+DrawDescription draw_description_args(lua_State *L, i32 arg_start) {
+  DrawDescription dd;
+
+  dd.x = (float)luaL_optnumber(L, arg_start + 0, 0);
+  dd.y = (float)luaL_optnumber(L, arg_start + 1, 0);
+
+  dd.rotation = (float)luaL_optnumber(L, arg_start + 2, 0);
+
+  dd.sx = (float)luaL_optnumber(L, arg_start + 3, 1);
+  dd.sy = (float)luaL_optnumber(L, arg_start + 4, 1);
+
+  dd.ox = (float)luaL_optnumber(L, arg_start + 5, 0);
+  dd.oy = (float)luaL_optnumber(L, arg_start + 6, 0);
+
+  dd.u0 = (float)luaL_optnumber(L, arg_start + 7, 0);
+  dd.v0 = (float)luaL_optnumber(L, arg_start + 8, 0);
+  dd.u1 = (float)luaL_optnumber(L, arg_start + 9, 1);
+  dd.v1 = (float)luaL_optnumber(L, arg_start + 10, 1);
+
+  return dd;
+}
+
+RectDescription rect_description_args(lua_State *L, i32 arg_start) {
+  RectDescription rd;
+
+  rd.x = (float)luaL_optnumber(L, arg_start + 0, 0);
+  rd.y = (float)luaL_optnumber(L, arg_start + 1, 0);
+  rd.w = (float)luaL_optnumber(L, arg_start + 2, 0);
+  rd.h = (float)luaL_optnumber(L, arg_start + 3, 0);
+
+  rd.rotation = (float)luaL_optnumber(L, arg_start + 4, 0);
+
+  rd.sx = (float)luaL_optnumber(L, arg_start + 5, 1);
+  rd.sy = (float)luaL_optnumber(L, arg_start + 6, 1);
+
+  rd.ox = (float)luaL_optnumber(L, arg_start + 7, 0);
+  rd.oy = (float)luaL_optnumber(L, arg_start + 8, 0);
+
+  return rd;
 }

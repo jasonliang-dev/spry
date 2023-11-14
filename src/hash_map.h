@@ -25,7 +25,7 @@ template <typename T> void hashmap_trash(HashMap<T> *map) {
   mem_free(map->kinds);
 }
 
-template <typename T> u64 hashmap_find_entry(HashMap<T> *map, u64 key) {
+template <typename T> u64 hashmap_find_entry(const HashMap<T> *map, u64 key) {
   u64 index = key & (map->capacity - 1);
   u64 tombstone = (u64)-1;
   while (true) {
@@ -100,7 +100,7 @@ template <typename T> void hashmap_reserve(HashMap<T> *old, u64 capacity) {
   hashmap_real_reserve(old, capacity);
 }
 
-template <typename T> T *hashmap_get(HashMap<T> *map, u64 key) {
+template <typename T> T *hashmap_get(const HashMap<T> *map, u64 key) {
   if (map->load == 0) {
     return nullptr;
   }
