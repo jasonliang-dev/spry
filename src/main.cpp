@@ -28,9 +28,11 @@
 #endif
 
 static void fatal_error(String str) {
-  g_app->fatal_error = to_cstr(str);
-  fprintf(stderr, "%s\n", g_app->fatal_error.data);
-  g_app->error_mode = true;
+  if (!g_app->error_mode) {
+    g_app->fatal_error = to_cstr(str);
+    fprintf(stderr, "%s\n", g_app->fatal_error.data);
+    g_app->error_mode = true;
+  }
 }
 
 FORMAT_ARGS(1)
@@ -357,34 +359,27 @@ static void frame() {
       draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
                 g_app->traceback);
     }
-  }
+  } else {
+    lua_State *L = g_app->L;
+    lua_getglobal(L, "spry");
 
-  lua_State *L = g_app->L;
-  lua_getglobal(L, "spry");
-
-  if (!g_app->error_mode) {
     lua_getfield(L, -1, "_timer_update");
     lua_pushnumber(L, g_app->time.delta);
     if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
       lua_pop(L, 1);
     }
-  }
 
-  {
-    PROFILE_BLOCK("spry.frame");
+    {
+      PROFILE_BLOCK("spry.frame");
 
-    if (!g_app->error_mode) {
       lua_getfield(L, -1, "frame");
       lua_pushnumber(L, g_app->time.delta);
       if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
         lua_pop(L, 1);
       }
     }
-  }
 
-  lua_pop(L, 1);
-
-  if (!g_app->error_mode) {
+    lua_pop(L, 1);
     assert(lua_gettop(L) == 1);
   }
 
