@@ -8,23 +8,24 @@ Some random text.
   - If compiled online, how in the name of heck would I do this?
   - If compiled offline, just use `sokol-shdc`? But how would uniforms work?
 - Networking
-  - HTTP? UDP with enet?
+  - HTTP? UDP with enet? LuaSocket?
+- MobDebug (requires LuaSocket)
 - UI
 
-## `defer`
+## `defer` and RAII
 
 See https://www.gingerbill.org/article/2015/08/19/defer-in-cpp/.
 
 Spry's C++ code reads more like C than modern C++. One of the C++ features I
-ignore is RAII.
+(mostly) ignore is RAII.
 
-I don't want to write:
+I don't want to write a:
 
-- A constructor
-- A copy constructor
-- A copy assignment operator overload
-- A move constructor
-- A move assignment operator overload
+- constructor
+- copy constructor
+- copy assignment operator
+- move constructor
+- move assignment operator
 
 ... for each type.
 
@@ -38,19 +39,36 @@ Sometimes I want to just forget about a buffer I allocated when the scope
 exits, and sometimes I don't! `defer` makes destruction obvious, and I like
 that.
 
-The one exception to this is `Instrument` in `profile.h`. It uses its
-constructor and destructor to write trace events.
+There's a few types that use destructors, but not directly. Instead these
+types are used through macros:
+
+- The macro `defer` uses `Defer` (`prelude.h`), which runs a lambda function
+  in its destructor.
+- The macros `PROFILE_FUNC` and `PROFILE_BLOCK` uses `Instrument`
+  (`profile.h`), which produces trace events in its constructor and destructor.
+
+## Dynamic dispatch
+
+I don't often use classes nor member functions in C++, but there's two places
+where this isn't true:
+
+- `Allocator` in `prelude.h`
+- `FileSystem` in `vfs.cpp`
+
+The rationale for doing this is that I wanted vtables for these types. I found
+vtables hard to read when written in the way you would write them in C. Both
+`Allocator` and `FileSystem` are abstract base types, consisting of only pure
+virtual functions.
 
 ## Memory
 
 - General allocation with malloc/free
 - Debug allocation through doubly linked list
 - Arena allocation with 4kb (or larger) chunks in singly linked list
-  - Types that use arenas:
-    - Sprites use it for arrays
-    - JSON parser uses it for arrays/objects (except JSONArray is actually a
-      linked list)
-    - Tilemap uses it for arrays and strings
+  - Sprites use it for arrays
+  - JSON parser uses it for arrays/objects (except JSONArray is actually a
+    linked list)
+  - Tilemap uses it for arrays and strings
 
 ## Data structures
 
@@ -61,15 +79,16 @@ constructor and destructor to write trace events.
 - Dynamic array
 - Open addressing hash map
 - Min heap priority queue
-- Queue backed by a ring buffer
+- Unbounded queue backed by a ring buffer
 
 STL exists, yes, but I would like to compile my program in a reasonable time
 please. Also, the STL containers hits debug performance pretty hard.
 
 ## Algorithms
 
-- JSON parsing (recursive descent)
-- A\* pathfinding
+- `profile.cpp` - Producer/consumer with unbounded queue
+- `json.cpp` -  recursive descent parsing
+- `tilemap.cpp` - A\* pathfinding
 
 Since tilemaps are grids, and it's not uncommon for graph nodes to have the
 same costs for traversal, JPS is a good fit, and I'd like to put it in this
@@ -82,17 +101,16 @@ renderer in `draw.cpp` also takes advantage of SIMD.
 
 I barely know how SIMD works.
 
-## Archive
+## Virtual File System
 
-The `Archive` type acts like a virtual file system. You *could* read files
-directly (`io.open` for Lua, `fopen` for C/C++), but don't. Spry has the
-ability to load data from a zip archive, where file paths are treated as if
-they were located in a regular folder. This is also the reason why the
-`require` function in Lua was changed.
+You *could* read files directly (`io.open` for Lua, `fopen` for C/C++), but
+don't. Spry has the ability to load data from a zip archive, where file paths
+are treated as if they were located in a regular folder. This is also the
+reason why the `require` function in Lua was changed.
 
 ## Profiling
 
-For debug builds, or if `USE_PROFILER` was defined when building, a
+For debug builds, or if `USE_PROFILER` was defined during compilation, a
 `profile.json` file is produced while running the program. This file can be
 loaded in a profiler such as `chrome://tracing/` or
 https://gravitymoth.com/spall/.
@@ -104,19 +122,6 @@ sleep more accurate, call `Sleep` for a little less than the target time,
 then spin loop the rest.
 
 The better thing to do is VSync, but there's noticeable input latency.
-
-## `os_file_modtime`
-
-Hot reloading is done by comparing file modification time. This performs
-decent on Linux, but it takes about 100-200us per file on Windows with a
-mid-range Windows PC. 100 microseconds adds up fast with a decent number of
-files.
-
-~~Eventually I want to do something different.~~
-- ~~Maybe use `ReadDirectoryChangesW`?~~
-- ~~Compare mod time in a different thread?~~
-
-Update: Hot reloading is now done on a separate thread.
 
 ## Hot reloading classes
 
