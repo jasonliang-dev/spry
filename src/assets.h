@@ -15,7 +15,7 @@ enum AssetKind : i32 {
 };
 
 struct Asset {
-  char *name;
+  String name;
   u64 hash;
   u64 modtime;
   AssetKind kind;

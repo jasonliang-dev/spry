@@ -1,4 +1,9 @@
 #include "profile.h"
+#include "deps/cute_sync.h"
+#include "deps/sokol_time.h"
+#include "os.h"
+#include "queue.h"
+#include "strings.h"
 
 struct Profile {
   cute_mutex_t mtx;

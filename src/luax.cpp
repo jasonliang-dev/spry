@@ -5,7 +5,7 @@
 #include "strings.h"
 #include "profile.h"
 
-i32 require_lua_script(lua_State *L, Archive *ar, String filepath) {
+i32 luax_require_script(lua_State *L, Archive *ar, String filepath) {
   PROFILE_FUNC();
 
   if (g_app->error_mode) {

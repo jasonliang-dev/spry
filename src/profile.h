@@ -10,11 +10,7 @@ void profile_shutdown();
 #endif
 
 #ifdef USE_PROFILER
-#include "deps/cute_sync.h"
-#include "deps/sokol_time.h"
-#include "os.h"
-#include "queue.h"
-#include "strings.h"
+#include "prelude.h"
 
 struct TraceEvent {
   const char *cat;

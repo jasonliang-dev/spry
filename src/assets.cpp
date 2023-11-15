@@ -5,6 +5,7 @@
 #include "luax.h"
 #include "os.h"
 #include "profile.h"
+#include "strings.h"
 
 struct FileChange {
   u64 key;
@@ -44,7 +45,7 @@ static i32 hot_reload_thread(void *) {
       for (auto [k, v] : g_assets.table) {
         PROFILE_BLOCK("reload file asset");
 
-        u64 modtime = os_file_modtime(v->name);
+        u64 modtime = os_file_modtime(v->name.data);
         if (modtime > v->modtime) {
           FileChange change = {};
           change.key = v->hash;
@@ -60,50 +61,46 @@ static i32 hot_reload_thread(void *) {
       cute_lock(&g_app->frame_mtx);
       defer(cute_unlock(&g_app->frame_mtx));
 
-      cute_write_lock(&g_assets.rw_lock);
-      defer(cute_write_unlock(&g_assets.rw_lock));
-
       for (FileChange change : g_assets.changes) {
-        Asset *a = nullptr;
-        bool exists = hashmap_index(&g_assets.table, change.key, &a);
+        Asset a = {};
+        bool exists = asset_read(change.key, &a);
         assert(exists);
 
-        a->modtime = change.modtime;
+        a.modtime = change.modtime;
 
-        bool skip = false;
         bool ok = false;
-        switch (a->kind) {
+        switch (a.kind) {
         case AssetKind_LuaRef: {
-          luaL_unref(g_app->L, LUA_REGISTRYINDEX, a->lua_ref);
-          a->lua_ref = require_lua_script(g_app->L, g_app->archive, a->name);
+          luaL_unref(g_app->L, LUA_REGISTRYINDEX, a.lua_ref);
+          a.lua_ref = luax_require_script(g_app->L, g_app->archive, a.name);
           ok = true;
           break;
         }
         case AssetKind_Image: {
-          image_trash(&a->image);
-          ok = image_load(&a->image, g_app->archive, a->name);
+          image_trash(&a.image);
+          ok = image_load(&a.image, g_app->archive, a.name);
           break;
         }
         case AssetKind_Sprite: {
-          sprite_data_trash(&a->sprite);
-          ok = sprite_data_load(&a->sprite, g_app->archive, a->name);
+          sprite_data_trash(&a.sprite);
+          ok = sprite_data_load(&a.sprite, g_app->archive, a.name);
           break;
         }
         case AssetKind_Tilemap: {
-          tilemap_trash(&a->tilemap);
-          ok = tilemap_load(&a->tilemap, g_app->archive, a->name);
+          tilemap_trash(&a.tilemap);
+          ok = tilemap_load(&a.tilemap, g_app->archive, a.name);
           break;
         }
-        default: skip = true; break;
+        default: continue; break;
         }
 
-        if (!skip) {
-          if (!ok) {
-            fatal_error(tmp_fmt("failed to hot reload: %s", a->name));
-          } else {
-            printf("reloaded: %s\n", a->name);
-          }
+        if (!ok) {
+          fatal_error(tmp_fmt("failed to hot reload: %s", a.name.data));
+          return 0;
         }
+
+        asset_write(a);
+        printf("reloaded: %s\n", a.name.data);
       }
     }
   }
@@ -128,7 +125,7 @@ void assets_shutdown() {
   cute_rw_lock_destroy(&g_assets.rw_lock);
 
   for (auto [k, v] : g_assets.table) {
-    mem_free(v->name);
+    mem_free(v->name.data);
 
     switch (v->kind) {
     case AssetKind_Image: image_trash(&v->image); break;
@@ -151,15 +148,10 @@ bool asset_load(AssetKind kind, Archive *ar, String filepath, Asset *out) {
   u64 key = fnv1a(filepath);
 
   {
-    cute_read_lock(&g_assets.rw_lock);
-    defer(cute_read_unlock(&g_assets.rw_lock));
-
-    Asset *asset = hashmap_get(&g_assets.table, key);
-    if (asset != nullptr) {
-      assert(asset->kind == kind);
-
+    Asset asset = {};
+    if (asset_read(key, &asset)) {
       if (out != nullptr) {
-        *out = *asset;
+        *out = asset;
       }
       return true;
     }
@@ -168,45 +160,45 @@ bool asset_load(AssetKind kind, Archive *ar, String filepath, Asset *out) {
   {
     PROFILE_BLOCK("load new asset");
 
-    cute_write_lock(&g_assets.rw_lock);
-    defer(cute_write_unlock(&g_assets.rw_lock));
-
-    Asset *asset = nullptr;
-    hashmap_index(&g_assets.table, key, &asset);
-    asset->name = to_cstr(filepath).data;
-    asset->hash = key;
-    asset->modtime = os_file_modtime(asset->name);
-    asset->kind = kind;
+    Asset asset = {};
+    asset.name = to_cstr(filepath);
+    asset.hash = key;
+    asset.modtime = os_file_modtime(asset.name.data);
+    asset.kind = kind;
 
     bool ok = false;
     switch (kind) {
     case AssetKind_LuaRef: {
-      asset->lua_ref = require_lua_script(g_app->L, ar, filepath);
+      asset.lua_ref = LUA_REFNIL;
+      asset_write(asset);
+      asset.lua_ref = luax_require_script(g_app->L, ar, filepath);
       ok = true;
       break;
     }
     case AssetKind_Image: {
-      ok = image_load(&asset->image, ar, filepath);
+      ok = image_load(&asset.image, ar, filepath);
       break;
     }
     case AssetKind_Sprite: {
-      ok = sprite_data_load(&asset->sprite, ar, filepath);
+      ok = sprite_data_load(&asset.sprite, ar, filepath);
       break;
     }
     case AssetKind_Tilemap: {
-      ok = tilemap_load(&asset->tilemap, ar, filepath);
+      ok = tilemap_load(&asset.tilemap, ar, filepath);
       break;
     }
     default: break;
     }
 
     if (!ok) {
-      hashmap_unset(&g_assets.table, key);
+      mem_free(asset.name.data);
       return false;
     }
 
+    asset_write(asset);
+
     if (out != nullptr) {
-      *out = *asset;
+      *out = asset;
     }
     return true;
   }
@@ -229,14 +221,12 @@ void asset_write(Asset asset) {
   cute_write_lock(&g_assets.rw_lock);
   defer(cute_write_unlock(&g_assets.rw_lock));
 
-  Asset *dst = hashmap_get(&g_assets.table, asset.hash);
-  *dst = asset;
+  g_assets.table[asset.hash] = asset;
 }
 
 Asset check_asset(lua_State *L, u64 key) {
   Asset asset = {};
-  bool ok = asset_read(key, &asset);
-  if (!ok) {
+  if (!asset_read(key, &asset)) {
     luaL_error(L, "cannot read asset");
   }
 

@@ -322,11 +322,10 @@ static void actually_cleanup() {
     mem_free(sound);
   }
   array_trash(&g_app->garbage_sounds);
+  ma_engine_uninit(&g_app->audio_engine);
 
   assets_shutdown();
   cute_mutex_destroy(&g_app->frame_mtx);
-
-  ma_engine_uninit(&g_app->audio_engine);
 
   sgl_destroy_pipeline(g_app->pipeline);
   sgl_shutdown();
