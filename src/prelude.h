@@ -41,16 +41,24 @@ using u32 = uint32_t;
 using u64 = uint64_t;
 
 struct Allocator {
+  Allocator() = default;
+  Allocator(const Allocator &) = delete;
+  Allocator &operator=(const Allocator &) = delete;
   virtual ~Allocator() = 0;
+
   virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
   virtual void free(void *ptr) = 0;
 };
 inline Allocator::~Allocator() {}
 
-struct HeapAllocator : Allocator {
-  ~HeapAllocator() = default;
-  void *alloc(size_t bytes, const char *, i32) { return malloc(bytes); }
-  void free(void *ptr) { ::free(ptr); }
+struct HeapAllocator final : Allocator {
+  ~HeapAllocator() override = default;
+
+  void *alloc(size_t bytes, const char *, i32) override {
+    return malloc(bytes);
+  }
+
+  void free(void *ptr) override { ::free(ptr); }
 };
 
 struct DebugAllocInfo {
@@ -61,14 +69,13 @@ struct DebugAllocInfo {
   DebugAllocInfo *next;
 };
 
-struct DebugAllocator : Allocator {
+struct DebugAllocator final : Allocator {
   DebugAllocInfo *head = nullptr;
-  cute_mutex_t mtx = {};
+  cute_mutex_t mtx = cute_mutex_create();
 
-  DebugAllocator() { mtx = cute_mutex_create(); }
-  ~DebugAllocator() { cute_mutex_destroy(&mtx); }
+  ~DebugAllocator() override { cute_mutex_destroy(&mtx); }
 
-  void *alloc(size_t bytes, const char *file, i32 line) {
+  void *alloc(size_t bytes, const char *file, i32 line) override {
     cute_lock(&mtx);
     defer(cute_unlock(&mtx));
 
@@ -86,7 +93,7 @@ struct DebugAllocator : Allocator {
     return info + 1;
   }
 
-  void free(void *ptr) {
+  void free(void *ptr) override {
     if (ptr == nullptr) {
       return;
     }

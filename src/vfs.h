@@ -8,7 +8,7 @@ struct MountResult {
   bool can_hot_reload;
 };
 
-MountResult vfs_mount(int argc, char **argv);
+MountResult vfs_mount(const char *filepath);
 void vfs_trash();
 
 bool vfs_file_exists(String filepath);

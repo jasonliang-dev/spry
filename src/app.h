@@ -24,8 +24,6 @@ struct App {
   LuaAlloc *LA;
   lua_State *L;
 
-  sgl_pipeline pipeline;
-
   AppTime time;
 
   cute_atomic_int_t hot_reload_enabled;

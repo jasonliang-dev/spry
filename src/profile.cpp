@@ -1,3 +1,10 @@
+#ifndef USE_PROFILER
+void profile_setup() {}
+void profile_shutdown() {}
+#endif
+
+#ifdef USE_PROFILER
+
 #include "profile.h"
 #include "deps/cute_sync.h"
 #include "deps/sokol_time.h"
@@ -55,9 +62,6 @@ static void profile_send(TraceEvent e) {
 }
 
 void profile_setup() {
-  os_high_timer_resolution();
-  stm_setup();
-
   g_profile = {};
 
   g_profile.mtx = cute_mutex_create();
@@ -100,3 +104,5 @@ Instrument::~Instrument() {
 
   profile_send(e);
 }
+
+#endif // USE_PROFILER

@@ -21,6 +21,8 @@
 #include "strings.h"
 #include "vfs.h"
 
+static sgl_pipeline g_pipeline;
+
 FORMAT_ARGS(1)
 static void panic(const char *fmt, ...) {
   va_list args = {};
@@ -54,7 +56,7 @@ static void init() {
     sg_pipline.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
     sg_pipline.colors[0].blend.dst_factor_rgb =
         SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    g_app->pipeline = sgl_make_pipeline(sg_pipline);
+    g_pipeline = sgl_make_pipeline(sg_pipline);
   }
 
   {
@@ -191,7 +193,7 @@ static void frame() {
     sg_begin_default_pass(pass, sapp_width(), sapp_height());
 
     sgl_defaults();
-    sgl_load_pipeline(g_app->pipeline);
+    sgl_load_pipeline(g_pipeline);
 
     sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
     sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
@@ -306,7 +308,7 @@ static void actually_cleanup() {
   assets_shutdown();
   cute_mutex_destroy(&g_app->frame_mtx);
 
-  sgl_destroy_pipeline(g_app->pipeline);
+  sgl_destroy_pipeline(g_pipeline);
   sgl_shutdown();
   sg_shutdown();
 
@@ -435,8 +437,62 @@ sapp_desc sokol_main(int argc, char **argv) {
   g_allocator = new HeapAllocator();
 #endif
 
+  os_high_timer_resolution();
+  stm_setup();
+
   profile_setup();
+
   PROFILE_FUNC();
+
+  const char *mount_path = nullptr;
+  bool usage = false;
+  bool version = false;
+#ifdef DEBUG
+  bool win_console = true;
+#else
+  bool win_console = false;
+#endif
+
+#ifndef __EMSCRIPTEN__
+  for (i32 i = 1; i < argc; i++) {
+    switch (fnv1a(argv[i])) {
+    case "-h"_hash:
+    case "--help"_hash: usage = true; continue;
+    case "--console"_hash: win_console = true; continue;
+    case "-v"_hash:
+    case "--version"_hash: version = true; continue;
+    }
+
+    if (mount_path == nullptr) {
+      mount_path = argv[i];
+    } else {
+      usage = true;
+    }
+  }
+#endif
+
+  if (usage) {
+    printf(R"(usage:
+  %s [command] [--console]
+commands:
+  --help                      show this usage
+  -h
+  --version                   show spry version
+  -v
+  --console                   windows only. use console output
+  [directory or zip archive]  run the game at the given directory
+
+  [no arguments]              if fused with a zip file, run the with embedded
+                              game data.
+)",
+           os_program_path().data);
+    exit(0);
+  }
+
+  if (version) {
+    printf("%s\n", SPRY_VERSION);
+    exit(0);
+  }
 
   g_app = (App *)mem_alloc(sizeof(App));
   *g_app = {};
@@ -446,15 +502,15 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   assets_setup();
 
-  MountResult mount = vfs_mount(argc, argv);
-
-  if (!g_app->error_mode && mount.ok) {
-    asset_load(AssetKind_LuaRef, "main.lua", nullptr);
-  }
+  MountResult mount = vfs_mount(mount_path);
 
   lua_newtable(L);
 
   if (!g_app->error_mode) {
+    if (mount.ok) {
+      asset_load(AssetKind_LuaRef, "main.lua", nullptr);
+    }
+
     lua_getglobal(L, "spry");
     lua_getfield(L, -1, "conf");
     lua_remove(L, -2);
@@ -464,11 +520,7 @@ sapp_desc sokol_main(int argc, char **argv) {
     }
   }
 
-#ifdef DEBUG
-  bool win_console = luax_boolean_field(L, "win_console", true);
-#else
-  bool win_console = luax_boolean_field(L, "win_console", false);
-#endif
+  win_console = win_console || luax_boolean_field(L, "win_console", false);
 
   bool hot_reload = luax_boolean_field(L, "hot_reload", true);
   bool startup_load_scripts =

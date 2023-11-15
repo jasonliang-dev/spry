@@ -14,15 +14,11 @@
 #include <emscripten.h>
 #endif
 
-struct FileSystem {
-  virtual ~FileSystem() = 0;
-  virtual bool file_exists(String filepath) = 0;
-  virtual bool read_entire_file(String *out, String filepath) = 0;
-  virtual bool list_all_files(Array<String> *files) = 0;
-};
-FileSystem::~FileSystem() {}
-
-static FileSystem *g_filesystem;
+static u32 read4(char *bytes) {
+  u32 n;
+  memcpy(&n, bytes, 4);
+  return n;
+}
 
 static bool read_entire_file_raw(String *out, String filepath) {
   PROFILE_FUNC();
@@ -84,12 +80,33 @@ static bool list_all_files_help(Array<String> *files, String path) {
   return true;
 }
 
-struct DirectoryFileSystem : FileSystem {
-  ~DirectoryFileSystem() {}
+struct FileSystem {
+  FileSystem() = default;
+  FileSystem(const FileSystem &) = delete;
+  FileSystem &operator=(const FileSystem &) = delete;
+  virtual ~FileSystem() = 0;
 
-  bool file_exists(String filepath) {
-    PROFILE_FUNC();
+  virtual bool mount(String filepath) = 0;
+  virtual bool file_exists(String filepath) = 0;
+  virtual bool read_entire_file(String *out, String filepath) = 0;
+  virtual bool list_all_files(Array<String> *files) = 0;
+};
+FileSystem::~FileSystem() {}
 
+static FileSystem *g_filesystem;
+
+struct DirectoryFileSystem final : FileSystem {
+  ~DirectoryFileSystem() override = default;
+
+  bool mount(String filepath) override {
+    String path = to_cstr(filepath);
+    defer(mem_free(path.data));
+
+    i32 res = os_change_dir(path.data);
+    return res == 0;
+  }
+
+  bool file_exists(String filepath) override {
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
 
@@ -102,27 +119,80 @@ struct DirectoryFileSystem : FileSystem {
     return false;
   }
 
-  bool read_entire_file(String *out, String filepath) {
+  bool read_entire_file(String *out, String filepath) override {
     return read_entire_file_raw(out, filepath);
   }
 
-  bool list_all_files(Array<String> *files) {
+  bool list_all_files(Array<String> *files) override {
     return list_all_files_help(files, "");
   }
 };
 
-struct ZipFileSystem : FileSystem {
+struct ZipFileSystem final : FileSystem {
   mz_zip_archive zip = {};
   String zip_contents = {};
 
-  ~ZipFileSystem() {
+  ~ZipFileSystem() override {
     if (zip_contents.data != nullptr) {
       mz_zip_reader_end(&zip);
       mem_free(zip_contents.data);
     }
   }
 
-  bool file_exists(String filepath) {
+  bool mount(String filepath) override {
+    PROFILE_FUNC();
+
+    String contents = {};
+    bool contents_ok = read_entire_file_raw(&contents, filepath);
+    if (!contents_ok) {
+      return false;
+    }
+
+    bool success = false;
+    defer({
+      if (!success) {
+        mem_free(contents.data);
+      }
+    });
+
+    char *data = contents.data;
+    char *end = &data[contents.len];
+
+    constexpr i32 eocd_size = 22;
+    char *eocd = end - eocd_size;
+    if (read4(eocd) != 0x06054b50) {
+      fprintf(stderr, "can't find EOCD record\n");
+      return false;
+    }
+
+    u32 central_size = read4(&eocd[12]);
+    if (read4(eocd - central_size) != 0x02014b50) {
+      fprintf(stderr, "can't find central directory\n");
+      return false;
+    }
+
+    u32 central_offset = read4(&eocd[16]);
+    char *begin = eocd - central_size - central_offset;
+    u64 zip_len = end - begin;
+    if (read4(begin) != 0x04034b50) {
+      fprintf(stderr, "can't read local file header\n");
+      return false;
+    }
+
+    mz_bool zip_ok = mz_zip_reader_init_mem(&zip, begin, zip_len, 0);
+    if (!zip_ok) {
+      mz_zip_error err = mz_zip_get_last_error(&zip);
+      fprintf(stderr, "failed to read zip: %s\n", mz_zip_get_error_string(err));
+      return false;
+    }
+
+    zip_contents = contents;
+
+    success = true;
+    return true;
+  }
+
+  bool file_exists(String filepath) override {
     PROFILE_FUNC();
 
     String path = to_cstr(filepath);
@@ -142,7 +212,7 @@ struct ZipFileSystem : FileSystem {
     return true;
   }
 
-  bool read_entire_file(String *out, String filepath) {
+  bool read_entire_file(String *out, String filepath) override {
     PROFILE_FUNC();
 
     String path = to_cstr(filepath);
@@ -176,7 +246,7 @@ struct ZipFileSystem : FileSystem {
     return true;
   }
 
-  bool list_all_files(Array<String> *files) {
+  bool list_all_files(Array<String> *files) override {
     PROFILE_FUNC();
 
     for (u32 i = 0; i < mz_zip_reader_get_num_files(&zip); i++) {
@@ -193,89 +263,6 @@ struct ZipFileSystem : FileSystem {
     return true;
   }
 };
-
-static bool vfs_mount_directory(String mount) {
-  PROFILE_FUNC();
-
-  String path = to_cstr(mount);
-  defer(mem_free(path.data));
-
-  if (os_change_dir(path.data) != 0) {
-    return false;
-  }
-
-  g_filesystem = (DirectoryFileSystem *)mem_alloc(sizeof(DirectoryFileSystem));
-  new (g_filesystem) DirectoryFileSystem();
-  return true;
-}
-
-static u32 read4(char *bytes) {
-  u32 n;
-  memcpy(&n, bytes, 4);
-  return n;
-}
-
-static bool vfs_mount_zip(String mount) {
-  PROFILE_FUNC();
-
-  String contents = {};
-  bool contents_ok = read_entire_file_raw(&contents, mount);
-  if (!contents_ok) {
-    return false;
-  }
-
-  ZipFileSystem *vfs = (ZipFileSystem *)mem_alloc(sizeof(ZipFileSystem));
-  new (vfs) ZipFileSystem();
-
-  bool success = false;
-  defer({
-    if (!success) {
-      mem_free(contents.data);
-
-      if (vfs != nullptr) {
-        vfs->~ZipFileSystem();
-        mem_free(vfs);
-      }
-    }
-  });
-
-  char *data = contents.data;
-  char *end = &data[contents.len];
-
-  constexpr i32 eocd_size = 22;
-  char *eocd = end - eocd_size;
-  if (read4(eocd) != 0x06054b50) {
-    fprintf(stderr, "can't find EOCD record\n");
-    return false;
-  }
-
-  u32 central_size = read4(&eocd[12]);
-  if (read4(eocd - central_size) != 0x02014b50) {
-    fprintf(stderr, "can't find central directory\n");
-    return false;
-  }
-
-  u32 central_offset = read4(&eocd[16]);
-  char *begin = eocd - central_size - central_offset;
-  u64 zip_len = end - begin;
-  if (read4(begin) != 0x04034b50) {
-    fprintf(stderr, "can't read local file header\n");
-    return false;
-  }
-
-  mz_bool zip_ok = mz_zip_reader_init_mem(&vfs->zip, begin, zip_len, 0);
-  if (!zip_ok) {
-    mz_zip_error err = mz_zip_get_last_error(&vfs->zip);
-    fprintf(stderr, "failed to read zip: %s\n", mz_zip_get_error_string(err));
-    return false;
-  }
-
-  vfs->zip_contents = contents;
-
-  g_filesystem = vfs;
-  success = true;
-  return true;
-}
 
 #ifdef __EMSCRIPTEN__
 EM_JS(char *, web_mount_dir, (), { return stringToNewUTF8(spryMount); });
@@ -336,7 +323,22 @@ EM_ASYNC_JS(void, web_load_files, (), {
 });
 #endif
 
-MountResult vfs_mount(int argc, char **argv) {
+template <typename T> static bool vfs_mount_type(String mount) {
+  void *ptr = mem_alloc(sizeof(T));
+  T *vfs = new (ptr) T();
+
+  bool ok = vfs->mount(mount);
+  if (!ok) {
+    vfs->~T();
+    mem_free(vfs);
+    return false;
+  }
+
+  g_filesystem = vfs;
+  return true;
+}
+
+MountResult vfs_mount(const char *filepath) {
   PROFILE_FUNC();
 
   MountResult res = {};
@@ -347,35 +349,35 @@ MountResult vfs_mount(int argc, char **argv) {
 
   if (ends_with(mount_dir, ".zip")) {
     web_load_zip();
-    res.ok = vfs_mount_zip(mount_dir);
+    res.ok = vfs_mount_type<ZipFileSystem>(mount_dir);
   } else {
     web_load_files();
-    res.ok = vfs_mount_directory(mount_dir);
+    res.ok = vfs_mount_type<DirectoryFileSystem>(mount_dir);
   }
 
 #else
-  if (argc == 1) {
+  if (filepath == nullptr) {
     String path = os_program_path();
 
 #ifdef DEBUG
     printf("program path: %s\n", path.data);
 #endif
 
-    res.ok = vfs_mount_zip(path);
-  } else if (argc == 2) {
-    String mount_dir = argv[1];
+    res.ok = vfs_mount_type<DirectoryFileSystem>(path);
+  } else {
+    String mount_dir = filepath;
 
     if (ends_with(mount_dir, ".zip")) {
-      res.ok = vfs_mount_zip(mount_dir);
+      res.ok = vfs_mount_type<ZipFileSystem>(mount_dir);
     } else {
-      res.ok = vfs_mount_directory(mount_dir);
-      res.can_hot_reload = true;
+      res.ok = vfs_mount_type<DirectoryFileSystem>(mount_dir);
+      res.can_hot_reload = res.ok;
     }
   }
 #endif
 
-  if (argc == 2 && !res.ok) {
-    fatal_error(tmp_fmt("failed to load: %s", argv[1]));
+  if (filepath != nullptr && !res.ok) {
+    fatal_error(tmp_fmt("failed to load: %s", filepath));
   }
 
   return res;
