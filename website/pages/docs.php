@@ -107,6 +107,12 @@ $api_reference = [
     ],
   ],
   "Core" => [
+    "spry.version" => [
+      "desc" => "Get the version of Spry.",
+      "example" => "print(spry.version())",
+      "args" => [],
+      "return" => "string",
+    ],
     "spry.quit" => [
       "desc" => "Exit the program.",
       "example" => "

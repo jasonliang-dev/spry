@@ -2,8 +2,8 @@
 
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
-#include "draw.h"
 #include "prelude.h"
+#include "archive.h"
 #include <initializer_list>
 
 i32 luax_require_script(lua_State *L, Archive *ar, String filepath);

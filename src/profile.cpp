@@ -46,7 +46,7 @@ static i32 profile_recv_thread(void *) {
   }
 }
 
-void profile_send(TraceEvent e) {
+static void profile_send(TraceEvent e) {
   cute_lock(&g_profile.mtx);
   queue_push(&g_profile.events, e);
   cute_unlock(&g_profile.mtx);

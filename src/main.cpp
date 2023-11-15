@@ -15,14 +15,11 @@
 #include "deps/sokol_time.h"
 #include "draw.h"
 #include "font.h"
-#include "image.h"
 #include "luax.h"
 #include "os.h"
 #include "prelude.h"
 #include "profile.h"
-#include "sprite.h"
 #include "strings.h"
-#include "tilemap.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -40,16 +37,6 @@ static void panic(const char *fmt, ...) {
   exit(1);
 }
 
-static void *sokol_alloc(size_t size, void *) {
-  size_t bytes = size;
-  return mem_alloc(bytes);
-}
-
-static void sokol_free(void *ptr, void *) {
-  void *mem = ptr;
-  mem_free(mem);
-}
-
 static void init() {
   PROFILE_FUNC();
 
@@ -59,14 +46,10 @@ static void init() {
     sg_desc sg = {};
     sg.logger.func = slog_func;
     sg.context = sapp_sgcontext();
-    sg.allocator.alloc_fn = sokol_alloc;
-    sg.allocator.free_fn = sokol_free;
     sg_setup(sg);
 
     sgl_desc_t sgl = {};
     sgl.logger.func = slog_func;
-    sgl.allocator.alloc_fn = sokol_alloc;
-    sgl.allocator.free_fn = sokol_free;
     sgl_setup(sgl);
 
     sg_pipeline_desc sg_pipline = {};
@@ -631,8 +614,6 @@ sapp_desc sokol_main(int argc, char **argv) {
   sapp.logger.func = slog_func;
   sapp.swap_interval = (i32)swap_interval;
   sapp.fullscreen = fullscreen;
-  sapp.allocator.alloc_fn = sokol_alloc;
-  sapp.allocator.free_fn = sokol_free;
 
 #ifdef __EMSCRIPTEN__
   sapp.gl_force_gles2 = true;

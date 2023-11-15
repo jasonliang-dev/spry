@@ -1368,6 +1368,11 @@ static int open_mt_b2_world(lua_State *L) {
 
 // spry api
 
+static int spry_version(lua_State *L) {
+  lua_pushstring(L, SPRY_VERSION);
+  return 1;
+}
+
 static int spry_quit(lua_State *L) {
   (void)L;
   sapp_request_quit();
@@ -1889,6 +1894,7 @@ static int spry_b2_world(lua_State *L) {
 static int open_spry(lua_State *L) {
   luaL_Reg reg[] = {
       // core
+      {"version", spry_version},
       {"quit", spry_quit},
       {"platform", spry_platform},
       {"dt", spry_dt},
