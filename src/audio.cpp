@@ -1,12 +1,13 @@
 #include "audio.h"
 #include "app.h"
 #include "profile.h"
+#include "vfs.h"
 
-bool audio_load(Audio *audio, Archive *ar, String filepath) {
+bool audio_load(Audio *audio, String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
-  bool ok = ar->read_entire_file(&contents, filepath);
+  bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "archive.h"
+#include "prelude.h"
 
 struct Image {
   u32 id;
@@ -8,5 +8,5 @@ struct Image {
   i32 height;
 };
 
-bool image_load(Image *image, Archive *ar, String filepath);
+bool image_load(Image *image, String filepath);
 void image_trash(Image *image);

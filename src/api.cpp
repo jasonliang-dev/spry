@@ -1792,7 +1792,7 @@ static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_Image, g_app->archive, str, &asset);
+  bool ok = asset_load(AssetKind_Image, str, &asset);
   if (!ok) {
     return 0;
   }
@@ -1805,7 +1805,7 @@ static int spry_font_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   FontFamily *font = (FontFamily *)mem_alloc(sizeof(FontFamily));
-  bool ok = font_load(font, g_app->archive, str);
+  bool ok = font_load(font, str);
   if (!ok) {
     mem_free(font);
     return 0;
@@ -1819,7 +1819,7 @@ static int spry_audio_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Audio *audio = (Audio *)mem_alloc(sizeof(Audio));
-  bool ok = audio_load(audio, g_app->archive, str);
+  bool ok = audio_load(audio, str);
   if (!ok) {
     mem_free(audio);
     return 0;
@@ -1833,7 +1833,7 @@ static int spry_sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_Sprite, g_app->archive, str, &asset);
+  bool ok = asset_load(AssetKind_Sprite, str, &asset);
   if (!ok) {
     return 0;
   }
@@ -1849,7 +1849,7 @@ static int spry_atlas_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Atlas atlas = {};
-  bool ok = atlas_load(&atlas, g_app->archive, str);
+  bool ok = atlas_load(&atlas, str);
   if (!ok) {
     return 0;
   }
@@ -1862,7 +1862,7 @@ static int spry_tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_Tilemap, g_app->archive, str, &asset);
+  bool ok = asset_load(AssetKind_Tilemap, str, &asset);
   if (!ok) {
     return 0;
   }

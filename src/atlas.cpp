@@ -2,12 +2,13 @@
 #include "profile.h"
 #include "scanner.h"
 #include "strings.h"
+#include "vfs.h"
 
-bool atlas_load(Atlas *atlas, Archive *ar, String filepath) {
+bool atlas_load(Atlas *atlas, String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
-  bool ok = ar->read_entire_file(&contents, filepath);
+  bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }
@@ -28,7 +29,7 @@ bool atlas_load(Atlas *atlas, Archive *ar, String filepath) {
 
       string_builder_swap_filename(&sb, filepath, filename);
 
-      bool ok = image_load(&img, ar, string_builder_as_string(&sb));
+      bool ok = image_load(&img, string_builder_as_string(&sb));
       if (!ok) {
         return false;
       }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "archive.h"
 #include "deps/miniaudio.h"
+#include "prelude.h"
 
 struct Audio {
   float *buf;
@@ -12,7 +12,7 @@ struct Audio {
   ma_format format;
 };
 
-bool audio_load(Audio *audio, Archive *ar, String filepath);
+bool audio_load(Audio *audio, String filepath);
 void audio_unref(Audio *audio);
 
 struct Sound {

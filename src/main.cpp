@@ -1,6 +1,5 @@
 #include "api.h"
 #include "app.h"
-#include "archive.h"
 #include "array.h"
 #include "assets.h"
 #include "deps/cute_sync.h"
@@ -20,10 +19,7 @@
 #include "prelude.h"
 #include "profile.h"
 #include "strings.h"
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
+#include "vfs.h"
 
 FORMAT_ARGS(1)
 static void panic(const char *fmt, ...) {
@@ -314,10 +310,7 @@ static void actually_cleanup() {
   sgl_shutdown();
   sg_shutdown();
 
-  if (g_app->archive != nullptr) {
-    g_app->archive->trash();
-    mem_free(g_app->archive);
-  }
+  vfs_trash();
 
   mem_free(g_app->fatal_error.data);
   mem_free(g_app->traceback.data);
@@ -359,7 +352,7 @@ static int spry_require_lua_script(lua_State *L) {
   String path = luax_check_string(L, 1);
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_LuaRef, g_app->archive, path, &asset);
+  bool ok = asset_load(AssetKind_LuaRef, path, &asset);
   if (!ok) {
     return 0;
   }
@@ -367,65 +360,6 @@ static int spry_require_lua_script(lua_State *L) {
   lua_rawgeti(L, LUA_REGISTRYINDEX, asset.lua_ref);
   return 1;
 }
-
-#ifdef __EMSCRIPTEN__
-EM_JS(char *, web_mount_dir, (), { return stringToNewUTF8(spryMount); });
-
-EM_ASYNC_JS(void, web_load_zip, (), {
-  var dirs = spryMount.split('/');
-  dirs.pop();
-
-  var path = [];
-  for (var dir of dirs) {
-    path.push(dir);
-    FS.mkdir(path.join('/'));
-  }
-
-  await fetch(spryMount).then(async function(res) {
-    if (!res.ok) {
-      throw new Error('failed to fetch ' + spryMount);
-    }
-
-    var data = await res.arrayBuffer();
-    FS.writeFile(spryMount, new Uint8Array(data));
-  });
-});
-
-EM_ASYNC_JS(void, web_load_files, (), {
-  var jobs = [];
-
-  function spryWalkFiles(files, leading) {
-    var path = leading.join('/');
-    if (path != '') {
-      FS.mkdir(path);
-    }
-
-    for (var entry of Object.entries(files)) {
-      var key = entry[0];
-      var value = entry[1];
-      var filepath = [... leading, key ];
-      if (typeof value == 'object') {
-        spryWalkFiles(value, filepath);
-      } else if (value == 1) {
-        var file = filepath.join('/');
-
-        var job = fetch(file).then(async function(res) {
-          if (!res.ok) {
-            throw new Error('failed to fetch ' + file);
-          }
-          var data = await res.arrayBuffer();
-          FS.writeFile(file, new Uint8Array(data));
-        });
-
-        jobs.push(job);
-      }
-    }
-  }
-  spryWalkFiles(spryFiles, []);
-
-  await Promise.all(jobs);
-});
-#endif
 
 static void setup_lua() {
   PROFILE_FUNC();
@@ -462,40 +396,6 @@ static void setup_lua() {
   }
 }
 
-static void mount_files(int argc, char **argv, bool *can_hot_reload) {
-  PROFILE_FUNC();
-
-#ifdef __EMSCRIPTEN__
-  String mount_dir = web_mount_dir();
-  defer(free(mount_dir.data));
-
-  if (ends_with(mount_dir, ".zip")) {
-    web_load_zip();
-    g_app->archive = load_zip_archive(mount_dir);
-  } else {
-    web_load_files();
-    g_app->archive = load_filesystem_archive(mount_dir);
-  }
-#else
-  if (argc == 1) {
-    String path = os_program_path();
-#ifdef DEBUG
-    printf("program path: %s\n", path.data);
-#endif
-    g_app->archive = load_zip_archive(path);
-  } else if (argc == 2) {
-    String mount_dir = argv[1];
-
-    if (ends_with(mount_dir, ".zip")) {
-      g_app->archive = load_zip_archive(mount_dir);
-    } else {
-      g_app->archive = load_filesystem_archive(mount_dir);
-      *can_hot_reload = true;
-    }
-  }
-#endif
-}
-
 static void load_all_lua_scripts(lua_State *L) {
   PROFILE_FUNC();
 
@@ -507,7 +407,7 @@ static void load_all_lua_scripts(lua_State *L) {
     array_trash(&files);
   });
 
-  bool ok = g_app->archive->list_all_files(&files);
+  bool ok = vfs_list_all_files(&files);
   if (!ok) {
     panic("failed to list all files");
   }
@@ -520,7 +420,7 @@ static void load_all_lua_scripts(lua_State *L) {
 
   for (String file : files) {
     if (file != "main.lua" && ends_with(file, ".lua")) {
-      asset_load(AssetKind_LuaRef, g_app->archive, file, nullptr);
+      asset_load(AssetKind_LuaRef, file, nullptr);
     }
   }
 }
@@ -546,13 +446,10 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   assets_setup();
 
-  bool can_hot_reload = false;
-  mount_files(argc, argv, &can_hot_reload);
+  MountResult mount = vfs_mount(argc, argv);
 
-  if (argc == 2 && g_app->archive == nullptr) {
-    fatal_error(tmp_fmt("failed to load: %s", argv[1]));
-  } else if (g_app->archive != nullptr) {
-    asset_load(AssetKind_LuaRef, g_app->archive, "main.lua", nullptr);
+  if (!g_app->error_mode && mount.ok) {
+    asset_load(AssetKind_LuaRef, "main.lua", nullptr);
   }
 
   lua_newtable(L);
@@ -586,11 +483,12 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   lua_pop(L, 1);
 
-  if (startup_load_scripts && g_app->archive != nullptr) {
+  if (startup_load_scripts && mount.ok) {
     load_all_lua_scripts(L);
   }
 
-  cute_atomic_set(&g_app->hot_reload_enabled, can_hot_reload && hot_reload);
+  cute_atomic_set(&g_app->hot_reload_enabled,
+                  mount.can_hot_reload && hot_reload);
   cute_atomic_set(&g_app->reload_interval, (u32)(reload_interval * 1000));
 
   if (target_fps != 0) {

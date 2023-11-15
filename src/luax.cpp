@@ -2,10 +2,11 @@
 #include "app.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
-#include "strings.h"
 #include "profile.h"
+#include "strings.h"
+#include "vfs.h"
 
-i32 luax_require_script(lua_State *L, Archive *ar, String filepath) {
+i32 luax_require_script(lua_State *L, String filepath) {
   PROFILE_FUNC();
 
   if (g_app->error_mode) {
@@ -16,7 +17,7 @@ i32 luax_require_script(lua_State *L, Archive *ar, String filepath) {
   defer(mem_free(path.data));
 
   String contents;
-  bool ok = ar->read_entire_file(&contents, filepath);
+  bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
     StringBuilder sb = string_builder_make();
     defer(string_builder_trash(&sb));
@@ -174,7 +175,7 @@ String luax_opt_string(lua_State *L, i32 arg, String def) {
 }
 
 int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
-                       String needle) {
+                      String needle) {
   StringBuilder sb = string_builder_make();
   defer(string_builder_trash(&sb));
 

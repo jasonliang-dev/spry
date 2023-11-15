@@ -4,7 +4,7 @@ void profile_setup();
 void profile_shutdown();
 
 #ifdef DEBUG
-#ifndef USE_PROFILER
+#if !defined(USE_PROFILER) && !defined(__EMSCRIPTEN__)
 #define USE_PROFILER
 #endif
 #endif

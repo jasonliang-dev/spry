@@ -4,13 +4,14 @@
 #include "prelude.h"
 #include "profile.h"
 #include "strings.h"
+#include "vfs.h"
 #include <stdio.h>
 
-bool font_load(FontFamily *font, Archive *ar, String filepath) {
+bool font_load(FontFamily *font, String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
-  bool ok = ar->read_entire_file(&contents, filepath);
+  bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }

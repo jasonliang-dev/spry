@@ -1,6 +1,5 @@
 #pragma once
 
-#include "archive.h"
 #include "hash_map.h"
 #include "image.h"
 
@@ -16,6 +15,6 @@ struct Atlas {
   Image img;
 };
 
-bool atlas_load(Atlas *atlas, Archive *ar, String filepath);
+bool atlas_load(Atlas *atlas, String filepath);
 void atlas_trash(Atlas *atlas);
 AtlasImage *atlas_get(Atlas *atlas, String name);

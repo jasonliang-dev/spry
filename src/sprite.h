@@ -35,7 +35,7 @@ struct SpriteView {
   SpriteLoop loop;
 };
 
-bool sprite_data_load(SpriteData *spr, Archive *ar, String filepath);
+bool sprite_data_load(SpriteData *spr, String filepath);
 void sprite_data_trash(SpriteData *spr);
 
 bool sprite_play(Sprite *spr, String tag);

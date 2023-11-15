@@ -76,7 +76,7 @@ struct Tilemap {
 
 inline u64 tile_key(i32 x, i32 y) { return ((u64)x << 32) | (u64)y; }
 
-bool tilemap_load(Tilemap *tm, Archive *ar, String filepath);
+bool tilemap_load(Tilemap *tm, String filepath);
 void tilemap_trash(Tilemap *tm);
 void tilemap_destroy_bodies(Tilemap *tm, b2World *world);
 

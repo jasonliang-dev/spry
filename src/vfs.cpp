@@ -1,4 +1,5 @@
-#include "archive.h"
+#include "vfs.h"
+#include "app.h"
 #include "deps/miniz.h"
 #include "deps/tinydir.h"
 #include "os.h"
@@ -8,6 +9,20 @@
 #include <new>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+struct FileSystem {
+  virtual ~FileSystem() = 0;
+  virtual bool file_exists(String filepath) = 0;
+  virtual bool read_entire_file(String *out, String filepath) = 0;
+  virtual bool list_all_files(Array<String> *files) = 0;
+};
+FileSystem::~FileSystem() {}
+
+static FileSystem *g_filesystem;
 
 static bool read_entire_file_raw(String *out, String filepath) {
   PROFILE_FUNC();
@@ -69,8 +84,8 @@ static bool list_all_files_help(Array<String> *files, String path) {
   return true;
 }
 
-struct FileSystemArchive : Archive {
-  void trash() {}
+struct DirectoryFileSystem : FileSystem {
+  ~DirectoryFileSystem() {}
 
   bool file_exists(String filepath) {
     PROFILE_FUNC();
@@ -96,11 +111,11 @@ struct FileSystemArchive : Archive {
   }
 };
 
-struct ZipArchive : Archive {
-  mz_zip_archive zip;
-  String zip_contents;
+struct ZipFileSystem : FileSystem {
+  mz_zip_archive zip = {};
+  String zip_contents = {};
 
-  void trash() {
+  ~ZipFileSystem() {
     if (zip_contents.data != nullptr) {
       mz_zip_reader_end(&zip);
       mem_free(zip_contents.data);
@@ -179,20 +194,19 @@ struct ZipArchive : Archive {
   }
 };
 
-Archive *load_filesystem_archive(String mount) {
+static bool vfs_mount_directory(String mount) {
   PROFILE_FUNC();
 
   String path = to_cstr(mount);
   defer(mem_free(path.data));
 
   if (os_change_dir(path.data) != 0) {
-    return nullptr;
+    return false;
   }
 
-  FileSystemArchive *ar =
-      (FileSystemArchive *)mem_alloc(sizeof(FileSystemArchive));
-  new (ar) FileSystemArchive();
-  return ar;
+  g_filesystem = (DirectoryFileSystem *)mem_alloc(sizeof(DirectoryFileSystem));
+  new (g_filesystem) DirectoryFileSystem();
+  return true;
 }
 
 static u32 read4(char *bytes) {
@@ -201,19 +215,27 @@ static u32 read4(char *bytes) {
   return n;
 }
 
-Archive *load_zip_archive(String mount) {
+static bool vfs_mount_zip(String mount) {
   PROFILE_FUNC();
 
-  String contents;
+  String contents = {};
   bool contents_ok = read_entire_file_raw(&contents, mount);
   if (!contents_ok) {
-    return nullptr;
+    return false;
   }
+
+  ZipFileSystem *vfs = (ZipFileSystem *)mem_alloc(sizeof(ZipFileSystem));
+  new (vfs) ZipFileSystem();
 
   bool success = false;
   defer({
     if (!success) {
       mem_free(contents.data);
+
+      if (vfs != nullptr) {
+        vfs->~ZipFileSystem();
+        mem_free(vfs);
+      }
     }
   });
 
@@ -224,13 +246,13 @@ Archive *load_zip_archive(String mount) {
   char *eocd = end - eocd_size;
   if (read4(eocd) != 0x06054b50) {
     fprintf(stderr, "can't find EOCD record\n");
-    return nullptr;
+    return false;
   }
 
   u32 central_size = read4(&eocd[12]);
   if (read4(eocd - central_size) != 0x02014b50) {
     fprintf(stderr, "can't find central directory\n");
-    return nullptr;
+    return false;
   }
 
   u32 central_offset = read4(&eocd[16]);
@@ -238,22 +260,142 @@ Archive *load_zip_archive(String mount) {
   u64 zip_len = end - begin;
   if (read4(begin) != 0x04034b50) {
     fprintf(stderr, "can't read local file header\n");
-    return nullptr;
+    return false;
   }
 
-  ZipArchive *ar = (ZipArchive *)mem_alloc(sizeof(ZipArchive));
-  new (ar) ZipArchive();
-
-  mz_bool zip_ok = mz_zip_reader_init_mem(&ar->zip, begin, zip_len, 0);
+  mz_bool zip_ok = mz_zip_reader_init_mem(&vfs->zip, begin, zip_len, 0);
   if (!zip_ok) {
-    mz_zip_error err = mz_zip_get_last_error(&ar->zip);
+    mz_zip_error err = mz_zip_get_last_error(&vfs->zip);
     fprintf(stderr, "failed to read zip: %s\n", mz_zip_get_error_string(err));
-    mem_free(ar);
-    return nullptr;
+    return false;
   }
 
-  ar->zip_contents = contents;
+  vfs->zip_contents = contents;
 
+  g_filesystem = vfs;
   success = true;
-  return ar;
+  return true;
+}
+
+#ifdef __EMSCRIPTEN__
+EM_JS(char *, web_mount_dir, (), { return stringToNewUTF8(spryMount); });
+
+EM_ASYNC_JS(void, web_load_zip, (), {
+  var dirs = spryMount.split('/');
+  dirs.pop();
+
+  var path = [];
+  for (var dir of dirs) {
+    path.push(dir);
+    FS.mkdir(path.join('/'));
+  }
+
+  await fetch(spryMount).then(async function(res) {
+    if (!res.ok) {
+      throw new Error('failed to fetch ' + spryMount);
+    }
+
+    var data = await res.arrayBuffer();
+    FS.writeFile(spryMount, new Uint8Array(data));
+  });
+});
+
+EM_ASYNC_JS(void, web_load_files, (), {
+  var jobs = [];
+
+  function spryWalkFiles(files, leading) {
+    var path = leading.join('/');
+    if (path != '') {
+      FS.mkdir(path);
+    }
+
+    for (var entry of Object.entries(files)) {
+      var key = entry[0];
+      var value = entry[1];
+      var filepath = [... leading, key ];
+      if (typeof value == 'object') {
+        spryWalkFiles(value, filepath);
+      } else if (value == 1) {
+        var file = filepath.join('/');
+
+        var job = fetch(file).then(async function(res) {
+          if (!res.ok) {
+            throw new Error('failed to fetch ' + file);
+          }
+          var data = await res.arrayBuffer();
+          FS.writeFile(file, new Uint8Array(data));
+        });
+
+        jobs.push(job);
+      }
+    }
+  }
+  spryWalkFiles(spryFiles, []);
+
+  await Promise.all(jobs);
+});
+#endif
+
+MountResult vfs_mount(int argc, char **argv) {
+  PROFILE_FUNC();
+
+  MountResult res = {};
+
+#ifdef __EMSCRIPTEN__
+  String mount_dir = web_mount_dir();
+  defer(free(mount_dir.data));
+
+  if (ends_with(mount_dir, ".zip")) {
+    web_load_zip();
+    res.ok = vfs_mount_zip(mount_dir);
+  } else {
+    web_load_files();
+    res.ok = vfs_mount_directory(mount_dir);
+  }
+
+#else
+  if (argc == 1) {
+    String path = os_program_path();
+
+#ifdef DEBUG
+    printf("program path: %s\n", path.data);
+#endif
+
+    res.ok = vfs_mount_zip(path);
+  } else if (argc == 2) {
+    String mount_dir = argv[1];
+
+    if (ends_with(mount_dir, ".zip")) {
+      res.ok = vfs_mount_zip(mount_dir);
+    } else {
+      res.ok = vfs_mount_directory(mount_dir);
+      res.can_hot_reload = true;
+    }
+  }
+#endif
+
+  if (argc == 2 && !res.ok) {
+    fatal_error(tmp_fmt("failed to load: %s", argv[1]));
+  }
+
+  return res;
+}
+
+void vfs_trash() {
+  if (g_filesystem != nullptr) {
+    g_filesystem->~FileSystem();
+    mem_free(g_filesystem);
+  }
+}
+
+bool vfs_file_exists(String filepath) {
+  return g_filesystem->file_exists(filepath);
+}
+
+bool vfs_read_entire_file(String *out, String filepath) {
+  return g_filesystem->read_entire_file(out, filepath);
+}
+
+bool vfs_list_all_files(Array<String> *files) {
+  return g_filesystem->list_all_files(files);
 }

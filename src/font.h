@@ -18,7 +18,7 @@ struct FontFamily {
   HashMap<FontRange> ranges;
 };
 
-bool font_load(FontFamily *font, Archive *ar, String filepath);
+bool font_load(FontFamily *font, String filepath);
 void font_load_default(FontFamily *font);
 void font_trash(FontFamily *font);
 stbtt_aligned_quad font_quad(FontFamily *font, u32 *img, float *x, float *y,

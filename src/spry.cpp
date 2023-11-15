@@ -1,5 +1,4 @@
 #include "api.cpp"
-#include "archive.cpp"
 #include "arena.cpp"
 #include "assets.cpp"
 #include "atlas.cpp"
@@ -15,5 +14,6 @@
 #include "sprite.cpp"
 #include "strings.cpp"
 #include "tilemap.cpp"
+#include "vfs.cpp"
 
 #include "main.cpp"

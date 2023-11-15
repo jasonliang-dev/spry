@@ -7,14 +7,14 @@
 #include "profile.h"
 #include "slice.h"
 #include "strings.h"
+#include "vfs.h"
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
 #include <box2d/b2_world.h>
 
 static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
-                            Archive *ar, String filepath,
-                            HashMap<Image> *images) {
+                            String filepath, HashMap<Image> *images) {
   PROFILE_FUNC();
 
   layer->identifier =
@@ -54,7 +54,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
       layer->image = *img;
     } else {
       Image create_img = {};
-      bool ok = image_load(&create_img, ar, fullpath);
+      bool ok = image_load(&create_img, fullpath);
       if (!ok) {
         return false;
       }
@@ -145,8 +145,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
 }
 
 static bool level_from_json(TilemapLevel *level, JSON *json, Arena *arena,
-                            Archive *ar, String filepath,
-                            HashMap<Image> *images) {
+                            String filepath, HashMap<Image> *images) {
   PROFILE_FUNC();
 
   level->identifier =
@@ -165,7 +164,7 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Arena *arena,
     slice_from_arena(&layers, arena, len);
     for (JSONArray *a = layer_instances; a != nullptr; a = a->next) {
       TilemapLayer layer = {};
-      bool ok = layer_from_json(&layer, &a->value, arena, ar, filepath, images);
+      bool ok = layer_from_json(&layer, &a->value, arena, filepath, images);
       if (!ok) {
         return false;
       }
@@ -177,11 +176,11 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Arena *arena,
   return true;
 }
 
-bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
+bool tilemap_load(Tilemap *tm, String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
-  bool ok = ar->read_entire_file(&contents, filepath);
+  bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }
@@ -217,7 +216,7 @@ bool tilemap_load(Tilemap *tm, Archive *ar, String filepath) {
     for (JSONArray *a = arr_levels; a != nullptr; a = a->next) {
       TilemapLevel level = {};
       bool ok =
-          level_from_json(&level, &a->value, &arena, ar, filepath, &images);
+          level_from_json(&level, &a->value, &arena, filepath, &images);
       if (!ok) {
         return false;
       }

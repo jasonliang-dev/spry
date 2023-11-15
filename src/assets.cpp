@@ -43,7 +43,7 @@ static i32 hot_reload_thread(void *) {
       defer(cute_read_unlock(&g_assets.rw_lock));
 
       for (auto [k, v] : g_assets.table) {
-        PROFILE_BLOCK("reload file asset");
+        PROFILE_BLOCK("read modtime");
 
         u64 modtime = os_file_modtime(v->name.data);
         if (modtime > v->modtime) {
@@ -72,23 +72,23 @@ static i32 hot_reload_thread(void *) {
         switch (a.kind) {
         case AssetKind_LuaRef: {
           luaL_unref(g_app->L, LUA_REGISTRYINDEX, a.lua_ref);
-          a.lua_ref = luax_require_script(g_app->L, g_app->archive, a.name);
+          a.lua_ref = luax_require_script(g_app->L, a.name);
           ok = true;
           break;
         }
         case AssetKind_Image: {
           image_trash(&a.image);
-          ok = image_load(&a.image, g_app->archive, a.name);
+          ok = image_load(&a.image, a.name);
           break;
         }
         case AssetKind_Sprite: {
           sprite_data_trash(&a.sprite);
-          ok = sprite_data_load(&a.sprite, g_app->archive, a.name);
+          ok = sprite_data_load(&a.sprite, a.name);
           break;
         }
         case AssetKind_Tilemap: {
           tilemap_trash(&a.tilemap);
-          ok = tilemap_load(&a.tilemap, g_app->archive, a.name);
+          ok = tilemap_load(&a.tilemap, a.name);
           break;
         }
         default: continue; break;
@@ -142,7 +142,7 @@ void assets_start_hot_reload() {
       cute_thread_create(hot_reload_thread, "hot reload", nullptr);
 }
 
-bool asset_load(AssetKind kind, Archive *ar, String filepath, Asset *out) {
+bool asset_load(AssetKind kind, String filepath, Asset *out) {
   PROFILE_FUNC();
 
   u64 key = fnv1a(filepath);
@@ -163,7 +163,10 @@ bool asset_load(AssetKind kind, Archive *ar, String filepath, Asset *out) {
     Asset asset = {};
     asset.name = to_cstr(filepath);
     asset.hash = key;
-    asset.modtime = os_file_modtime(asset.name.data);
+    {
+      PROFILE_BLOCK("asset modtime")
+      asset.modtime = os_file_modtime(asset.name.data);
+    }
     asset.kind = kind;
 
     bool ok = false;
@@ -171,20 +174,20 @@ bool asset_load(AssetKind kind, Archive *ar, String filepath, Asset *out) {
     case AssetKind_LuaRef: {
       asset.lua_ref = LUA_REFNIL;
       asset_write(asset);
-      asset.lua_ref = luax_require_script(g_app->L, ar, filepath);
+      asset.lua_ref = luax_require_script(g_app->L, filepath);
       ok = true;
       break;
     }
     case AssetKind_Image: {
-      ok = image_load(&asset.image, ar, filepath);
+      ok = image_load(&asset.image, filepath);
       break;
     }
     case AssetKind_Sprite: {
-      ok = sprite_data_load(&asset.sprite, ar, filepath);
+      ok = sprite_data_load(&asset.sprite, filepath);
       break;
     }
     case AssetKind_Tilemap: {
-      ok = tilemap_load(&asset.tilemap, ar, filepath);
+      ok = tilemap_load(&asset.tilemap, filepath);
       break;
     }
     default: break;

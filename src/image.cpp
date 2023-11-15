@@ -1,15 +1,15 @@
 #include "image.h"
-#include "archive.h"
 #include "deps/sokol_gfx.h"
 #include "deps/stb_image.h"
 #include "profile.h"
+#include "vfs.h"
 #include <stdio.h>
 
-bool image_load(Image *image, Archive *ar, String filepath) {
+bool image_load(Image *image, String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
-  bool ok = ar->read_entire_file(&contents, filepath);
+  bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }

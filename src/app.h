@@ -19,8 +19,6 @@ struct AppTime {
 };
 
 struct App {
-  Archive *archive;
-
   cute_mutex_t frame_mtx;
 
   LuaAlloc *LA;

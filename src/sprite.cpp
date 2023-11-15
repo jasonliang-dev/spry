@@ -6,12 +6,13 @@
 #include "deps/sokol_gfx.h"
 #include "profile.h"
 #include "slice.h"
+#include "vfs.h"
 
-bool sprite_data_load(SpriteData *spr, Archive *ar, String filepath) {
+bool sprite_data_load(SpriteData *spr, String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
-  bool ok = ar->read_entire_file(&contents, filepath);
+  bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
     return false;
   }

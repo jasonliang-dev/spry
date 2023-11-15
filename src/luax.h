@@ -3,10 +3,9 @@
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "prelude.h"
-#include "archive.h"
 #include <initializer_list>
 
-i32 luax_require_script(lua_State *L, Archive *ar, String filepath);
+i32 luax_require_script(lua_State *L, String filepath);
 
 void luax_stack_dump(lua_State *L);
 

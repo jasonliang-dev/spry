@@ -31,7 +31,7 @@ void assets_setup();
 void assets_shutdown();
 void assets_start_hot_reload();
 
-bool asset_load(AssetKind kind, Archive *ar, String filepath, Asset *out);
+bool asset_load(AssetKind kind, String filepath, Asset *out);
 
 bool asset_read(u64 key, Asset *out);
 void asset_write(Asset asset);
