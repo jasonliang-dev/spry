@@ -17,18 +17,15 @@ and the changes will be reflected without having to restart your program.
 </video>
 
 Hot reloading Lua scripts will not update any references or callbacks. For
-example, if you modify a class that has a draw method, only newly created
-instances of the class will use the new version of the method.
+example, If you change a callback function in a class constructor, old
+instances will still hold onto the old function.
 
 ```lua
-class 'Enemy'
-
-function Enemy:draw()
-  -- if you update `rot` here, only new enemies will use the updated value.
-  -- existing enemies use the previous value.
-  local rot = math.pi
-
-  self.img:draw(self.x, self.y, rot)
+function Enemy:new()
+  self.timer = interval(0.1, function()
+    -- update this function and save the file.
+    -- changes are reflected for new Enemy instances only.
+  end)
 end
 ```
 
@@ -42,8 +39,9 @@ function spry.conf(t)
 end
 ```
 
-You can even set the reload interval to 0 if you want to poll for changes
-every frame.
+You can even set the reload interval to 0 if you want to poll for changes as
+fast as possible, but it increases the chance that Spry is reading the file
+you want to write to, and it wastes disk usage.
 
 To disable hot reloading, set `hot_reload` to `false` in `spry.conf`.
 
