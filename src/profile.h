@@ -26,8 +26,6 @@ struct Instrument {
   i32 tid;
 
   Instrument(const char *cat, const char *name);
-  Instrument(const Instrument &) = delete;
-  Instrument &operator=(const Instrument &) = delete;
   ~Instrument();
 };
 
