@@ -473,15 +473,11 @@ sapp_desc sokol_main(int argc, char **argv) {
     printf(R"(usage:
   %s [command] [--console]
 commands:
-  --help                      show this usage
-  -h
-  --version                   show spry version
-  -v
+  --help, -h                  show this usage
+  --version, -v               show spry version
   --console                   windows only. use console output
   [directory or zip archive]  run the game at the given directory
-
-  [no arguments]              if fused with a zip file, run the with embedded
-                              game data.
+  [no arguments]              if available, run with fused game data
 )",
            os_program_path().data);
     exit(0);
@@ -537,9 +533,8 @@ commands:
     load_all_lua_scripts(L);
   }
 
-  cute_atomic_set(&g_app->hot_reload_enabled,
-                  mount.can_hot_reload && hot_reload);
-  cute_atomic_set(&g_app->reload_interval, (u32)(reload_interval * 1000));
+  atomic_store(&g_app->hot_reload_enabled, mount.can_hot_reload && hot_reload);
+  atomic_store(&g_app->reload_interval, (u32)(reload_interval * 1000));
 
   if (target_fps != 0) {
     g_app->time.target_ticks = 1000000000 / target_fps;

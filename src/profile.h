@@ -15,9 +15,9 @@ void profile_shutdown();
 struct TraceEvent {
   const char *cat;
   const char *name;
-  char ph;
   u64 ts;
-  i32 tid;
+  u64 tid;
+  char ph;
 };
 
 struct Instrument {

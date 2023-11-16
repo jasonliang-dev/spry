@@ -1,6 +1,6 @@
 function spry.conf(t)
-  t.swap_interval = 1
-  t.target_fps = 0
+  t.swap_interval = 0
+  t.target_fps = 120
   t.reload_interval = 0.001
   t.window_width = 800
   t.window_height = 600

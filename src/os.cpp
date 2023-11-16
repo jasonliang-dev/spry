@@ -11,6 +11,7 @@
 #elif defined(IS_LINUX)
 #include <sched.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 #endif
@@ -31,10 +32,11 @@ String os_program_dir() {
   return str;
 }
 
+#ifdef IS_WIN32
+
 String os_program_path() {
   static char s_buf[2048];
 
-#if defined(IS_WIN32)
   DWORD len = GetModuleFileNameA(NULL, s_buf, array_size(s_buf));
 
   for (i32 i = 0; s_buf[i]; i++) {
@@ -43,19 +45,10 @@ String os_program_path() {
     }
   }
 
-#elif defined(IS_LINUX)
-  i32 len = (i32)readlink("/proc/self/exe", s_buf, array_size(s_buf));
-
-#elif defined(IS_HTML5)
-  i32 len = 0;
-
-#endif
-
   return {s_buf, (u64)len};
 }
 
 u64 os_file_modtime(const char *filename) {
-#ifdef IS_WIN32
   HANDLE handle = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
                              OPEN_EXISTING, 0, NULL);
 
@@ -77,9 +70,23 @@ u64 os_file_modtime(const char *filename) {
   time.HighPart = write.dwHighDateTime;
 
   return time.QuadPart;
-#endif
+}
+
+void os_high_timer_resolution() { timeBeginPeriod(8); }
+void os_sleep(u32 ms) { Sleep(ms); }
+void os_yield() { YieldProcessor(); }
+
+#endif // IS_WIN32
 
 #ifdef IS_LINUX
+
+String os_program_path() {
+  static char s_buf[2048];
+  i32 len = (i32)readlink("/proc/self/exe", s_buf, array_size(s_buf));
+  return {s_buf, (u64)len};
+}
+
+u64 os_file_modtime(const char *filename) {
   struct stat attrib = {};
   i32 err = stat(filename, &attrib);
   if (err == 0) {
@@ -87,54 +94,17 @@ u64 os_file_modtime(const char *filename) {
   } else {
     return 0;
   }
-#endif
-
-#ifdef __EMSCRIPTEN__
-  return 0;
-#endif
 }
 
-void os_high_timer_resolution() {
-#ifdef IS_WIN32
-  timeBeginPeriod(8);
-#endif
-}
+void os_high_timer_resolution() {}
 
 void os_sleep(u32 ms) {
-#if defined(IS_WIN32)
-  Sleep(ms);
-
-#elif defined(IS_LINUX)
   struct timespec ts;
   ts.tv_sec = ms / 1000;
   ts.tv_nsec = (ms % 1000) * 1000000;
   nanosleep(&ts, &ts);
-#endif
 }
 
-void os_yield() {
-#ifdef IS_WIN32
-  YieldProcessor();
+void os_yield() { sched_yield(); }
 
-#elif defined(IS_LINUX)
-  sched_yield();
-#endif
-}
-
-i32 os_process_id() {
-#if defined(IS_WIN32)
-  return (i32)GetCurrentProcessId();
-
-#elif defined(IS_LINUX)
-  return (i32)getpid();
-#endif
-}
-
-i32 os_thread_id() {
-#if defined(IS_WIN32)
-  return (i32)GetCurrentThreadId();
-
-#elif defined(IS_LINUX)
-  return (i32)gettid();
-#endif
-}
+#endif // IS_LINUX

@@ -1,3 +1,5 @@
+#include "profile.h"
+
 #ifndef USE_PROFILER
 void profile_setup() {}
 void profile_shutdown() {}
@@ -5,7 +7,6 @@ void profile_shutdown() {}
 
 #ifdef USE_PROFILER
 
-#include "profile.h"
 #include "deps/cute_sync.h"
 #include "deps/sokol_time.h"
 #include "os.h"
@@ -46,10 +47,11 @@ static i32 profile_recv_thread(void *) {
       return 0;
     }
 
-    fprintf(f,
-            R"({"name":"%s","cat":"%s","ph":"%c","ts":%.3f,"pid":0,"tid":%d},)"
-            "\n",
-            e.name, e.cat, e.ph, stm_us(e.ts), e.tid);
+    fprintf(
+        f,
+        R"({"name":"%s","cat":"%s","ph":"%c","ts":%.3f,"pid":0,"tid":%llu},)"
+        "\n",
+        e.name, e.cat, e.ph, stm_us(e.ts), (unsigned long long)e.tid);
   }
 }
 
@@ -83,7 +85,7 @@ void profile_shutdown() {
 }
 
 Instrument::Instrument(const char *cat, const char *name)
-    : cat(cat), name(name), tid(os_thread_id()) {
+    : cat(cat), name(name), tid(cute_thread_id()) {
   TraceEvent e = {};
   e.cat = cat;
   e.name = name;

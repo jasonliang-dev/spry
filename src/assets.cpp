@@ -16,7 +16,7 @@ struct Assets {
   HashMap<Asset> table;
   cute_rw_lock_t rw_lock;
 
-  cute_atomic_int_t shutdown_request;
+  atomic_int shutdown_request;
   cute_thread_t *reload_thread;
   Array<FileChange> changes;
 };
@@ -24,12 +24,9 @@ struct Assets {
 static Assets g_assets;
 
 static i32 hot_reload_thread(void *) {
-  if (cute_atomic_get(&g_app->hot_reload_enabled) == 0) {
-    return 0;
-  }
+  u32 reload_interval = atomic_load(&g_app->reload_interval);
 
-  u32 reload_interval = cute_atomic_get(&g_app->reload_interval);
-  while (cute_atomic_get(&g_assets.shutdown_request) == 0) {
+  while (atomic_load(&g_assets.shutdown_request) == 0) {
     PROFILE_BLOCK("hot reload");
 
     os_sleep(reload_interval);
@@ -114,10 +111,10 @@ void assets_setup() {
 }
 
 void assets_shutdown() {
-  {
+  if (g_assets.reload_thread != nullptr) {
     PROFILE_BLOCK("wait for hot reload");
 
-    cute_atomic_set(&g_assets.shutdown_request, 1);
+    atomic_store(&g_assets.shutdown_request, 1);
     cute_thread_wait(g_assets.reload_thread);
   }
   array_trash(&g_assets.changes);
@@ -138,8 +135,10 @@ void assets_shutdown() {
 }
 
 void assets_start_hot_reload() {
-  g_assets.reload_thread =
-      cute_thread_create(hot_reload_thread, "hot reload", nullptr);
+  if (atomic_load(&g_app->hot_reload_enabled)) {
+    g_assets.reload_thread =
+        cute_thread_create(hot_reload_thread, "hot reload", nullptr);
+  }
 }
 
 bool asset_load(AssetKind kind, String filepath, Asset *out) {
