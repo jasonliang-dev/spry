@@ -8,7 +8,6 @@
 #include "strings.h"
 #include <new>
 #include <stdio.h>
-#include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -81,24 +80,19 @@ static bool list_all_files_help(Array<String> *files, String path) {
 }
 
 struct FileSystem {
-  FileSystem() = default;
-  FileSystem(const FileSystem &) = delete;
-  FileSystem &operator=(const FileSystem &) = delete;
-  virtual ~FileSystem() = 0;
-
+  virtual void trash() = 0;
   virtual bool mount(String filepath) = 0;
   virtual bool file_exists(String filepath) = 0;
   virtual bool read_entire_file(String *out, String filepath) = 0;
   virtual bool list_all_files(Array<String> *files) = 0;
 };
-FileSystem::~FileSystem() {}
 
 static FileSystem *g_filesystem;
 
-struct DirectoryFileSystem final : FileSystem {
-  ~DirectoryFileSystem() override = default;
+struct DirectoryFileSystem : FileSystem {
+  void trash() {}
 
-  bool mount(String filepath) override {
+  bool mount(String filepath) {
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
 
@@ -106,7 +100,7 @@ struct DirectoryFileSystem final : FileSystem {
     return res == 0;
   }
 
-  bool file_exists(String filepath) override {
+  bool file_exists(String filepath) {
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
 
@@ -119,27 +113,27 @@ struct DirectoryFileSystem final : FileSystem {
     return false;
   }
 
-  bool read_entire_file(String *out, String filepath) override {
+  bool read_entire_file(String *out, String filepath) {
     return read_entire_file_raw(out, filepath);
   }
 
-  bool list_all_files(Array<String> *files) override {
+  bool list_all_files(Array<String> *files) {
     return list_all_files_help(files, "");
   }
 };
 
-struct ZipFileSystem final : FileSystem {
+struct ZipFileSystem : FileSystem {
   mz_zip_archive zip = {};
   String zip_contents = {};
 
-  ~ZipFileSystem() override {
+  void trash() {
     if (zip_contents.data != nullptr) {
       mz_zip_reader_end(&zip);
       mem_free(zip_contents.data);
     }
   }
 
-  bool mount(String filepath) override {
+  bool mount(String filepath) {
     PROFILE_FUNC();
 
     String contents = {};
@@ -192,7 +186,7 @@ struct ZipFileSystem final : FileSystem {
     return true;
   }
 
-  bool file_exists(String filepath) override {
+  bool file_exists(String filepath) {
     PROFILE_FUNC();
 
     String path = to_cstr(filepath);
@@ -212,7 +206,7 @@ struct ZipFileSystem final : FileSystem {
     return true;
   }
 
-  bool read_entire_file(String *out, String filepath) override {
+  bool read_entire_file(String *out, String filepath) {
     PROFILE_FUNC();
 
     String path = to_cstr(filepath);
@@ -246,7 +240,7 @@ struct ZipFileSystem final : FileSystem {
     return true;
   }
 
-  bool list_all_files(Array<String> *files) override {
+  bool list_all_files(Array<String> *files) {
     PROFILE_FUNC();
 
     for (u32 i = 0; i < mz_zip_reader_get_num_files(&zip); i++) {
@@ -329,7 +323,7 @@ template <typename T> static bool vfs_mount_type(String mount) {
 
   bool ok = vfs->mount(mount);
   if (!ok) {
-    vfs->~T();
+    vfs->trash();
     mem_free(vfs);
     return false;
   }
@@ -385,7 +379,7 @@ MountResult vfs_mount(const char *filepath) {
 
 void vfs_trash() {
   if (g_filesystem != nullptr) {
-    g_filesystem->~FileSystem();
+    g_filesystem->trash();
     mem_free(g_filesystem);
   }
 }

@@ -39,24 +39,26 @@ Sometimes I want to just forget about a buffer I allocated when the scope
 exits, and sometimes I don't! `defer` makes destruction obvious, and I like
 that.
 
-There's a few places where constructors and destructors are used:
+There's a few types that use destructors, but not directly. Instead these
+types are used through macros:
 
-- `Allocator` in `prelude.h`. It pairs well with inheritance and virtual
-  functions. There's only one `Allocator`. No copies are allowed. The
-  constructor/destructor is called via `new`/`delete`.
-- `FileSystem` in `vfs.cpp` is similar to `Allocator`, being a abstract base
-  type that can't be copied. It uses `mem_alloc`/`mem_free` instead of
-  `new`/`delete`. It uses placement new and the destructor is explicitly
-  called.
-- `Instrument` in `profile.h` uses its constructor and destructor to write
-  trace events.
+- The macro `defer` uses `Defer` (`prelude.h`), which runs a lambda function
+  in its destructor.
+- The macros `PROFILE_FUNC` and `PROFILE_BLOCK` uses `Instrument`
+  (`profile.h`), which produces trace events in its constructor and destructor.
 
-To some (many?), this isn't considered proper RAII usage since these types are
-constructed/destructed explicitly.
+## Dynamic dispatch
 
-The rationale for doing this with `Allocator` and `FileSystem` is that I
-wanted vtables for these types, and I found vtables hard to read when written
-in the way you would in C. For `Instrument`, it was out of convenience.
+I don't often use classes nor member functions in C++, but there's two places
+where this isn't true:
+
+- `Allocator` in `prelude.h`
+- `FileSystem` in `vfs.cpp`
+
+The rationale for doing this is that I wanted vtables for these types. I found
+vtables hard to read when written in the way you would write them in C. Both
+`Allocator` and `FileSystem` are abstract base types, consisting of only pure
+virtual functions.
 
 ## Memory
 
@@ -99,13 +101,12 @@ renderer in `draw.cpp` also takes advantage of SIMD.
 
 I barely know how SIMD works.
 
-## Archive
+## Virtual File System
 
-The `Archive` type acts like a virtual file system. You *could* read files
-directly (`io.open` for Lua, `fopen` for C/C++), but don't. Spry has the
-ability to load data from a zip archive, where file paths are treated as if
-they were located in a regular folder. This is also the reason why the
-`require` function in Lua was changed.
+You *could* read files directly (`io.open` for Lua, `fopen` for C/C++), but
+don't. Spry has the ability to load data from a zip archive, where file paths
+are treated as if they were located in a regular folder. This is also the
+reason why the `require` function in Lua was changed.
 
 ## Profiling
 

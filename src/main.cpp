@@ -341,6 +341,7 @@ static void cleanup() {
   }
 #endif
 
+  g_allocator->trash();
   delete g_allocator;
 
 #ifdef DEBUG
@@ -436,6 +437,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 #else
   g_allocator = new HeapAllocator();
 #endif
+  g_allocator->make();
 
   os_high_timer_resolution();
   stm_setup();
@@ -447,11 +449,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   const char *mount_path = nullptr;
   bool usage = false;
   bool version = false;
-#ifdef DEBUG
-  bool win_console = true;
-#else
   bool win_console = false;
-#endif
 
 #ifndef __EMSCRIPTEN__
   for (i32 i = 1; i < argc; i++) {
