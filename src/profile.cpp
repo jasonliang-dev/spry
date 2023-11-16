@@ -7,18 +7,18 @@ void profile_shutdown() {}
 
 #ifdef USE_PROFILER
 
-#include "deps/cute_sync.h"
 #include "deps/sokol_time.h"
 #include "os.h"
 #include "queue.h"
 #include "strings.h"
+#include "sync.h"
 
 struct Profile {
-  cute_mutex_t mtx;
-  cute_cv_t cond;
+  Mutex mtx;
+  Cond cv;
   Queue<TraceEvent> events;
 
-  cute_thread_t *recv_thread;
+  Thread *recv_thread;
 };
 
 static Profile g_profile;
@@ -34,14 +34,14 @@ static i32 profile_recv_thread(void *) {
 
   fputs("[", f);
   while (true) {
-    cute_lock(&g_profile.mtx);
+    mutex_lock(&g_profile.mtx);
     while (g_profile.events.len == 0) {
-      cute_cv_wait(&g_profile.cond, &g_profile.mtx);
+      cond_wait(&g_profile.cv, &g_profile.mtx);
     }
 
     TraceEvent e = {};
     queue_pop(&g_profile.events, &e);
-    cute_unlock(&g_profile.mtx);
+    mutex_unlock(&g_profile.mtx);
 
     if (e.name == nullptr) {
       return 0;
@@ -49,43 +49,42 @@ static i32 profile_recv_thread(void *) {
 
     fprintf(
         f,
-        R"({"name":"%s","cat":"%s","ph":"%c","ts":%.3f,"pid":0,"tid":%llu},)"
+        R"({"name":"%s","cat":"%s","ph":"%c","ts":%.3f,"pid":0,"tid":%hu},)"
         "\n",
-        e.name, e.cat, e.ph, stm_us(e.ts), (unsigned long long)e.tid);
+        e.name, e.cat, e.ph, stm_us(e.ts), e.tid);
   }
 }
 
 static void profile_send(TraceEvent e) {
-  cute_lock(&g_profile.mtx);
+  mutex_lock(&g_profile.mtx);
   queue_push(&g_profile.events, e);
-  cute_unlock(&g_profile.mtx);
+  mutex_unlock(&g_profile.mtx);
 
-  cute_cv_wake_one(&g_profile.cond);
+  cond_signal(&g_profile.cv);
 }
 
 void profile_setup() {
   g_profile = {};
 
-  g_profile.mtx = cute_mutex_create();
-  g_profile.cond = cute_cv_create();
-  g_profile.recv_thread =
-      cute_thread_create(profile_recv_thread, "profile", nullptr);
+  g_profile.mtx = mutex_make();
+  g_profile.cv = cond_make();
+  g_profile.recv_thread = thread_make(profile_recv_thread, nullptr);
 
   queue_reserve(&g_profile.events, 256);
 }
 
 void profile_shutdown() {
   profile_send({});
-  cute_thread_wait(g_profile.recv_thread);
+  thread_join(g_profile.recv_thread);
 
-  cute_cv_destroy(&g_profile.cond);
-  cute_mutex_destroy(&g_profile.mtx);
+  cond_trash(&g_profile.cv);
+  mutex_trash(&g_profile.mtx);
 
   queue_trash(&g_profile.events);
 }
 
 Instrument::Instrument(const char *cat, const char *name)
-    : cat(cat), name(name), tid(cute_thread_id()) {
+    : cat(cat), name(name), tid(this_thread_id()) {
   TraceEvent e = {};
   e.cat = cat;
   e.name = name;

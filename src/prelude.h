@@ -1,12 +1,23 @@
 #pragma once
 
-#include "deps/cute_sync.h"
+#include "sync.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if defined(_WIN32)
+#define IS_WIN32
+
+#elif defined(__EMSCRIPTEN__)
+#define IS_HTML5
+
+#elif defined(__linux__) || defined(__unix__)
+#define IS_LINUX
+
+#endif
 
 #define array_size(a) (sizeof(a) / sizeof(a[0]))
 #define MATH_PI 3.1415926535897f
@@ -66,14 +77,14 @@ struct DebugAllocInfo {
 
 struct DebugAllocator : Allocator {
   DebugAllocInfo *head = nullptr;
-  cute_mutex_t mtx = {};
+  Mutex mtx = {};
 
-  void make() { mtx = cute_mutex_create(); }
-  void trash() { cute_mutex_destroy(&mtx); }
+  void make() { mtx = mutex_make(); }
+  void trash() { mutex_trash(&mtx); }
 
   void *alloc(size_t bytes, const char *file, i32 line) {
-    cute_lock(&mtx);
-    defer(cute_unlock(&mtx));
+    mutex_lock(&mtx);
+    defer(mutex_unlock(&mtx));
 
     DebugAllocInfo *info =
         (DebugAllocInfo *)malloc(sizeof(DebugAllocInfo) + bytes);
@@ -94,8 +105,8 @@ struct DebugAllocator : Allocator {
       return;
     }
 
-    cute_lock(&mtx);
-    defer(cute_unlock(&mtx));
+    mutex_lock(&mtx);
+    defer(mutex_unlock(&mtx));
 
     DebugAllocInfo *info = (DebugAllocInfo *)ptr - 1;
 

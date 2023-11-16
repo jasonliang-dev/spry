@@ -2,7 +2,7 @@
 #include "app.h"
 #include "array.h"
 #include "assets.h"
-#include "deps/cute_sync.h"
+#include "sync.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/lua/lualib.h"
@@ -90,7 +90,7 @@ static void init() {
     }
   }
 
-  g_app->frame_mtx = cute_mutex_create();
+  g_app->frame_mtx = mutex_make();
 
   assets_start_hot_reload();
 
@@ -124,8 +124,8 @@ static void event(const sapp_event *e) {
 static void frame() {
   PROFILE_FUNC();
 
-  cute_lock(&g_app->frame_mtx);
-  defer(cute_unlock(&g_app->frame_mtx));
+  mutex_lock(&g_app->frame_mtx);
+  defer(mutex_unlock(&g_app->frame_mtx));
 
   {
     AppTime *time = &g_app->time;
@@ -306,7 +306,7 @@ static void actually_cleanup() {
   ma_engine_uninit(&g_app->audio_engine);
 
   assets_shutdown();
-  cute_mutex_destroy(&g_app->frame_mtx);
+  mutex_trash(&g_app->frame_mtx);
 
   sgl_destroy_pipeline(g_pipeline);
   sgl_shutdown();

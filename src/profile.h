@@ -16,7 +16,7 @@ struct TraceEvent {
   const char *cat;
   const char *name;
   u64 ts;
-  u64 tid;
+  u16 tid;
   char ph;
 };
 

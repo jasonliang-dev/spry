@@ -13,6 +13,7 @@
 #include "scanner.cpp"
 #include "sprite.cpp"
 #include "strings.cpp"
+#include "sync.cpp"
 #include "tilemap.cpp"
 #include "vfs.cpp"
 

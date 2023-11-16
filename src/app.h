@@ -20,7 +20,7 @@ struct AppTime {
 };
 
 struct App {
-  cute_mutex_t frame_mtx;
+  Mutex frame_mtx;
 
   LuaAlloc *LA;
   lua_State *L;

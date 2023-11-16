@@ -1,11 +1,11 @@
 #include "assets.h"
 #include "app.h"
-#include "deps/cute_sync.h"
 #include "deps/lua/lauxlib.h"
 #include "luax.h"
 #include "os.h"
 #include "profile.h"
 #include "strings.h"
+#include "sync.h"
 
 struct FileChange {
   u64 key;
@@ -14,10 +14,10 @@ struct FileChange {
 
 struct Assets {
   HashMap<Asset> table;
-  cute_rw_lock_t rw_lock;
+  RWLock rw_lock;
 
   atomic_int shutdown_request;
-  cute_thread_t *reload_thread;
+  Thread *reload_thread;
   Array<FileChange> changes;
 };
 
@@ -36,8 +36,8 @@ static i32 hot_reload_thread(void *) {
     {
       PROFILE_BLOCK("check for updates");
 
-      cute_read_lock(&g_assets.rw_lock);
-      defer(cute_read_unlock(&g_assets.rw_lock));
+      rw_shared_lock(&g_assets.rw_lock);
+      defer(rw_shared_unlock(&g_assets.rw_lock));
 
       for (auto [k, v] : g_assets.table) {
         PROFILE_BLOCK("read modtime");
@@ -55,8 +55,8 @@ static i32 hot_reload_thread(void *) {
     if (g_assets.changes.len > 0) {
       PROFILE_BLOCK("perform hot reload");
 
-      cute_lock(&g_app->frame_mtx);
-      defer(cute_unlock(&g_app->frame_mtx));
+      mutex_lock(&g_app->frame_mtx);
+      defer(mutex_unlock(&g_app->frame_mtx));
 
       for (FileChange change : g_assets.changes) {
         Asset a = {};
@@ -107,7 +107,7 @@ static i32 hot_reload_thread(void *) {
 
 void assets_setup() {
   g_assets = {};
-  g_assets.rw_lock = cute_rw_lock_create();
+  g_assets.rw_lock = rw_make();
 }
 
 void assets_shutdown() {
@@ -115,11 +115,11 @@ void assets_shutdown() {
     PROFILE_BLOCK("wait for hot reload");
 
     atomic_store(&g_assets.shutdown_request, 1);
-    cute_thread_wait(g_assets.reload_thread);
+    thread_join(g_assets.reload_thread);
   }
   array_trash(&g_assets.changes);
 
-  cute_rw_lock_destroy(&g_assets.rw_lock);
+  rw_trash(&g_assets.rw_lock);
 
   for (auto [k, v] : g_assets.table) {
     mem_free(v->name.data);
@@ -136,8 +136,7 @@ void assets_shutdown() {
 
 void assets_start_hot_reload() {
   if (atomic_load(&g_app->hot_reload_enabled)) {
-    g_assets.reload_thread =
-        cute_thread_create(hot_reload_thread, "hot reload", nullptr);
+    g_assets.reload_thread = thread_make(hot_reload_thread, nullptr);
   }
 }
 
@@ -207,8 +206,8 @@ bool asset_load(AssetKind kind, String filepath, Asset *out) {
 }
 
 bool asset_read(u64 key, Asset *out) {
-  cute_read_lock(&g_assets.rw_lock);
-  defer(cute_read_unlock(&g_assets.rw_lock));
+  rw_shared_lock(&g_assets.rw_lock);
+  defer(rw_shared_unlock(&g_assets.rw_lock));
 
   const Asset *asset = hashmap_get(&g_assets.table, key);
   if (asset == nullptr) {
@@ -220,8 +219,8 @@ bool asset_read(u64 key, Asset *out) {
 }
 
 void asset_write(Asset asset) {
-  cute_write_lock(&g_assets.rw_lock);
-  defer(cute_write_unlock(&g_assets.rw_lock));
+  rw_unique_lock(&g_assets.rw_lock);
+  defer(rw_unique_unlock(&g_assets.rw_lock));
 
   g_assets.table[asset.hash] = asset;
 }

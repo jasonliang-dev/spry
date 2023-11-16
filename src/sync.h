@@ -1,8 +1,8 @@
 #pragma once
 
-#include "os.h"
+#include <stdint.h>
 
-#ifdef IS_WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -30,21 +30,19 @@ void rw_shared_unlock(RWLock *rw);
 void rw_unique_lock(RWLock *rw);
 void rw_unique_unlock(RWLock *rw);
 
-struct Thread;
-typedef i32(ThreadStart)(void *);
-Thread thread_create(ThreadStart fn, void *udata);
-void thread_join(Thread t);
-u64 this_thread_id();
+using Thread = uintptr_t;
+typedef int(ThreadStart)(void *);
+Thread *thread_make(ThreadStart fn, void *udata);
+void thread_join(Thread *t);
+uint64_t this_thread_id();
 
-#ifdef IS_WIN32
+#ifdef _WIN32
 
 struct Mutex {
   SRWLOCK srwlock;
 };
 
-#endif // IS_WIN32
-
-#ifdef IS_LINUX
+#else
 
 struct Mutex {
   pthread_mutex_t pt;
@@ -58,8 +56,4 @@ struct RWLock {
   pthread_rwlock_t pt;
 };
 
-struct Thread {
-  pthread_t pt;
-};
-
-#endif // IS_LINUX
+#endif

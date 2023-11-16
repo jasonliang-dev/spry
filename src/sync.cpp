@@ -1,7 +1,12 @@
 #include "sync.h"
-#include <pthread.h>
+#include "prelude.h"
+
+#ifdef IS_WIN32
+#endif
 
 #ifdef IS_LINUX
+#include <sys/syscall.h>
+#include <unistd.h>
 
 Mutex mutex_make() {
   Mutex mtx = {};
@@ -14,7 +19,7 @@ void mutex_lock(Mutex *mtx) { pthread_mutex_lock(&mtx->pt); }
 void mutex_unlock(Mutex *mtx) { pthread_mutex_unlock(&mtx->pt); }
 
 bool mutex_try_lock(Mutex *mtx) {
-  i32 err = pthread_mutex_trylock(&mtx->pt);
+  int err = pthread_mutex_trylock(&mtx->pt);
   return err == 0;
 }
 
@@ -41,13 +46,17 @@ void rw_shared_unlock(RWLock *rw) { pthread_rwlock_unlock(&rw->pt); }
 void rw_unique_lock(RWLock *rw) { pthread_rwlock_wrlock(&rw->pt); }
 void rw_unique_unlock(RWLock *rw) { pthread_rwlock_unlock(&rw->pt); }
 
-Thread thread_create(ThreadStart fn, void *udata) {
-  Thread t = {};
-  pthread_create(&t.pt, nullptr, (void *(*)(void *))fn, udata);
-  return t;
+Thread *thread_make(ThreadStart fn, void *udata) {
+  pthread_t pt = {};
+  pthread_create(&pt, nullptr, (void *(*)(void *))fn, udata);
+  return (Thread *)pt;
 }
 
-void thread_join(Thread t) { pthread_join(t.pt, nullptr); }
-u64 this_thread_id() { return pthread_self(); }
+void thread_join(Thread *t) { pthread_join((pthread_t)t, nullptr); }
+
+uint64_t this_thread_id() {
+  static thread_local uint64_t s_tid = syscall(SYS_gettid);
+  return s_tid;
+}
 
 #endif // IS_LINUX
