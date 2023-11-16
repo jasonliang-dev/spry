@@ -262,18 +262,18 @@ struct ZipFileSystem : FileSystem {
 EM_JS(char *, web_mount_dir, (), { return stringToNewUTF8(spryMount); });
 
 EM_ASYNC_JS(void, web_load_zip, (), {
-  var dirs = spryMount.split('/');
+  var dirs = spryMount.split("/");
   dirs.pop();
 
   var path = [];
   for (var dir of dirs) {
     path.push(dir);
-    FS.mkdir(path.join('/'));
+    FS.mkdir(path.join("/"));
   }
 
   await fetch(spryMount).then(async function(res) {
     if (!res.ok) {
-      throw new Error('failed to fetch ' + spryMount);
+      throw new Error("failed to fetch " + spryMount);
     }
 
     var data = await res.arrayBuffer();
@@ -285,8 +285,8 @@ EM_ASYNC_JS(void, web_load_files, (), {
   var jobs = [];
 
   function spryWalkFiles(files, leading) {
-    var path = leading.join('/');
-    if (path != '') {
+    var path = leading.join("/");
+    if (path != "") {
       FS.mkdir(path);
     }
 
@@ -294,14 +294,14 @@ EM_ASYNC_JS(void, web_load_files, (), {
       var key = entry[0];
       var value = entry[1];
       var filepath = [... leading, key ];
-      if (typeof value == 'object') {
+      if (typeof value == "object") {
         spryWalkFiles(value, filepath);
       } else if (value == 1) {
-        var file = filepath.join('/');
+        var file = filepath.join("/");
 
         var job = fetch(file).then(async function(res) {
           if (!res.ok) {
-            throw new Error('failed to fetch ' + file);
+            throw new Error("failed to fetch " + file);
           }
           var data = await res.arrayBuffer();
           FS.writeFile(file, new Uint8Array(data));

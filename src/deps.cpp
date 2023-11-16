@@ -81,7 +81,7 @@
 #elif defined(__linux__)
 #define SOKOL_GLCORE33
 #elif defined(__EMSCRIPTEN__)
-#define SOKOL_GLES2
+#define SOKOL_GLES3
 #endif
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"

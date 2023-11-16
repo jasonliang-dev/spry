@@ -558,10 +558,6 @@ commands:
   sapp.swap_interval = (i32)swap_interval;
   sapp.fullscreen = fullscreen;
 
-#ifdef __EMSCRIPTEN__
-  sapp.gl_force_gles2 = true;
-#endif
-
 #ifdef DEBUG
   printf("debug build\n");
 #endif
