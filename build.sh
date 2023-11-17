@@ -8,7 +8,15 @@ lflags="-lX11 -lXi -lXcursor -lasound -lGL -ldl -lpthread -lm"
 
 srcs="src/spry.cpp src/deps.cpp"
 
-if [ "$1" = "web_release" ]; then
+if [ "$1" = "package" ]; then
+  cp spry.js html5
+  cp spry.wasm html5
+  cp spry.js website/static/demos
+  cp spry.wasm website/static/demos
+
+  zip -FS spry-linux-x86-64 spry
+  zip -FS spry-html5 spry.js spry.wasm
+elif [ "$1" = "web_release" ]; then
   emcc $em_cflags -O2 -DRELEASE $srcs -o spry.js $em_lflags
 elif [ "$1" = "web" ]; then
   emcc $em_cflags -DDEBUG $srcs -o spry.js $em_lflags
