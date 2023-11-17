@@ -1,7 +1,7 @@
 #pragma once
 
 #define SPRY_VERSION_MAJOR "0"
-#define SPRY_VERSION_MINOR "x"
+#define SPRY_VERSION_MINOR "7"
 #define SPRY_VERSION SPRY_VERSION_MAJOR "." SPRY_VERSION_MINOR
 
 #include "audio.h"
