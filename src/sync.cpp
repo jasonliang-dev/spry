@@ -1,9 +1,37 @@
 #include "sync.h"
 #include "prelude.h"
-#include <handleapi.h>
-#include <synchapi.h>
 
 #ifdef IS_WIN32
+
+int atomic_int_load(AtomicInt *a) {
+  return _InterlockedCompareExchange(&a->n, 0, 0);
+}
+
+void atomic_int_store(AtomicInt *a, int val) {
+  _InterlockedExchange(&a->n, val);
+}
+
+int atomic_int_add(AtomicInt *a, int val) {
+  return _InterlockedExchangeAdd(&a->n, val);
+}
+
+bool atomic_int_cas(AtomicInt *a, int *expect, int val) {
+  *expect = _InterlockedCompareExchange(&a->n, val, *expect);
+  return *expect == val;
+}
+
+void *atomic_ptr_load(void **p) {
+  return _InterlockedCompareExchangePointer(p, nullptr, nullptr);
+}
+
+void atomic_ptr_store(void **p, void *val) {
+  _InterlockedExchangePointer(p, val);
+}
+
+bool atomic_ptr_cas(void **p, void **expect, void *val) {
+  *expect = _InterlockedCompareExchangePointer(p, val, *expect);
+  return *expect == val;
+}
 
 Mutex mutex_make() { return {}; }
 void mutex_trash(Mutex *mtx) {}

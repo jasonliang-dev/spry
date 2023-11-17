@@ -543,8 +543,8 @@ commands:
     load_all_lua_scripts(L);
   }
 
-  atomic_store(&g_app->hot_reload_enabled, mount.can_hot_reload && hot_reload);
-  atomic_store(&g_app->reload_interval, (u32)(reload_interval * 1000));
+  atomic_int_store(&g_app->hot_reload_enabled, mount.can_hot_reload && hot_reload);
+  atomic_int_store(&g_app->reload_interval, (u32)(reload_interval * 1000));
 
   if (target_fps != 0) {
     g_app->time.target_ticks = 1000000000 / target_fps;

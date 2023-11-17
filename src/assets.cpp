@@ -16,7 +16,7 @@ struct Assets {
   HashMap<Asset> table;
   RWLock rw_lock;
 
-  std::atomic_bool shutdown_request;
+  AtomicInt shutdown_request;
   Thread *reload_thread;
   Array<FileChange> changes;
 };
@@ -24,9 +24,9 @@ struct Assets {
 static Assets g_assets = {};
 
 static i32 hot_reload_thread(void *) {
-  u32 reload_interval = atomic_load(&g_app->reload_interval);
+  u32 reload_interval = atomic_int_load(&g_app->reload_interval);
 
-  while (!atomic_load(&g_assets.shutdown_request)) {
+  while (atomic_int_load(&g_assets.shutdown_request) == 0) {
     PROFILE_BLOCK("hot reload");
 
     os_sleep(reload_interval);
@@ -110,7 +110,7 @@ void assets_shutdown() {
   if (g_assets.reload_thread != nullptr) {
     PROFILE_BLOCK("wait for hot reload");
 
-    atomic_store(&g_assets.shutdown_request, true);
+    atomic_int_store(&g_assets.shutdown_request, 1);
     thread_join(g_assets.reload_thread);
   }
   array_trash(&g_assets.changes);
@@ -131,7 +131,7 @@ void assets_shutdown() {
 }
 
 void assets_start_hot_reload() {
-  if (atomic_load(&g_app->hot_reload_enabled)) {
+  if (atomic_int_load(&g_app->hot_reload_enabled) != 0) {
     g_assets.reload_thread = thread_make(hot_reload_thread, nullptr);
   }
 }

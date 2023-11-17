@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 
+struct AtomicInt {
+  alignas(8) long n;
+};
+
 #ifdef _WIN32
 #include <windows.h>
 
@@ -33,6 +37,15 @@ struct RWLock {
 };
 
 #endif
+
+int atomic_int_load(AtomicInt *a);
+void atomic_int_store(AtomicInt *a, int val);
+int atomic_int_add(AtomicInt *a, int val);
+bool atomic_int_cas(AtomicInt *a, int *expect, int val);
+
+void *atomic_ptr_load(void **p);
+void atomic_ptr_store(void **p, void *val);
+bool atomic_ptr_cas(void **p, void **expect, void *val);
 
 Mutex mutex_make();
 void mutex_trash(Mutex *mtx);
