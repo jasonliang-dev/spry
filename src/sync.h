@@ -2,12 +2,12 @@
 
 #include <stdint.h>
 
+#ifdef _WIN32
+#include <windows.h>
+
 struct AtomicInt {
   alignas(8) long n;
 };
-
-#ifdef _WIN32
-#include <windows.h>
 
 struct Mutex {
   SRWLOCK srwlock;
@@ -23,6 +23,8 @@ struct RWLock {
 
 #else
 #include <pthread.h>
+
+using AtomicInt = int;
 
 struct Mutex {
   pthread_mutex_t pt;

@@ -15,5 +15,6 @@ elif [ "$1" = "web" ]; then
 elif [ "$1" = "release" ]; then
   clang++ $cflags -O2 -DRELEASE $srcs -o spry $lflags
 else
+  # clang++ -ftime-trace $cflags -g -DDEBUG $srcs -o spry $lflags
   clang++ $cflags -g -DDEBUG $srcs -o spry $lflags
 fi

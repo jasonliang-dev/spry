@@ -78,11 +78,35 @@ void thread_join(Thread *t) {
 
 uint64_t this_thread_id() { return GetCurrentThreadId(); }
 
-#endif
+#else
 
-#ifdef IS_LINUX
-#include <sys/syscall.h>
-#include <unistd.h>
+int atomic_int_load(AtomicInt *a) {
+  return __atomic_load_n(a, __ATOMIC_SEQ_CST);
+}
+
+void atomic_int_store(AtomicInt *a, int val) {
+  __atomic_store_n(a, val, __ATOMIC_SEQ_CST);
+}
+
+int atomic_int_add(AtomicInt *a, int val) {
+  return __atomic_fetch_add(a, val, __ATOMIC_SEQ_CST);
+}
+
+bool atomic_int_cas(AtomicInt *a, int *expect, int val) {
+  return __atomic_compare_exchange_n(a, expect, val, true, __ATOMIC_SEQ_CST,
+                                     __ATOMIC_SEQ_CST);
+}
+
+void *atomic_ptr_load(void **p) { return __atomic_load_n(p, __ATOMIC_SEQ_CST); }
+
+void atomic_ptr_store(void **p, void *val) {
+  __atomic_store_n(p, val, __ATOMIC_SEQ_CST);
+}
+
+bool atomic_ptr_cas(void **p, void **expect, void *val) {
+  return __atomic_compare_exchange_n(p, expect, val, true, __ATOMIC_SEQ_CST,
+                                     __ATOMIC_SEQ_CST);
+}
 
 Mutex mutex_make() {
   Mutex mtx = {};
@@ -129,6 +153,12 @@ Thread *thread_make(ThreadStart fn, void *udata) {
 }
 
 void thread_join(Thread *t) { pthread_join((pthread_t)t, nullptr); }
+
+#endif
+
+#ifdef IS_LINUX
+#include <sys/syscall.h>
+#include <unistd.h>
 
 uint64_t this_thread_id() {
   thread_local uint64_t s_tid = syscall(SYS_gettid);
