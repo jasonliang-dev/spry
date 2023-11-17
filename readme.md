@@ -63,7 +63,7 @@ Build `src/spry.cpp` and `src/deps.cpp` with a C++17 compiler.
 An optimized build of Spry using MSVC looks like this:
 
 ```sh
-cl /std:c++17 /O2 /EHsc /DNOMINMAX /Isrc/deps/box2d src/spry.cpp src/deps.cpp
+cl /std:c++17 /O2 /EHsc /Isrc/deps/box2d src/spry.cpp src/deps.cpp
 ```
 
 Depending on your platform, you might need to link to some system libraries.
