@@ -108,3 +108,13 @@ void os_sleep(u32 ms) {
 void os_yield() { sched_yield(); }
 
 #endif // IS_LINUX
+
+#ifdef IS_HTML5
+
+String os_program_path() { return {}; }
+u64 os_file_modtime(const char *filename) { return 0; }
+void os_high_timer_resolution() {}
+void os_sleep(u32 ms) {}
+void os_yield() {}
+
+#endif // IS_HTML5

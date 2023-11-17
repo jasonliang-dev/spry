@@ -66,8 +66,7 @@ static void init() {
   {
     PROFILE_BLOCK("miniaudio");
 
-    ma_engine_config ma_config = {};
-    ma_config.channels = 2;
+    ma_engine_config ma_config = ma_engine_config_init();
     ma_config.sampleRate = 44100;
     ma_result res = ma_engine_init(&ma_config, &g_app->audio_engine);
     if (res != MA_SUCCESS) {
