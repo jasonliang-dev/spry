@@ -16,22 +16,20 @@ struct Assets {
   HashMap<Asset> table;
   RWLock rw_lock;
 
-  atomic_int shutdown_request;
+  std::atomic_bool shutdown_request;
   Thread *reload_thread;
   Array<FileChange> changes;
 };
 
-static Assets g_assets;
+static Assets g_assets = {};
 
 static i32 hot_reload_thread(void *) {
   u32 reload_interval = atomic_load(&g_app->reload_interval);
 
-  while (atomic_load(&g_assets.shutdown_request) == 0) {
+  while (!atomic_load(&g_assets.shutdown_request)) {
     PROFILE_BLOCK("hot reload");
 
     os_sleep(reload_interval);
-
-    g_assets.changes.len = 0;
 
     {
       PROFILE_BLOCK("check for updates");
@@ -39,6 +37,7 @@ static i32 hot_reload_thread(void *) {
       rw_shared_lock(&g_assets.rw_lock);
       defer(rw_shared_unlock(&g_assets.rw_lock));
 
+      g_assets.changes.len = 0;
       for (auto [k, v] : g_assets.table) {
         PROFILE_BLOCK("read modtime");
 
@@ -105,16 +104,13 @@ static i32 hot_reload_thread(void *) {
   return 0;
 }
 
-void assets_setup() {
-  g_assets = {};
-  g_assets.rw_lock = rw_make();
-}
+void assets_setup() { g_assets.rw_lock = rw_make(); }
 
 void assets_shutdown() {
   if (g_assets.reload_thread != nullptr) {
     PROFILE_BLOCK("wait for hot reload");
 
-    atomic_store(&g_assets.shutdown_request, 1);
+    atomic_store(&g_assets.shutdown_request, true);
     thread_join(g_assets.reload_thread);
   }
   array_trash(&g_assets.changes);

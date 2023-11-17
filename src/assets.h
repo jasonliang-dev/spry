@@ -1,6 +1,5 @@
 #pragma once
 
-#include "sync.h"
 #include "deps/lua/lua.h"
 #include "image.h"
 #include "sprite.h"

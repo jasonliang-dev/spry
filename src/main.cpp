@@ -2,7 +2,6 @@
 #include "app.h"
 #include "array.h"
 #include "assets.h"
-#include "sync.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/lua/lualib.h"
@@ -19,8 +18,10 @@
 #include "prelude.h"
 #include "profile.h"
 #include "strings.h"
+#include "sync.h"
 #include "vfs.h"
 
+static Mutex g_init_mtx;
 static sgl_pipeline g_pipeline;
 
 FORMAT_ARGS(1)
@@ -37,6 +38,9 @@ static void panic(const char *fmt, ...) {
 
 static void init() {
   PROFILE_FUNC();
+
+  mutex_lock(&g_init_mtx);
+  defer(mutex_unlock(&g_init_mtx));
 
   {
     PROFILE_BLOCK("sokol");
@@ -344,6 +348,8 @@ static void cleanup() {
   g_allocator->trash();
   delete g_allocator;
 
+  mutex_trash(&g_init_mtx);
+
 #ifdef DEBUG
   printf("bye\n");
 #endif
@@ -432,6 +438,10 @@ static void load_all_lua_scripts(lua_State *L) {
 /* extern(prelude.h) */ Allocator *g_allocator;
 
 sapp_desc sokol_main(int argc, char **argv) {
+  g_init_mtx = mutex_make();
+  mutex_lock(&g_init_mtx);
+  defer(mutex_unlock(&g_init_mtx));
+
 #ifdef DEBUG
   g_allocator = new DebugAllocator();
 #else
@@ -489,7 +499,7 @@ commands:
   }
 
   g_app = (App *)mem_alloc(sizeof(App));
-  *g_app = {};
+  memset(g_app, 0, sizeof(App));
 
   setup_lua();
   lua_State *L = g_app->L;

@@ -1,7 +1,55 @@
 #include "sync.h"
 #include "prelude.h"
+#include <handleapi.h>
+#include <synchapi.h>
 
 #ifdef IS_WIN32
+
+Mutex mutex_make() { return {}; }
+void mutex_trash(Mutex *mtx) {}
+void mutex_lock(Mutex *mtx) { AcquireSRWLockExclusive(&mtx->srwlock); }
+void mutex_unlock(Mutex *mtx) { ReleaseSRWLockExclusive(&mtx->srwlock); }
+
+bool mutex_try_lock(Mutex *mtx) {
+  BOOLEAN ok = TryAcquireSRWLockExclusive(&mtx->srwlock);
+  return ok != 0;
+}
+
+Cond cond_make() {
+  Cond cv = {};
+  InitializeConditionVariable(&cv.cv);
+  return cv;
+}
+
+void cond_trash(Cond *cv) {}
+void cond_signal(Cond *cv) { WakeConditionVariable(&cv->cv); }
+void cond_broadcast(Cond *cv) { WakeAllConditionVariable(&cv->cv); }
+
+void cond_wait(Cond *cv, Mutex *mtx) {
+  SleepConditionVariableSRW(&cv->cv, &mtx->srwlock, INFINITE, 0);
+}
+
+RWLock rw_make() { return {}; }
+void rw_trash(RWLock *rw) {}
+void rw_shared_lock(RWLock *rw) { AcquireSRWLockShared(&rw->srwlock); }
+void rw_shared_unlock(RWLock *rw) { ReleaseSRWLockShared(&rw->srwlock); }
+void rw_unique_lock(RWLock *rw) { AcquireSRWLockExclusive(&rw->srwlock); }
+void rw_unique_unlock(RWLock *rw) { ReleaseSRWLockExclusive(&rw->srwlock); }
+
+Thread *thread_make(ThreadStart fn, void *udata) {
+  DWORD id = 0;
+  HANDLE handle =
+      CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)fn, udata, 0, &id);
+  return (Thread *)handle;
+}
+
+void thread_join(Thread *t) {
+  WaitForSingleObject((HANDLE)t, INFINITE);
+  CloseHandle((HANDLE)t);
+}
+
+uint64_t this_thread_id() { return GetCurrentThreadId(); }
+
 #endif
 
 #ifdef IS_LINUX
@@ -55,7 +103,7 @@ Thread *thread_make(ThreadStart fn, void *udata) {
 void thread_join(Thread *t) { pthread_join((pthread_t)t, nullptr); }
 
 uint64_t this_thread_id() {
-  static thread_local uint64_t s_tid = syscall(SYS_gettid);
+  thread_local uint64_t s_tid = syscall(SYS_gettid);
   return s_tid;
 }
 

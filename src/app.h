@@ -10,7 +10,7 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "draw.h"
-#include <stdatomic.h>
+#include <atomic>
 
 struct AppTime {
   u64 last;
@@ -27,8 +27,8 @@ struct App {
 
   AppTime time;
 
-  atomic_bool hot_reload_enabled;
-  atomic_uint reload_interval;
+  std::atomic_bool hot_reload_enabled;
+  std::atomic_uint reload_interval;
 
   FontFamily *default_font;
 
