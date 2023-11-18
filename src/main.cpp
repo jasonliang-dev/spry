@@ -75,7 +75,7 @@ static void init() {
     }
   }
 
-  renderer_setup(&g_app->renderer);
+  renderer_reset(&g_app->renderer);
 
   g_app->time.last = stm_now();
 
@@ -209,8 +209,7 @@ static void frame() {
       font_load_default(g_app->default_font);
     }
 
-    g_app->renderer.draw_colors[g_app->renderer.draw_colors_len - 1] = {
-        255, 255, 255, 255};
+    renderer_reset(&g_app->renderer);
 
     float x = 10;
     float y = 10;
@@ -355,21 +354,6 @@ static void cleanup() {
 #endif
 }
 
-static int spry_require_lua_script(lua_State *L) {
-  PROFILE_FUNC();
-
-  String path = luax_check_string(L, 1);
-
-  Asset asset = {};
-  bool ok = asset_load(AssetKind_LuaRef, path, &asset);
-  if (!ok) {
-    return 0;
-  }
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, asset.lua_ref);
-  return 1;
-}
-
 static void setup_lua() {
   PROFILE_FUNC();
 
@@ -384,11 +368,6 @@ static void setup_lua() {
 
   // add error message handler. always at the bottom of stack.
   lua_pushcfunction(L, luax_msgh);
-
-  lua_getglobal(L, "spry");
-  lua_pushcfunction(L, spry_require_lua_script);
-  lua_setfield(L, -2, "_require_lua_script");
-  lua_pop(L, 1);
 
   const char *bootstrap =
 #include "bootstrap.lua"

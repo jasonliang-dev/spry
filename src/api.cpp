@@ -1368,6 +1368,21 @@ static int open_mt_b2_world(lua_State *L) {
 
 // spry api
 
+static int spry_require_lua_script(lua_State *L) {
+  PROFILE_FUNC();
+
+  String path = luax_check_string(L, 1);
+
+  Asset asset = {};
+  bool ok = asset_load(AssetKind_LuaRef, path, &asset);
+  if (!ok) {
+    return 0;
+  }
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, asset.lua_ref);
+  return 1;
+}
+
 static int spry_version(lua_State *L) {
   lua_pushstring(L, SPRY_VERSION);
   return 1;
@@ -1893,6 +1908,9 @@ static int spry_b2_world(lua_State *L) {
 
 static int open_spry(lua_State *L) {
   luaL_Reg reg[] = {
+      // internal
+      {"_require_lua_script", spry_require_lua_script},
+
       // core
       {"version", spry_version},
       {"quit", spry_quit},

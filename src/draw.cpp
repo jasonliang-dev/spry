@@ -8,7 +8,7 @@
 #include "strings.h"
 #include <math.h>
 
-void renderer_setup(Renderer2D *ren) {
+void renderer_reset(Renderer2D *ren) {
   ren->clear_color[0] = 0.0f;
   ren->clear_color[1] = 0.0f;
   ren->clear_color[2] = 0.0f;

@@ -54,7 +54,7 @@ struct Renderer2D {
   u32 sampler;
 };
 
-void renderer_setup(Renderer2D *ren);
+void renderer_reset(Renderer2D *ren);
 void renderer_apply_color(Renderer2D *ren);
 bool renderer_push_color(Renderer2D *ren, Color c);
 bool renderer_pop_color(Renderer2D *ren);
