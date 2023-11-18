@@ -97,7 +97,6 @@
 #define MA_ENABLE_WEBAUDIO
 #define MA_NO_ENCODING
 #define MA_NO_GENERATION
-#define MA_NO_RESOURCE_MANAGER
 #define MINIAUDIO_IMPLEMENTATION
 #include "deps/miniaudio.h"
 

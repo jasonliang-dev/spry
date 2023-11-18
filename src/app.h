@@ -49,6 +49,7 @@ struct App {
   float scroll_x;
   float scroll_y;
 
+  void *miniaudio_vfs;
   ma_engine audio_engine;
   Array<Sound *> garbage_sounds;
 };

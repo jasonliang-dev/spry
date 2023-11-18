@@ -395,3 +395,105 @@ bool vfs_read_entire_file(String *out, String filepath) {
 bool vfs_list_all_files(Array<String> *files) {
   return g_filesystem->list_all_files(files);
 }
+
+struct AudioFile {
+  u8 *buf;
+  u64 cursor;
+  u64 len;
+};
+
+void *vfs_for_miniaudio() {
+  ma_vfs_callbacks vtbl = {};
+
+  vtbl.onOpen = [](ma_vfs *pVFS, const char *pFilePath, ma_uint32 openMode,
+                   ma_vfs_file *pFile) -> ma_result {
+    String contents = {};
+
+    if (openMode & MA_OPEN_MODE_WRITE) {
+      return MA_ERROR;
+    }
+
+    bool ok = vfs_read_entire_file(&contents, pFilePath);
+    if (!ok) {
+      return MA_ERROR;
+    }
+
+    AudioFile *file = (AudioFile *)mem_alloc(sizeof(AudioFile));
+    file->buf = (u8 *)contents.data;
+    file->len = contents.len;
+    file->cursor = 0;
+
+    *pFile = file;
+    return MA_SUCCESS;
+  };
+
+  vtbl.onClose = [](ma_vfs *pVFS, ma_vfs_file file) -> ma_result {
+    AudioFile *f = (AudioFile *)file;
+    mem_free(f->buf);
+    mem_free(f);
+    return MA_SUCCESS;
+  };
+
+  vtbl.onRead = [](ma_vfs *pVFS, ma_vfs_file file, void *pDst,
+                   size_t sizeInBytes, size_t *pBytesRead) -> ma_result {
+    AudioFile *f = (AudioFile *)file;
+
+    u64 remaining = f->len - f->cursor;
+    u64 len = remaining < sizeInBytes ? remaining : sizeInBytes;
+    memcpy(pDst, &f->buf[f->cursor], len);
+
+    if (pBytesRead != nullptr) {
+      *pBytesRead = len;
+    }
+
+    if (len != sizeInBytes) {
+      return MA_AT_END;
+    }
+
+    return MA_SUCCESS;
+  };
+
+  vtbl.onWrite = [](ma_vfs *pVFS, ma_vfs_file file, const void *pSrc,
+                    size_t sizeInBytes, size_t *pBytesWritten) -> ma_result {
+    return MA_NOT_IMPLEMENTED;
+  };
+
+  vtbl.onSeek = [](ma_vfs *pVFS, ma_vfs_file file, ma_int64 offset,
+                   ma_seek_origin origin) -> ma_result {
+    AudioFile *f = (AudioFile *)file;
+
+    i64 seek = 0;
+    switch (origin) {
+    case ma_seek_origin_start: seek = offset; break;
+    case ma_seek_origin_end: seek = f->len + offset; break;
+    case ma_seek_origin_current:
+    default: seek = f->cursor + offset; break;
+    }
+
+    if (seek < 0 || seek > f->len) {
+      return MA_ERROR;
+    }
+
+    f->cursor = (u64)seek;
+    return MA_SUCCESS;
+  };
+
+  vtbl.onTell = [](ma_vfs *pVFS, ma_vfs_file file,
+                   ma_int64 *pCursor) -> ma_result {
+    AudioFile *f = (AudioFile *)file;
+    *pCursor = f->cursor;
+    return MA_SUCCESS;
+  };
+
+  vtbl.onInfo = [](ma_vfs *pVFS, ma_vfs_file file,
+                   ma_file_info *pInfo) -> ma_result {
+    AudioFile *f = (AudioFile *)file;
+    pInfo->sizeInBytes = f->len;
+    return MA_SUCCESS;
+  };
+
+  ma_vfs_callbacks *ptr =
+      (ma_vfs_callbacks *)mem_alloc(sizeof(ma_vfs_callbacks));
+  *ptr = vtbl;
+  return ptr;
+}

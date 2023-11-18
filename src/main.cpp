@@ -66,9 +66,12 @@ static void init() {
   {
     PROFILE_BLOCK("miniaudio");
 
+    g_app->miniaudio_vfs = vfs_for_miniaudio();
+
     ma_engine_config ma_config = ma_engine_config_init();
     ma_config.channels = 2;
     ma_config.sampleRate = 44100;
+    ma_config.pResourceManagerVFS = g_app->miniaudio_vfs;
     ma_result res = ma_engine_init(&ma_config, &g_app->audio_engine);
     if (res != MA_SUCCESS) {
       fatal_error("failed to initialize audio engine");
@@ -307,6 +310,7 @@ static void actually_cleanup() {
   }
   array_trash(&g_app->garbage_sounds);
   ma_engine_uninit(&g_app->audio_engine);
+  mem_free(g_app->miniaudio_vfs);
 
   assets_shutdown();
   mutex_trash(&g_app->frame_mtx);
