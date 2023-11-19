@@ -123,9 +123,9 @@ function generate() {
   }
 
   if (PHP_OS_FAMILY === "Windows") {
-    system("xcopy public dist\\public /s /e /I");
+    system("xcopy static dist\\static /s /e /I");
   } else {
-    system("cp -r public dist/public");
+    system("cp -r static dist/static");
   }
 }
 

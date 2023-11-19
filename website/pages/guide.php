@@ -1,11 +1,13 @@
 <?php
 
-function render_article(string $contents) {
-  ?>
-  <article class="mw7 center prose pt3">
-    <?= Parsedown::instance()->text($contents) ?>
-  </article>
-  <?php
+if (!function_exists('render_article')) {
+  function render_article(string $contents) {
+    ?>
+    <article class="mw7 center prose pt3">
+      <?= Parsedown::instance()->text($contents) ?>
+    </article>
+    <?php
+  }
 }
 
 if (isset($page["use_php"])) {
