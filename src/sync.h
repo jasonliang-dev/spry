@@ -21,6 +21,10 @@ struct RWLock {
   SRWLOCK srwlock;
 };
 
+struct Sema {
+  HANDLE handle;
+};
+
 #else
 #include <pthread.h>
 
@@ -68,6 +72,12 @@ void rw_shared_lock(RWLock *rw);
 void rw_shared_unlock(RWLock *rw);
 void rw_unique_lock(RWLock *rw);
 void rw_unique_unlock(RWLock *rw);
+
+Sema sema_make(int n);
+void sema_trash(Sema *s);
+void sema_post(Sema *s, int n);
+void sema_wait(Sema *s);
+bool sema_timed_wait(Sema *s, uint32_t ms);
 
 using Thread = uintptr_t;
 typedef int(ThreadStart)(void *);

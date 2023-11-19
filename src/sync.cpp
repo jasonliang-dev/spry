@@ -68,6 +68,21 @@ void rw_shared_unlock(RWLock *rw) { ReleaseSRWLockShared(&rw->srwlock); }
 void rw_unique_lock(RWLock *rw) { AcquireSRWLockExclusive(&rw->srwlock); }
 void rw_unique_unlock(RWLock *rw) { ReleaseSRWLockExclusive(&rw->srwlock); }
 
+Sema sema_make(int n) {
+  Sema s = {};
+  s.handle = CreateSemaphoreA(nullptr, n, LONG_MAX, nullptr);
+  return s;
+}
+
+void sema_trash(Sema *s) { CloseHandle(s->handle); }
+void sema_post(Sema *s, int n) { ReleaseSemaphore(s->handle, n, nullptr); }
+void sema_wait(Sema *s) { WaitForSingleObjectEx(s->handle, INFINITE, false); }
+
+bool sema_timed_wait(Sema *s, uint32_t ms) {
+  DWORD wait = WaitForSingleObjectEx(s->handle, ms, false);
+  return wait == WAIT_OBJECT_0;
+}
+
 Thread *thread_make(ThreadStart fn, void *udata) {
   DWORD id = 0;
   HANDLE handle =
