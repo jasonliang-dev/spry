@@ -1,5 +1,4 @@
 #pragma once
 
-#include "deps/lua/lua.h"
-
+struct lua_State;
 void open_spry_api(lua_State *L);

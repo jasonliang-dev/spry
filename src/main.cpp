@@ -283,7 +283,6 @@ static void frame() {
     if (sound->dead_end) {
       assert(sound->zombie);
       sound_trash(sound);
-      mem_free(sound);
 
       sounds[i] = sounds[sounds.len - 1];
       sounds.len--;
@@ -306,9 +305,9 @@ static void actually_cleanup() {
 
   for (Sound *sound : g_app->garbage_sounds) {
     sound_trash(sound);
-    mem_free(sound);
   }
   array_trash(&g_app->garbage_sounds);
+
   ma_engine_uninit(&g_app->audio_engine);
   mem_free(g_app->miniaudio_vfs);
 
@@ -349,7 +348,7 @@ static void cleanup() {
 #endif
 
   g_allocator->trash();
-  delete g_allocator;
+  operator delete(g_allocator);
 
   mutex_trash(&g_init_mtx);
 

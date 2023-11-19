@@ -2,7 +2,7 @@
 #include "app.h"
 #include "assets.h"
 #include "atlas.h"
-#include "audio.h"
+#include "sound.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/sokol_app.h"
@@ -348,7 +348,6 @@ static int mt_sound_gc(lua_State *L) {
 
   if (ma_sound_at_end(&sound->ma)) {
     sound_trash(sound);
-    mem_free(sound);
   } else {
     sound->zombie = true;
     array_push(&g_app->garbage_sounds, sound);
@@ -358,10 +357,13 @@ static int mt_sound_gc(lua_State *L) {
 }
 
 static int mt_sound_frames(lua_State *L) {
-  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
-  Sound *sound = *udata;
+  u64 frames = 0;
+  ma_result res = ma_sound_get_length_in_pcm_frames(sound_ma(L), &frames);
+  if (res != MA_SUCCESS) {
+    return 0;
+  }
 
-  lua_pushnumber(L, (lua_Number)sound->audio->frames);
+  lua_pushinteger(L, (lua_Integer)frames);
   return 1;
 }
 
@@ -512,39 +514,6 @@ static int open_mt_sound(lua_State *L) {
   };
 
   luax_new_class(L, "mt_sound", reg);
-  return 1;
-}
-
-// mt_audio
-
-static int mt_audio_gc(lua_State *L) {
-  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
-  Audio *audio = *udata;
-  audio_unref(audio);
-  return 0;
-}
-
-static int mt_audio_make_sound(lua_State *L) {
-  Audio **udata = (Audio **)luaL_checkudata(L, 1, "mt_audio");
-  Audio *audio = *udata;
-
-  Sound *sound = sound_load(audio);
-  if (sound == nullptr) {
-    return 0;
-  }
-
-  luax_ptr_userdata(L, sound, "mt_sound");
-  return 1;
-}
-
-static int open_mt_audio(lua_State *L) {
-  luaL_Reg reg[] = {
-      {"__gc", mt_audio_gc},
-      {"make_sound", mt_audio_make_sound},
-      {nullptr, nullptr},
-  };
-
-  luax_new_class(L, "mt_audio", reg);
   return 1;
 }
 
@@ -1830,17 +1799,15 @@ static int spry_font_load(lua_State *L) {
   return 1;
 }
 
-static int spry_audio_load(lua_State *L) {
+static int spry_sound_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
-  Audio *audio = (Audio *)mem_alloc(sizeof(Audio));
-  bool ok = audio_load(audio, str);
-  if (!ok) {
-    mem_free(audio);
+  Sound *sound = sound_load(str);
+  if (sound == nullptr) {
     return 0;
   }
 
-  luax_ptr_userdata(L, audio, "mt_audio");
+  luax_ptr_userdata(L, sound, "mt_sound");
   return 1;
 }
 
@@ -1956,7 +1923,7 @@ static int open_spry(lua_State *L) {
       {"make_sampler", spry_make_sampler},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
-      {"audio_load", spry_audio_load},
+      {"sound_load", spry_sound_load},
       {"sprite_load", spry_sprite_load},
       {"atlas_load", spry_atlas_load},
       {"tilemap_load", spry_tilemap_load},
@@ -1970,10 +1937,10 @@ static int open_spry(lua_State *L) {
 
 void open_spry_api(lua_State *L) {
   lua_CFunction mt_funcs[] = {
-      open_mt_sampler,     open_mt_image,   open_mt_font,
-      open_mt_sound,       open_mt_audio,   open_mt_sprite,
-      open_mt_atlas_image, open_mt_atlas,   open_mt_tilemap,
-      open_mt_b2_fixture,  open_mt_b2_body, open_mt_b2_world,
+      open_mt_sampler, open_mt_image,    open_mt_font,
+      open_mt_sound,   open_mt_sprite,   open_mt_atlas_image,
+      open_mt_atlas,   open_mt_tilemap,  open_mt_b2_fixture,
+      open_mt_b2_body, open_mt_b2_world,
   };
 
   for (u32 i = 0; i < array_size(mt_funcs); i++) {

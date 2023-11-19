@@ -52,13 +52,11 @@ using u32 = uint32_t;
 using u64 = uint64_t;
 
 struct Allocator {
-  virtual ~Allocator() = 0;
   virtual void make() = 0;
   virtual void trash() = 0;
   virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
   virtual void free(void *ptr) = 0;
 };
-inline Allocator::~Allocator() {}
 
 struct HeapAllocator : Allocator {
   void make() {}

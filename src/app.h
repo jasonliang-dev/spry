@@ -4,7 +4,7 @@
 #define SPRY_VERSION_MINOR "7"
 #define SPRY_VERSION SPRY_VERSION_MAJOR "." SPRY_VERSION_MINOR
 
-#include "audio.h"
+#include "sound.h"
 #include "deps/lua/lua.h"
 #include "deps/luaalloc.h"
 #include "deps/sokol_gfx.h"
