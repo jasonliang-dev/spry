@@ -111,7 +111,7 @@ function Player.begin_contact(a, b)
     if vy > 10 then
       self.body:set_velocity(vx, -150)
       self.spring:pull(0.2)
-      audio_beep:make_sound():start()
+      spry.sound_load "beep.ogg":start()
     end
 
   elseif mt == SpringBox then
@@ -120,7 +120,7 @@ function Player.begin_contact(a, b)
 
       self.body:set_velocity(vx, -300)
       other.is_up = true
-      audio_sparkle:make_sound():start()
+      spry.sound_load "sparkle.ogg":start()
     end
 
   elseif mt == Spikes then

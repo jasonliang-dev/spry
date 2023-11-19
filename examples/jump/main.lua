@@ -9,18 +9,15 @@ function spry.start()
   font = spry.default_font()
   atlas = spry.atlas_load "atlas.rtpa"
 
-  audio_music = spry.audio_load "king-around-here.ogg"
-  audio_beep = spry.audio_load "beep.ogg"
-  audio_sparkle = spry.audio_load "sparkle.ogg"
+  music = spry.sound_load "king-around-here.ogg"
+  music:set_loop(true)
+  music:set_vol(0.25)
+  music:start()
 
   jump:reset()
 
   spry.clear_color(252, 223, 205, 255)
 
-  local music = audio_music:make_sound()
-  music:set_loop(true)
-  music:set_vol(0.25)
-  music:start()
 
   muted = spry.platform() == "html5"
 end

@@ -1,13 +1,10 @@
 function spry.start()
   font = spry.default_font()
-  audio_hit = spry.audio_load "hit01.ogg"
-  audio_bgm = spry.audio_load "bgm.ogg"
-  audio_engine = spry.audio_load "engine.ogg"
 
-  music = audio_bgm:make_sound()
+  music = spry.sound_load "bgm.ogg"
   music:set_loop(true)
 
-  engine = audio_engine:make_sound()
+  engine = spry.sound_load "engine.ogg"
   engine:set_loop(true)
   engine:set_vol(0.1)
   engine:start()
@@ -15,8 +12,12 @@ function spry.start()
   music_playing = false
 end
 
+local function sound()
+  return spry.sound_load "hit01.ogg"
+end
+
 local function play_at(vol)
-  local s = audio_hit:make_sound()
+  local s = spry.sound_load "hit01.ogg"
   s:set_vol(vol)
   s:start()
 end
@@ -74,25 +75,25 @@ function spry.frame(dt)
   if spry.key_press "0" then play_at(1.0) end
 
   if spry.key_press "left" then
-    local s = audio_hit:make_sound()
+    local s = sound()
     s:set_pan(-0.5)
     s:start()
   end
 
   if spry.key_press "right" then
-    local s = audio_hit:make_sound()
+    local s = sound()
     s:set_pan(0.5)
     s:start()
   end
 
   if spry.key_press "up" then
-    local s = audio_hit:make_sound()
+    local s = sound()
     s:set_pitch(2)
     s:start()
   end
 
   if spry.key_press "down" then
-    local s = audio_hit:make_sound()
+    local s = sound()
     s:set_pitch(0.5)
     s:start()
   end
