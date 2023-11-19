@@ -588,18 +588,12 @@ $api_reference = [
       ],
       "return" => false,
     ],
-    "spry.audio_load" => [
-      "desc" => "Create an audio object from a file.",
-      "example" => "local click_sound = spry.audio_load 'click.ogg'",
+    "spry.sound_load" => [
+      "desc" => "Create a sound source from a file.",
+      "example" => "local sound = spry.sound_load 'click.ogg'",
       "args" => [
         "file" => ["string", "The audio file to open."],
       ],
-      "return" => "Audio",
-    ],
-    "Audio:make_sound" => [
-      "desc" => "Create a sound source.",
-      "example" => "local sound = click_audio:make_sound()",
-      "args" => [],
       "return" => "Sound",
     ],
     "Sound:frames" => [
