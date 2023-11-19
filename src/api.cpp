@@ -357,7 +357,7 @@ static int mt_sound_gc(lua_State *L) {
 }
 
 static int mt_sound_frames(lua_State *L) {
-  u64 frames = 0;
+  unsigned long long frames = 0;
   ma_result res = ma_sound_get_length_in_pcm_frames(sound_ma(L), &frames);
   if (res != MA_SUCCESS) {
     return 0;
