@@ -575,7 +575,7 @@ $api_reference = [
       "return" => false,
     ],
   ],
-  "Audio" => [
+  "Sound" => [
     "spry.set_master_volume" => [
       "desc" => "Set the master volume for the program.",
       "example" => "

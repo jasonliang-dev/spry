@@ -31,7 +31,10 @@
 </div>
 <script type="text/javascript">
   var canvas = document.getElementById('canvas')
-  var Module = { canvas }
+  var Module = {
+    canvas,
+    _ma_device__on_notification_unlocked() {},
+  }
   var spryMount = '<?= $page["mount"] ?>'
 </script>
 <script src="static/demos/spry.js" type="text/javascript"></script>
