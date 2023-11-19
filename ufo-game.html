@@ -155,9 +155,10 @@
       </div>
     </div>
     <div style="margin-top: 3.5rem">
-        <div class="mw7 center prose pt3"><h1>UFO Game</h1>
+          <article class="mw7 center prose pt3">
+      <h1>UFO Game</h1>
 <video controls class="w-100 mw7 center db">
-  <source src="static/ufo-demo.webm" type="video/webm">
+  <source src="static/assets/ufo-demo.webm" type="video/webm">
 </video>
 <p>We'll be creating a little demo that sees a UFO move around the screen using
 the keyboard. Create a new folder, then add the following code to a new
@@ -167,7 +168,7 @@ the keyboard. Create a new folder, then add the following code to a new
 end</code></pre>
 <p><a href="https://kenney.nl/assets/alien-ufo-pack">kenney.nl</a> provides free
 (public domain) game assets. One of the asset packs includes
-<a href="static/green-ufo.png">a green UFO</a>. Add it to the game folder, and load it
+<a href="static/assets/green-ufo.png">a green UFO</a>. Add it to the game folder, and load it
 using <code>spry.image_load</code>.</p>
 <pre><code class="language-lua">function spry.start()
   ufo = spry.image_load 'green-ufo.png'
@@ -264,8 +265,8 @@ speed of both <code>vx</code> and <code>vy</code> is always 1.</p>
 <p>After setting keyboard input, but before moving the player, add the following line:</p>
 <pre><code class="language-lua">vx, vy = normalize(vx, vy)</code></pre>
 <p>Run the game again, and you'll see that the player moves at the same speed
-regardless of direction.</p></div>
-    <footer class="flex flex-wrap center mv5 mw7">
+regardless of direction.</p>    </article>
+      <footer class="flex flex-wrap center mv5 mw7">
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang
     </div>

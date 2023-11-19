@@ -155,30 +155,28 @@
       </div>
     </div>
     <div style="margin-top: 3.5rem">
-        <div class="mw7 center prose pt3"><h2>Hot Reloading</h2>
+          <article class="mw7 center prose pt3">
+      <h2>Hot Reloading</h2>
 <p>Spry has the ablity to hot reload recently changed Lua scripts, Aseprite
 files, LDtk files, and images. While Spry is running, you can update a file
 and the changes will be reflected without having to restart your program.</p>
 <video autoplay muted loop class="w-100 mw7 center db mb2">
-  <source src="static/hot-lua.webm" type="video/webm">
+  <source src="static/assets/hot-lua.webm" type="video/webm">
 </video>
 <video autoplay muted loop class="w-100 mw7 center db mb2">
-  <source src="static/hot-png.webm" type="video/webm">
+  <source src="static/assets/hot-png.webm" type="video/webm">
 </video>
 <video autoplay muted loop class="w-100 mw7 center db mb2">
-  <source src="static/hot-ldtk.webm" type="video/webm">
+  <source src="static/assets/hot-ldtk.webm" type="video/webm">
 </video>
 <p>Hot reloading Lua scripts will not update any references or callbacks. For
-example, if you modify a class that has a draw method, only newly created
-instances of the class will use the new version of the method.</p>
-<pre><code class="language-lua">class 'Enemy'
-
-function Enemy:draw()
-  -- if you update `rot` here, only new enemies will use the updated value.
-  -- existing enemies use the previous value.
-  local rot = math.pi
-
-  self.img:draw(self.x, self.y, rot)
+example, If you change a callback function in a class constructor, old
+instances will still hold onto the old function.</p>
+<pre><code class="language-lua">function Enemy:new()
+  self.timer = interval(0.1, function()
+    -- update this function and save the file.
+    -- changes are reflected for new Enemy instances only.
+  end)
 end</code></pre>
 <p>Hot reloads are done by checking the modified time of each loaded file. By
 default, this is done every 1/10th of a second. To change this, set
@@ -186,14 +184,15 @@ default, this is done every 1/10th of a second. To change this, set
 <pre><code class="language-lua">function spry.conf(t)
   t.reload_interval = 0.5 -- reload every half second
 end</code></pre>
-<p>You can even set the reload interval to 0 if you want to poll for changes
-every frame.</p>
+<p>You can even set the reload interval to 0 if you want to poll for changes as
+fast as possible, but it increases the chance that Spry is reading the file
+you want to write to, and it wastes disk usage.</p>
 <p>To disable hot reloading, set <code>hot_reload</code> to <code>false</code> in <code>spry.conf</code>.</p>
 <pre><code class="language-lua">function spry.conf(t)
   t.hot_reload = false -- disable hot reloading
 end</code></pre>
-<p>Hot reloading is not supported for web builds.</p></div>
-    <footer class="flex flex-wrap center mv5 mw7">
+<p>Hot reloading is not supported for web builds.</p>    </article>
+      <footer class="flex flex-wrap center mv5 mw7">
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang
     </div>

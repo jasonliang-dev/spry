@@ -155,45 +155,89 @@
       </div>
     </div>
     <div style="margin-top: 3.5rem">
-      <div class="mw8 center">
+      <div x-cloak x-data="{ open: false }" class="mw8 center">
+  <div x-show="open" @click="open = false" x-transition.opacity class="fixed absolute--fill bg-white-50 dm-bg-black-50 z-3 ml-100px"></div>
   <div
-    class="dn db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden"
-    style="width: 300px; top: 3.5rem"
+    x-show="!open"
+    class="db dn-l fixed bottom-0 left-0 mb3 z-4 shadow ba bl-0 b--black-10 dm-b--white-20 bg-near-white dm-bg-near-black"
+    style="border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem"
   >
-    <form
-      onsubmit="event.preventDefault()"
-      class="top-0 pt3 pb4 flex items-center bg-fade-down"
-      style="position: sticky"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px; margin-bottom: 1px" class="gray absolute ml2">
-        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+    <button @click="open = true" class="bg-none bn pointer pa3 flex dark-gray dm-silver">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
       </svg>
-      <input
-        id="search"
-        autocomplete="off"
-        class="input-reset shadow-sm ba b--black-20 dm-b--white-20 placeholder black dm-white br2 pv2 pl4 pr2 w-100 bg-white dm-bg-black"
-        type="text"
-        placeholder="Search"
-        style="outline-offset: 2px"
-      />
-    </form>
-    <ul id="function-list" class="list pl1 mt0" style="margin-top: -1rem">
+    </button>
+  </div>
+  <div
+    class="db-l fixed bottom-0 pl1 pr2 pb2 overflow-y-scroll overflow-x-hidden z-5 bg-near-white dm-bg-near-black translate-x-0-l"
+    style="transition: transform 200ms; width: 70%; max-width: 300px; top: 3.5rem"
+    :class="open ? '' : 'translate-x-n120px'"
+  >
+    <div class="top-0 bg-fade-down z-5" style="position: sticky">
+      <form onsubmit="event.preventDefault()" class="flex items-center pt3 pb3">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px; margin-bottom: 1px" class="gray absolute ml2">
+          <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+        </svg>
+        <input
+          id="search"
+          autocomplete="off"
+          class="input-reset shadow-sm ba b--black-20 dm-b--white-20 placeholder black dm-white br2 pv2 pl4 pr2 w-100 bg-white dm-bg-black"
+          type="text"
+          placeholder="Search"
+          style="outline-offset: 2px"
+        />
+      </form>
+    </div>
+    <button
+      x-data="{ expand: false }"
+      class="bn pointer f6 fw6 dark-gray dm-silver mb3 bg-none underline-hover"
+      @click="
+        expand = !expand
+        for (const detail of details) {
+          detail.open = expand
+          detail.dataset.open = expand
+        }
+      "
+      x-text="expand ? 'Collapse all' : 'Expand all'"
+    >Expand all</button>
+    <ul id="function-list" class="list pl1" style="margin-top: -1rem">
               <li class="mt3">
           <details>
             <summary class="fw6 pointer">Callback Functions</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.conf">
-                  <a href="#spry.conf" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.conf"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.conf</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.start">
-                  <a href="#spry.start" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.start"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.start</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.frame">
-                  <a href="#spry.frame" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.frame"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.frame</code>
                   </a>
                 </li>
@@ -202,136 +246,423 @@
         </li>
               <li class="mt3">
           <details>
-            <summary class="fw6 pointer">Core Functions</summary>
+            <summary class="fw6 pointer">Core</summary>
             <ul class="list pl0 mt2">
+                              <li class="pv1" data-key="spry.version">
+                  <a
+                    href="#spry.version"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>spry.version</code>
+                  </a>
+                </li>
                               <li class="pv1" data-key="spry.quit">
-                  <a href="#spry.quit" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.quit"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.quit</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.platform">
-                  <a href="#spry.platform" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.platform"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.platform</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.dt">
-                  <a href="#spry.dt" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.dt"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.dt</code>
                   </a>
                 </li>
+                              <li class="pv1" data-key="spry.fullscreen">
+                  <a
+                    href="#spry.fullscreen"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>spry.fullscreen</code>
+                  </a>
+                </li>
+                              <li class="pv1" data-key="spry.toggle_fullscreen">
+                  <a
+                    href="#spry.toggle_fullscreen"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>spry.toggle_fullscreen</code>
+                  </a>
+                </li>
                               <li class="pv1" data-key="spry.window_width">
-                  <a href="#spry.window_width" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.window_width"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.window_width</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.window_height">
-                  <a href="#spry.window_height" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.window_height"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.window_height</code>
                   </a>
                 </li>
+                          </ul>
+          </details>
+        </li>
+              <li class="mt3">
+          <details>
+            <summary class="fw6 pointer">Input</summary>
+            <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.key_down">
-                  <a href="#spry.key_down" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.key_down"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.key_down</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.key_press">
-                  <a href="#spry.key_press" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.key_press"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.key_press</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.key_release">
-                  <a href="#spry.key_release" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.key_release"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.key_release</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.mouse_down">
-                  <a href="#spry.mouse_down" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.mouse_down"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.mouse_down</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.mouse_click">
-                  <a href="#spry.mouse_click" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.mouse_click"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.mouse_click</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.mouse_release">
-                  <a href="#spry.mouse_release" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.mouse_release"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.mouse_release</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.mouse_pos">
-                  <a href="#spry.mouse_pos" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.mouse_pos"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.mouse_pos</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.mouse_delta">
-                  <a href="#spry.mouse_delta" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.mouse_delta"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.mouse_delta</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.show_mouse">
-                  <a href="#spry.show_mouse" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.show_mouse"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.show_mouse</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.scroll_wheel">
-                  <a href="#spry.scroll_wheel" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.scroll_wheel"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.scroll_wheel</code>
                   </a>
                 </li>
+                          </ul>
+          </details>
+        </li>
+              <li class="mt3">
+          <details>
+            <summary class="fw6 pointer">Drawing</summary>
+            <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.push_matrix">
-                  <a href="#spry.push_matrix" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.push_matrix"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.push_matrix</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.pop_matrix">
-                  <a href="#spry.pop_matrix" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.pop_matrix"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.pop_matrix</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.translate">
-                  <a href="#spry.translate" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.translate"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.translate</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.rotate">
-                  <a href="#spry.rotate" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.rotate"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.rotate</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.scale">
-                  <a href="#spry.scale" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.scale"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.scale</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.clear_color">
-                  <a href="#spry.clear_color" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.clear_color"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.clear_color</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.push_color">
-                  <a href="#spry.push_color" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.push_color"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.push_color</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.pop_color">
-                  <a href="#spry.pop_color" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.pop_color"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.pop_color</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.draw_filled_rect">
-                  <a href="#spry.draw_filled_rect" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.draw_filled_rect"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.draw_filled_rect</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.draw_line_rect">
-                  <a href="#spry.draw_line_rect" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.draw_line_rect"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.draw_line_rect</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.draw_line_circle">
-                  <a href="#spry.draw_line_circle" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.draw_line_circle"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.draw_line_circle</code>
+                  </a>
+                </li>
+                              <li class="pv1" data-key="spry.draw_line">
+                  <a
+                    href="#spry.draw_line"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>spry.draw_line</code>
+                  </a>
+                </li>
+                          </ul>
+          </details>
+        </li>
+              <li class="mt3">
+          <details>
+            <summary class="fw6 pointer">Sampler</summary>
+            <ul class="list pl0 mt2">
+                              <li class="pv1" data-key="spry.make_sampler">
+                  <a
+                    href="#spry.make_sampler"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>spry.make_sampler</code>
+                  </a>
+                </li>
+                              <li class="pv1" data-key="spry.default_sampler">
+                  <a
+                    href="#spry.default_sampler"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>spry.default_sampler</code>
+                  </a>
+                </li>
+                              <li class="pv1" data-key="sampler:use">
+                  <a
+                    href="#sampler:use"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sampler:use</code>
                   </a>
                 </li>
                           </ul>
@@ -342,22 +673,50 @@
             <summary class="fw6 pointer">Image</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.image_load">
-                  <a href="#spry.image_load" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.image_load"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.image_load</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="image:draw">
-                  <a href="#image:draw" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#image:draw"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Image:draw</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="image:width">
-                  <a href="#image:width" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#image:width"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Image:width</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="image:height">
-                  <a href="#image:height" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#image:height"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Image:height</code>
                   </a>
                 </li>
@@ -369,22 +728,50 @@
             <summary class="fw6 pointer">Font</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.font_load">
-                  <a href="#spry.font_load" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.font_load"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.font_load</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spry.default_font">
-                  <a href="#spry.default_font" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.default_font"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.default_font</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="font:width">
-                  <a href="#font:width" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#font:width"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Font:width</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="font:draw">
-                  <a href="#font:draw" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#font:draw"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Font:draw</code>
                   </a>
                 </li>
@@ -393,110 +780,245 @@
         </li>
               <li class="mt3">
           <details>
-            <summary class="fw6 pointer">Audio</summary>
+            <summary class="fw6 pointer">Sound</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.set_master_volume">
-                  <a href="#spry.set_master_volume" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.set_master_volume"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.set_master_volume</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spry.audio_load">
-                  <a href="#spry.audio_load" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>spry.audio_load</code>
-                  </a>
-                </li>
-                              <li class="pv1" data-key="audio:make_sound">
-                  <a href="#audio:make_sound" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>Audio:make_sound</code>
+                              <li class="pv1" data-key="spry.sound_load">
+                  <a
+                    href="#spry.sound_load"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>spry.sound_load</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:frames">
-                  <a href="#sound:frames" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:frames"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:frames</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:secs">
-                  <a href="#sound:secs" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:secs"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:secs</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:start">
-                  <a href="#sound:start" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:start"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:start</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:stop">
-                  <a href="#sound:stop" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:stop"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:stop</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:seek">
-                  <a href="#sound:seek" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:seek"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:seek</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:vol">
-                  <a href="#sound:vol" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:vol"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:vol</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:set_vol">
-                  <a href="#sound:set_vol" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:set_vol"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:set_vol</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:pan">
-                  <a href="#sound:pan" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:pan"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:pan</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:set_pan">
-                  <a href="#sound:set_pan" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:set_pan"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:set_pan</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:pitch">
-                  <a href="#sound:pitch" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:pitch"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:pitch</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:set_pitch">
-                  <a href="#sound:set_pitch" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:set_pitch"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:set_pitch</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:loop">
-                  <a href="#sound:loop" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:loop"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:loop</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:set_loop">
-                  <a href="#sound:set_loop" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:set_loop"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:set_loop</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:pos">
-                  <a href="#sound:pos" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:pos"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:pos</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:set_pos">
-                  <a href="#sound:set_pos" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:set_pos"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:set_pos</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:vel">
-                  <a href="#sound:vel" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:vel"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:vel</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:set_vel">
-                  <a href="#sound:set_vel" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:set_vel"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:set_vel</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sound:set_fade">
-                  <a href="#sound:set_fade" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sound:set_fade"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Sound:set_fade</code>
                   </a>
                 </li>
@@ -508,43 +1030,99 @@
             <summary class="fw6 pointer">Sprite</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.sprite_load">
-                  <a href="#spry.sprite_load" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.sprite_load"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.sprite_load</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spriterenderer:play">
-                  <a href="#spriterenderer:play" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>SpriteRenderer:play</code>
+                              <li class="pv1" data-key="sprite:play">
+                  <a
+                    href="#sprite:play"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sprite:play</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spriterenderer:update">
-                  <a href="#spriterenderer:update" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>SpriteRenderer:update</code>
+                              <li class="pv1" data-key="sprite:update">
+                  <a
+                    href="#sprite:update"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sprite:update</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spriterenderer:draw">
-                  <a href="#spriterenderer:draw" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>SpriteRenderer:draw</code>
+                              <li class="pv1" data-key="sprite:draw">
+                  <a
+                    href="#sprite:draw"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sprite:draw</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spriterenderer:width">
-                  <a href="#spriterenderer:width" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>SpriteRenderer:width</code>
+                              <li class="pv1" data-key="sprite:width">
+                  <a
+                    href="#sprite:width"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sprite:width</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spriterenderer:height">
-                  <a href="#spriterenderer:height" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>SpriteRenderer:height</code>
+                              <li class="pv1" data-key="sprite:height">
+                  <a
+                    href="#sprite:height"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sprite:height</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spriterenderer:set_frame">
-                  <a href="#spriterenderer:set_frame" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>SpriteRenderer:set_frame</code>
+                              <li class="pv1" data-key="sprite:set_frame">
+                  <a
+                    href="#sprite:set_frame"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sprite:set_frame</code>
                   </a>
                 </li>
-                              <li class="pv1" data-key="spriterenderer:total_frames">
-                  <a href="#spriterenderer:total_frames" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
-                    <code>SpriteRenderer:total_frames</code>
+                              <li class="pv1" data-key="sprite:total_frames">
+                  <a
+                    href="#sprite:total_frames"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Sprite:total_frames</code>
                   </a>
                 </li>
                           </ul>
@@ -555,27 +1133,62 @@
             <summary class="fw6 pointer">Texture Atlas</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.atlas_load">
-                  <a href="#spry.atlas_load" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.atlas_load"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.atlas_load</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="atlas:get_image">
-                  <a href="#atlas:get_image" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#atlas:get_image"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Atlas:get_image</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="atlasimage:draw">
-                  <a href="#atlasimage:draw" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#atlasimage:draw"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>AtlasImage:draw</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="atlasimage:width">
-                  <a href="#atlasimage:width" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#atlasimage:width"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>AtlasImage:width</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="atlasimage:height">
-                  <a href="#atlasimage:height" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#atlasimage:height"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>AtlasImage:height</code>
                   </a>
                 </li>
@@ -587,28 +1200,87 @@
             <summary class="fw6 pointer">Tilemap</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.tilemap_load">
-                  <a href="#spry.tilemap_load" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.tilemap_load"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.tilemap_load</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="tilemap:draw">
-                  <a href="#tilemap:draw" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#tilemap:draw"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Tilemap:draw</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="tilemap:entities">
-                  <a href="#tilemap:entities" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#tilemap:entities"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Tilemap:entities</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="tilemap:make_collision">
-                  <a href="#tilemap:make_collision" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#tilemap:make_collision"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Tilemap:make_collision</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="tilemap:draw_fixtures">
-                  <a href="#tilemap:draw_fixtures" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#tilemap:draw_fixtures"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Tilemap:draw_fixtures</code>
+                  </a>
+                </li>
+                              <li class="pv1" data-key="tilemap:make_graph">
+                  <a
+                    href="#tilemap:make_graph"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Tilemap:make_graph</code>
+                  </a>
+                </li>
+                              <li class="pv1" data-key="tilemap:astar">
+                  <a
+                    href="#tilemap:astar"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
+                    <code>Tilemap:astar</code>
                   </a>
                 </li>
                           </ul>
@@ -619,37 +1291,86 @@
             <summary class="fw6 pointer">Box2D World</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spry.b2_world">
-                  <a href="#spry.b2_world" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spry.b2_world"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>spry.b2_world</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2world:step">
-                  <a href="#b2world:step" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2world:step"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2World:step</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2world:make_static_body">
-                  <a href="#b2world:make_static_body" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2world:make_static_body"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2World:make_static_body</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2world:make_kinematic_body">
-                  <a href="#b2world:make_kinematic_body" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2world:make_kinematic_body"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2World:make_kinematic_body</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2world:make_dynamic_body">
-                  <a href="#b2world:make_dynamic_body" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2world:make_dynamic_body"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2World:make_dynamic_body</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2world:begin_contact">
-                  <a href="#b2world:begin_contact" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2world:begin_contact"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2World:begin_contact</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2world:end_contact">
-                  <a href="#b2world:end_contact" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2world:end_contact"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2World:end_contact</code>
                   </a>
                 </li>
@@ -661,92 +1382,218 @@
             <summary class="fw6 pointer">Box2D Body</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="b2body:destroy">
-                  <a href="#b2body:destroy" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:destroy"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:destroy</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:make_box_fixture">
-                  <a href="#b2body:make_box_fixture" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:make_box_fixture"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:make_box_fixture</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:make_circle_fixture">
-                  <a href="#b2body:make_circle_fixture" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:make_circle_fixture"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:make_circle_fixture</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:position">
-                  <a href="#b2body:position" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:position"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:position</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:velocity">
-                  <a href="#b2body:velocity" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:velocity"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:velocity</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:angle">
-                  <a href="#b2body:angle" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:angle"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:angle</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:linear_damping">
-                  <a href="#b2body:linear_damping" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:linear_damping"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:linear_damping</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:fixed_rotation">
-                  <a href="#b2body:fixed_rotation" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:fixed_rotation"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:fixed_rotation</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:apply_force">
-                  <a href="#b2body:apply_force" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:apply_force"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:apply_force</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:apply_impulse">
-                  <a href="#b2body:apply_impulse" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:apply_impulse"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:apply_impulse</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:set_position">
-                  <a href="#b2body:set_position" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:set_position"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:set_position</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:set_velocity">
-                  <a href="#b2body:set_velocity" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:set_velocity"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:set_velocity</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:set_angle">
-                  <a href="#b2body:set_angle" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:set_angle"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:set_angle</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:set_linear_damping">
-                  <a href="#b2body:set_linear_damping" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:set_linear_damping"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:set_linear_damping</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:set_fixed_rotation">
-                  <a href="#b2body:set_fixed_rotation" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:set_fixed_rotation"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:set_fixed_rotation</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:set_transform">
-                  <a href="#b2body:set_transform" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:set_transform"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:set_transform</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:draw_fixtures">
-                  <a href="#b2body:draw_fixtures" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:draw_fixtures"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:draw_fixtures</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2body:udata">
-                  <a href="#b2body:udata" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2body:udata"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Body:udata</code>
                   </a>
                 </li>
@@ -758,42 +1605,98 @@
             <summary class="fw6 pointer">Box2D Fixture</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="b2fixture:friction">
-                  <a href="#b2fixture:friction" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:friction"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:friction</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2fixture:restitution">
-                  <a href="#b2fixture:restitution" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:restitution"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:restitution</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2fixture:is_sensor">
-                  <a href="#b2fixture:is_sensor" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:is_sensor"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:is_sensor</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2fixture:set_friction">
-                  <a href="#b2fixture:set_friction" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:set_friction"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:set_friction</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2fixture:set_restitution">
-                  <a href="#b2fixture:set_restitution" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:set_restitution"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:set_restitution</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2fixture:set_sensor">
-                  <a href="#b2fixture:set_sensor" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:set_sensor"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:set_sensor</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2fixture:body">
-                  <a href="#b2fixture:body" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:body"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:body</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="b2fixture:udata">
-                  <a href="#b2fixture:udata" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#b2fixture:udata"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>b2Fixture:udata</code>
                   </a>
                 </li>
@@ -805,67 +1708,158 @@
             <summary class="fw6 pointer">2D Vector</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="vec2">
-                  <a href="#vec2" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2:normalize">
-                  <a href="#vec2:normalize" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2:normalize"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2:normalize</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2:distance">
-                  <a href="#vec2:distance" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2:distance"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2:distance</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2:direction">
-                  <a href="#vec2:direction" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2:direction"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2:direction</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2:lerp">
-                  <a href="#vec2:lerp" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2:lerp"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2:lerp</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2:dot">
-                  <a href="#vec2:dot" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2:dot"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2:dot</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2:unpack">
-                  <a href="#vec2:unpack" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2:unpack"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2:unpack</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2.__add">
-                  <a href="#vec2.__add" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2.__add"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2.__add</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2.__sub">
-                  <a href="#vec2.__sub" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2.__sub"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2.__sub</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2.__mul">
-                  <a href="#vec2.__mul" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2.__mul"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2.__mul</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2.__div">
-                  <a href="#vec2.__div" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2.__div"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2.__div</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2:__len">
-                  <a href="#vec2:__len" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2:__len"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2:__len</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="vec2.__eq">
-                  <a href="#vec2.__eq" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#vec2.__eq"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>vec2.__eq</code>
                   </a>
                 </li>
@@ -877,37 +1871,86 @@
             <summary class="fw6 pointer">World</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="world">
-                  <a href="#world" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#world"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>World</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="world:add">
-                  <a href="#world:add" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#world:add"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>World:add</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="world:kill">
-                  <a href="#world:kill" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#world:kill"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>World:kill</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="world:query_id">
-                  <a href="#world:query_id" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#world:query_id"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>World:query_id</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="world:query_mt">
-                  <a href="#world:query_mt" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#world:query_mt"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>World:query_mt</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="world:update">
-                  <a href="#world:update" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#world:update"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>World:update</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="world:draw">
-                  <a href="#world:draw" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#world:draw"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>World:draw</code>
                   </a>
                 </li>
@@ -919,37 +1962,86 @@
             <summary class="fw6 pointer">Entity Component System</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="ecs">
-                  <a href="#ecs" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#ecs"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>ECS</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="ecs:update">
-                  <a href="#ecs:update" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#ecs:update"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>ECS:update</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="ecs:add">
-                  <a href="#ecs:add" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#ecs:add"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>ECS:add</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="ecs:kill">
-                  <a href="#ecs:kill" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#ecs:kill"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>ECS:kill</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="ecs:get">
-                  <a href="#ecs:get" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#ecs:get"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>ECS:get</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="ecs:query">
-                  <a href="#ecs:query" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#ecs:query"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>ECS:query</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="ecs:select">
-                  <a href="#ecs:select" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#ecs:select"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>ECS:select</code>
                   </a>
                 </li>
@@ -961,17 +2053,38 @@
             <summary class="fw6 pointer">Spring</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="spring">
-                  <a href="#spring" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spring"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Spring</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spring:update">
-                  <a href="#spring:update" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spring:update"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Spring:update</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="spring:pull">
-                  <a href="#spring:pull" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#spring:pull"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Spring:pull</code>
                   </a>
                 </li>
@@ -983,22 +2096,50 @@
             <summary class="fw6 pointer">Timer</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="interval">
-                  <a href="#interval" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#interval"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>interval</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="timeout">
-                  <a href="#timeout" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#timeout"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>timeout</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="stop_interval">
-                  <a href="#stop_interval" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#stop_interval"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>stop_interval</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="stop_timeout">
-                  <a href="#stop_timeout" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#stop_timeout"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>stop_timeout</code>
                   </a>
                 </li>
@@ -1010,17 +2151,38 @@
             <summary class="fw6 pointer">Object Oriented</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="class">
-                  <a href="#class" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#class"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>class</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="object:__call">
-                  <a href="#object:__call" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#object:__call"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Object:__call</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="object:is">
-                  <a href="#object:is" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#object:is"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>Object:is</code>
                   </a>
                 </li>
@@ -1032,117 +2194,278 @@
             <summary class="fw6 pointer">Utility Functions</summary>
             <ul class="list pl0 mt2">
                               <li class="pv1" data-key="require">
-                  <a href="#require" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#require"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>require</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="stringify">
-                  <a href="#stringify" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#stringify"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>stringify</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="clamp">
-                  <a href="#clamp" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#clamp"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>clamp</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sign">
-                  <a href="#sign" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sign"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>sign</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="lerp">
-                  <a href="#lerp" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#lerp"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>lerp</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="direction">
-                  <a href="#direction" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#direction"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>direction</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="heading">
-                  <a href="#heading" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#heading"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>heading</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="delta_angle">
-                  <a href="#delta_angle" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#delta_angle"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>delta_angle</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="distance">
-                  <a href="#distance" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#distance"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>distance</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="normalize">
-                  <a href="#normalize" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#normalize"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>normalize</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="dot">
-                  <a href="#dot" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#dot"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>dot</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="random">
-                  <a href="#random" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#random"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>random</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="clone">
-                  <a href="#clone" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#clone"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>clone</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="push">
-                  <a href="#push" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#push"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>push</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="map">
-                  <a href="#map" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#map"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>map</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="filter">
-                  <a href="#filter" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#filter"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>filter</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="zip">
-                  <a href="#zip" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#zip"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>zip</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="choose">
-                  <a href="#choose" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#choose"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>choose</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sortpairs">
-                  <a href="#sortpairs" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sortpairs"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>sortpairs</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="create_thread">
-                  <a href="#create_thread" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#create_thread"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>create_thread</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="resume">
-                  <a href="#resume" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#resume"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>resume</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="yield">
-                  <a href="#yield" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#yield"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>yield</code>
                   </a>
                 </li>
                               <li class="pv1" data-key="sleep">
-                  <a href="#sleep" class="function-link dark-gray dm-silver link underline-hover lh-solid dib">
+                  <a
+                    href="#sleep"
+                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    @click="
+                      open = false
+                      $el.closest('details').dataset.open = 'true'
+                    "
+                  >
                     <code>sleep</code>
                   </a>
                 </li>
@@ -1151,7 +2474,7 @@
         </li>
           </ul>
   </div>
-  <div class="pl3-l pt3 ml-300px-l">
+  <div x-ignore class="pl3-l pt3 ml-300px-l">
                   <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.conf" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
@@ -1195,14 +2518,14 @@ end
                                                 <td class="pv2 ph3">The table to edit options with.</td>
                       </tr>
                                                                 <tr>
-                        <td class="pv2 ph3 pre overflow-hidden"><code> .console_attach</code></td>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .win_console</code></td>
                         <td class="pv2 ph3">
                                                       <code>boolean</code>
                                                   </td>
                                                   <td class="pv2 ph3">
                                                           <code>false</code>
                                                       </td>
-                                                <td class="pv2 ph3">Windows only. If true, attach a console to the program.</td>
+                                                <td class="pv2 ph3">Windows only. If true, use console output.</td>
                       </tr>
                                                                 <tr>
                         <td class="pv2 ph3 pre overflow-hidden"><code> .hot_reload</code></td>
@@ -1223,6 +2546,16 @@ end
                                                           <code>true</code>
                                                       </td>
                                                 <td class="pv2 ph3">Enable/disable loading all lua scripts in the project</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .fullscreen</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>boolean</code>
+                                                  </td>
+                                                  <td class="pv2 ph3">
+                                                          <code>false</code>
+                                                      </td>
+                                                <td class="pv2 ph3">If true, start the program in fullscreen mode.</td>
                       </tr>
                                                                 <tr>
                         <td class="pv2 ph3 pre overflow-hidden"><code> .reload_interval</code></td>
@@ -1250,7 +2583,7 @@ end
                                                       <code>number</code>
                                                   </td>
                                                   <td class="pv2 ph3">
-                                                          <code>240</code>
+                                                          <code>0</code>
                                                       </td>
                                                 <td class="pv2 ph3">Set the maximum frames to render per second. No FPS limit if target is 0.</td>
                       </tr>
@@ -1371,9 +2704,33 @@ end
                       <p class="i gray mb0">Returns nothing.</p>
                   </div>
                         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.version" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Core          </p>
+          <h2 class="mb2 f4">
+            <a href="#spry.version" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                spry.version()              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Get the version of Spry.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">print(spry.version())</code></pre>
+          </div>
+          
+                      <p class="mb0">
+              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
+              <code class="inline-code">string</code>.
+            </p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.quit" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Core          </p>
           <h2 class="mb2 f4">
             <a href="#spry.quit" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1397,7 +2754,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.platform" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Core          </p>
           <h2 class="mb2 f4">
             <a href="#spry.platform" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1424,7 +2781,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.dt" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Core          </p>
           <h2 class="mb2 f4">
             <a href="#spry.dt" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1446,9 +2803,57 @@ end
             </p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.fullscreen" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Core          </p>
+          <h2 class="mb2 f4">
+            <a href="#spry.fullscreen" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                spry.fullscreen()              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Returns true if program is fullscreen.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">local fs = spry.fullscreen()</code></pre>
+          </div>
+          
+                      <p class="mb0">
+              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
+              <code class="inline-code">boolean</code>.
+            </p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.toggle_fullscreen" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Core          </p>
+          <h2 class="mb2 f4">
+            <a href="#spry.toggle_fullscreen" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                spry.toggle_fullscreen()              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Toggle fullscreen.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">if spry.key_press 'f11' then
+  spry.toggle_fullscreen()
+end
+</code></pre>
+          </div>
+          
+                      <p class="i gray mb0">Returns nothing.</p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.window_width" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Core          </p>
           <h2 class="mb2 f4">
             <a href="#spry.window_width" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1472,7 +2877,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.window_height" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Core          </p>
           <h2 class="mb2 f4">
             <a href="#spry.window_height" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1493,10 +2898,10 @@ end
               <code class="inline-code">number</code>.
             </p>
                   </div>
-              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+                        <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.key_down" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.key_down" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1556,7 +2961,7 @@ if spry.key_down 's' then vy = vy + 1 end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.key_press" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.key_press" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1605,7 +3010,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.key_release" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.key_release" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1654,7 +3059,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.mouse_down" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.mouse_down" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1704,7 +3109,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.mouse_click" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.mouse_click" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1754,7 +3159,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.mouse_release" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.mouse_release" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1804,7 +3209,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.mouse_pos" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.mouse_pos" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1828,7 +3233,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.mouse_delta" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.mouse_delta" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1852,7 +3257,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.show_mouse" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.show_mouse" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1894,7 +3299,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.scroll_wheel" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Input          </p>
           <h2 class="mb2 f4">
             <a href="#spry.scroll_wheel" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1915,10 +3320,10 @@ end
               <code class="inline-code">number, number</code>.
             </p>
                   </div>
-              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+                        <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.push_matrix" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.push_matrix" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1943,7 +3348,7 @@ spry.translate(-self.x, -self.y)
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.pop_matrix" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.pop_matrix" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -1969,7 +3374,7 @@ spry.pop_matrix()
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.translate" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.translate" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2020,7 +3425,7 @@ spry.translate(camera.x, camera.y)
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.rotate" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.rotate" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2064,7 +3469,7 @@ spry.rotate(camera.tilt)
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.scale" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.scale" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2115,7 +3520,7 @@ spry.scale(camera.zoom, camera.zoom)
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.clear_color" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.clear_color" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2178,7 +3583,7 @@ spry.scale(camera.zoom, camera.zoom)
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.push_color" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.push_color" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2245,7 +3650,7 @@ img:draw(x, y)
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.pop_color" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.pop_color" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2270,7 +3675,7 @@ spry.pop_color()
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.draw_filled_rect" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.draw_filled_rect" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2396,7 +3801,7 @@ spry.pop_color()
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.draw_line_rect" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.draw_line_rect" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2522,7 +3927,7 @@ spry.pop_color()
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.draw_line_circle" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Core Functions          </p>
+            Drawing          </p>
           <h2 class="mb2 f4">
             <a href="#spry.draw_line_circle" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -2572,6 +3977,214 @@ spry.pop_color()
                 </table>
               </div>
             </div>
+          
+                      <p class="i gray mb0">Returns nothing.</p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.draw_line" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Drawing          </p>
+          <h2 class="mb2 f4">
+            <a href="#spry.draw_line" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                spry.draw_line(x0, y0, x1, y1)              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Draw a line between two points.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">local path = tilemap:astar(...)
+for i = 1, #path - 1 do
+  local x0 = path[i + 0].x + off
+  local y0 = path[i + 0].y + off
+  local x1 = path[i + 1].x + off
+  local y1 = path[i + 1].y + off
+
+  spry.draw_line(x0, y0, x1, y1)
+end
+</code></pre>
+          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x0</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The starting x position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y0</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The starting y position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>x1</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The ending x position to draw at.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>y1</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The ending y position to draw at.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray mb0">Returns nothing.</p>
+                  </div>
+                        <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.make_sampler" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Sampler          </p>
+          <h2 class="mb2 f4">
+            <a href="#spry.make_sampler" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                spry.make_sampler(t)              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Create a sampler used with images and fonts.</p>
+<p><code>min_filter</code> and <code>mag_filter</code> can be set to:</p>
+<ul>
+<li><code>linear</code>, good for pixel art</li>
+<li><code>nearest</code>, suitable for larger/smoother images</li>
+</ul>
+<p><code>wrap_u</code> and <code>wrap_v</code> can be set to <code>repeat</code>, <code>mirroredrepeat</code>, or
+<code>clamp</code>.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">my_sampler = spry.make_sampler {
+  min_filter = 'linear',
+  mag_filter = 'linear',
+  wrap_u = 'clamp',
+  wrap_v = 'clamp',
+}
+</code></pre>
+          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>t</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>table</code>
+                                                  </td>
+                                                <td class="pv2 ph3">Sampler options.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .min_filter</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>string</code>
+                                                  </td>
+                                                <td class="pv2 ph3">Filter mode when scaling down.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .mag_filter</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>string</code>
+                                                  </td>
+                                                <td class="pv2 ph3">Filter mode when scaling up.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .wrap_u</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>string</code>
+                                                  </td>
+                                                <td class="pv2 ph3">Wrap mode for the horizontal direction.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code> .wrap_v</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>string</code>
+                                                  </td>
+                                                <td class="pv2 ph3">Wrap mode for the vertical direction.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="mb0">
+              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
+              <code class="inline-code">Sampler</code>.
+            </p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="spry.default_sampler" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Sampler          </p>
+          <h2 class="mb2 f4">
+            <a href="#spry.default_sampler" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                spry.default_sampler()              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Get the default sampler, which uses nearest neighbor filtering, and
+repeat wrapping.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">spry.default_sampler():use()
+player:draw(x, y, 0, sx, sy)
+</code></pre>
+          </div>
+          
+                      <p class="mb0">
+              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
+              <code class="inline-code">Sampler</code>.
+            </p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="sampler:use" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Sampler          </p>
+          <h2 class="mb2 f4">
+            <a href="#sampler:use" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                Sampler:use()              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Use this sampler for future image/font drawing.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">wrap_sampler:use()
+background:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)
+</code></pre>
+          </div>
           
                       <p class="i gray mb0">Returns nothing.</p>
                   </div>
@@ -3020,7 +4633,7 @@ img:draw(x, y, angle, 1, -1, ox, oy)
                         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.set_master_volume" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#spry.set_master_volume" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3063,22 +4676,22 @@ end
                       <p class="i gray mb0">Returns nothing.</p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spry.audio_load" style="position: relative; top: -5rem"></span>
+          <span id="spry.sound_load" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
-            <a href="#spry.audio_load" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#spry.sound_load" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                spry.audio_load(file)              </code>
+                spry.sound_load(file)              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Create an audio object from a file.</p>          </div>
+            <p>Create a sound source from a file.</p>          </div>
           <div class="prose relative">
             <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
               Example
             </span>
-            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">local click_sound = spry.audio_load 'click.ogg'</code></pre>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">local sound = spry.sound_load 'click.ogg'</code></pre>
           </div>
                                   <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
             <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
@@ -3104,37 +4717,13 @@ end
           
                       <p class="mb0">
               <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
-              <code class="inline-code">Audio</code>.
-            </p>
-                  </div>
-              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="audio:make_sound" style="position: relative; top: -5rem"></span>
-          <p class="mv0 f6 fw6 gray">
-            Audio          </p>
-          <h2 class="mb2 f4">
-            <a href="#audio:make_sound" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
-              <code>
-                Audio:make_sound()              </code>
-            </a>
-          </h2>
-          <div class="lh-copy prose">
-            <p>Create a sound source.</p>          </div>
-          <div class="prose relative">
-            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
-              Example
-            </span>
-            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">local sound = click_audio:make_sound()</code></pre>
-          </div>
-          
-                      <p class="mb0">
-              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
               <code class="inline-code">Sound</code>.
             </p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:frames" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:frames" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3158,7 +4747,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:secs" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:secs" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3182,7 +4771,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:start" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:start" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3206,7 +4795,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:stop" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:stop" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3230,7 +4819,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:seek" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:seek" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3276,7 +4865,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:vol" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:vol" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3300,7 +4889,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:set_vol" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:set_vol" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3342,7 +4931,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:pan" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:pan" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3366,7 +4955,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:set_pan" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:set_pan" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3408,7 +4997,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:pitch" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:pitch" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3432,7 +5021,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:set_pitch" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:set_pitch" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3477,7 +5066,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:loop" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:loop" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3501,7 +5090,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:set_loop" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:set_loop" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3546,7 +5135,7 @@ bgm:start()
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:pos" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:pos" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3570,7 +5159,7 @@ bgm:start()
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:set_pos" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:set_pos" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3622,7 +5211,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:vel" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:vel" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3646,7 +5235,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:set_vel" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:set_vel" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3695,7 +5284,7 @@ end
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="sound:set_fade" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
-            Audio          </p>
+            Sound          </p>
           <h2 class="mb2 f4">
             <a href="#sound:set_fade" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
@@ -3759,9 +5348,8 @@ end
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Create a sprite renderer from an Aseprite file. Sprites are cached, so
-creating a sprite renderer from a file that has already been loaded
-is cheap.</p>          </div>
+            <p>Create a sprite from an Aseprite file. Sprite data is cached, so
+calling this multiple tiles for the same file is cheap.</p>          </div>
           <div class="prose relative">
             <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
               Example
@@ -3795,21 +5383,23 @@ end
           
                       <p class="mb0">
               <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
-              <code class="inline-code">SpriteRenderer</code>.
+              <code class="inline-code">Sprite</code>.
             </p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spriterenderer:play" style="position: relative; top: -5rem"></span>
+          <span id="sprite:play" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Sprite          </p>
           <h2 class="mb2 f4">
-            <a href="#spriterenderer:play" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#sprite:play" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                SpriteRenderer:play(tag)              </code>
+                Sprite:play(tag, restart)              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Play an animation loop with the given tag.</p>          </div>
+            <p>Play an animation loop with the given tag. If the sprite's animation
+loop is the same as the previous, then this function does nothing,
+unless restart is also set to true.</p>          </div>
           <div class="prose relative">
             <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
               Example
@@ -3836,6 +5426,13 @@ end
                                                   </td>
                                                 <td class="pv2 ph3">The tag name.</td>
                       </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>restart</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>boolean</code>
+                                                  </td>
+                                                <td class="pv2 ph3">Force the animation to start on the first frame of the loop.</td>
+                      </tr>
                                       </tbody>
                 </table>
               </div>
@@ -3844,17 +5441,17 @@ end
                       <p class="i gray mb0">Returns nothing.</p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spriterenderer:update" style="position: relative; top: -5rem"></span>
+          <span id="sprite:update" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Sprite          </p>
           <h2 class="mb2 f4">
-            <a href="#spriterenderer:update" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#sprite:update" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                SpriteRenderer:update(dt)              </code>
+                Sprite:update(dt)              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Call this method every frame to update a sprite renderer's animation state.</p>          </div>
+            <p>Call this method every frame to update a sprite's animation state.</p>          </div>
           <div class="prose relative">
             <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
               Example
@@ -3886,13 +5483,13 @@ end
                       <p class="i gray mb0">Returns nothing.</p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spriterenderer:draw" style="position: relative; top: -5rem"></span>
+          <span id="sprite:draw" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Sprite          </p>
           <h2 class="mb2 f4">
-            <a href="#spriterenderer:draw" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#sprite:draw" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                SpriteRenderer:draw(x, y, r, sx, sy, ox, oy)              </code>
+                Sprite:draw(x, y, r, sx, sy, ox, oy)              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
@@ -3992,13 +5589,13 @@ end
                       <p class="i gray mb0">Returns nothing.</p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spriterenderer:width" style="position: relative; top: -5rem"></span>
+          <span id="sprite:width" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Sprite          </p>
           <h2 class="mb2 f4">
-            <a href="#spriterenderer:width" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#sprite:width" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                SpriteRenderer:width()              </code>
+                Sprite:width()              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
@@ -4016,13 +5613,13 @@ end
             </p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spriterenderer:height" style="position: relative; top: -5rem"></span>
+          <span id="sprite:height" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Sprite          </p>
           <h2 class="mb2 f4">
-            <a href="#spriterenderer:height" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#sprite:height" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                SpriteRenderer:height()              </code>
+                Sprite:height()              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
@@ -4040,17 +5637,17 @@ end
             </p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spriterenderer:set_frame" style="position: relative; top: -5rem"></span>
+          <span id="sprite:set_frame" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Sprite          </p>
           <h2 class="mb2 f4">
-            <a href="#spriterenderer:set_frame" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#sprite:set_frame" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                SpriteRenderer:set_frame(frame)              </code>
+                Sprite:set_frame(frame)              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
-            <p>Set the current frame index for a sprite renderer.</p>          </div>
+            <p>Set the current frame index for a sprite.</p>          </div>
           <div class="prose relative">
             <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
               Example
@@ -4085,13 +5682,13 @@ end
                       <p class="i gray mb0">Returns nothing.</p>
                   </div>
               <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
-          <span id="spriterenderer:total_frames" style="position: relative; top: -5rem"></span>
+          <span id="sprite:total_frames" style="position: relative; top: -5rem"></span>
           <p class="mv0 f6 fw6 gray">
             Sprite          </p>
           <h2 class="mb2 f4">
-            <a href="#spriterenderer:total_frames" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+            <a href="#sprite:total_frames" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
-                SpriteRenderer:total_frames()              </code>
+                Sprite:total_frames()              </code>
             </a>
           </h2>
           <div class="lh-copy prose">
@@ -4573,6 +6170,149 @@ tilemap:make_collision(b2, 16, 'Collision', { 1, 2 })
             </div>
           
                       <p class="i gray mb0">Returns nothing.</p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="tilemap:make_graph" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Tilemap          </p>
+          <h2 class="mb2 f4">
+            <a href="#tilemap:make_graph" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                Tilemap:make_graph(layer, costs, bloom)              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Prepare a tilemap for pathfinding by internally constructing a graph.</p>
+<p>The <code>costs</code> argument is required. The keys are the IntGrid values and
+the values are the costs to traverse to each tile. Any IntGrid values
+not in the <code>costs</code> table will be ignored.</p>
+<p>The <code>bloom</code> argument determines the number of nodes to consider as
+neighbor nodes. For example, a bloom of 1 looks at adjacent tiles. A
+bloom of 2 looks for nodes in a 5x5 region, 2 nodes outwards. Bloom
+of 3 looks for nodes in a 7x7 region, 3 nodes outwards, etc.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">tilemap = spry.tilemap_load 'map.ldtk'
+tilemap:make_graph('Floor', { [1] = 1, [2] = 1 }, 2)
+</code></pre>
+          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                              <th class="tl pv2 ph3 fw6">Default</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>layer</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>string</code>
+                                                  </td>
+                                                  <td class="pv2 ph3">
+                                                      </td>
+                                                <td class="pv2 ph3">The name of the IntGrid collision layer.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>costs</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>table</code>
+                                                  </td>
+                                                  <td class="pv2 ph3">
+                                                      </td>
+                                                <td class="pv2 ph3">The costs to traverse to each tile.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>bloom</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                  <td class="pv2 ph3">
+                                                          <code>1</code>
+                                                      </td>
+                                                <td class="pv2 ph3">The number of nodes outwards to consider as neighbors.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="i gray mb0">Returns nothing.</p>
+                  </div>
+              <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+          <span id="tilemap:astar" style="position: relative; top: -5rem"></span>
+          <p class="mv0 f6 fw6 gray">
+            Tilemap          </p>
+          <h2 class="mb2 f4">
+            <a href="#tilemap:astar" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
+              <code>
+                Tilemap:astar(sx, sy, ex, ey)              </code>
+            </a>
+          </h2>
+          <div class="lh-copy prose">
+            <p>Find the shortest path between two tiles.</p>          </div>
+          <div class="prose relative">
+            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+              Example
+            </span>
+            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem">local path = tilemap:astar(start.x, start.y, goal.x, goal.y)
+for k, v in ipairs(path) do
+  spry.draw_filled_rect(v.x, v.y, 16, 16)
+end
+</code></pre>
+          </div>
+                                  <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
+            <div class="ba b--black-10 dm-b--white-10 dib bg-off-white dm-bg-black-10 br3 overflow-hidden mw-100">
+              <div class="overflow-x-auto">
+                <table class="collapse nowrap">
+                  <tbody>
+                    <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
+                      <th class="tl pv2 ph3 fw6">Name</th>
+                      <th class="tl pv2 ph3 fw6">Type</th>
+                                            <th class="tl pv2 ph3 fw6">Description</th>
+                    </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sx</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The starting tile's x position.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>sy</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The starting tile's y position.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>ex</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The target tile's x position.</td>
+                      </tr>
+                                                                <tr>
+                        <td class="pv2 ph3 pre overflow-hidden"><code>ey</code></td>
+                        <td class="pv2 ph3">
+                                                      <code>number</code>
+                                                  </td>
+                                                <td class="pv2 ph3">The target tile's y position.</td>
+                      </tr>
+                                      </tbody>
+                </table>
+              </div>
+            </div>
+          
+                      <p class="mb0">
+              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
+              <code class="inline-code">table</code>.
+            </p>
                   </div>
                         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="spry.b2_world" style="position: relative; top: -5rem"></span>
@@ -9391,7 +11131,12 @@ end
               <code class="inline-code">number</code>.
             </p>
                   </div>
-            </div>
+              <div class="mv4 tr">
+      <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover pv3 dib">
+        GitHub
+      </a>
+    </div>
+  </div>
 </div>
 
 <script>
