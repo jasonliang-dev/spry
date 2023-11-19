@@ -16,7 +16,10 @@ struct Assets {
   HashMap<Asset> table;
   RWLock rw_lock;
 
-  AtomicInt shutdown_request;
+  Mutex mtx;
+  Cond notify;
+  bool shutdown_request;
+
   Thread *reload_thread;
   Array<FileChange> changes;
 };
@@ -26,10 +29,23 @@ static Assets g_assets = {};
 static i32 hot_reload_thread(void *) {
   u32 reload_interval = atomic_int_load(&g_app->reload_interval);
 
-  while (atomic_int_load(&g_assets.shutdown_request) == 0) {
+  while (true) {
     PROFILE_BLOCK("hot reload");
 
-    os_sleep(reload_interval);
+    {
+      mutex_lock(&g_assets.mtx);
+      defer(mutex_unlock(&g_assets.mtx));
+
+      if (g_assets.shutdown_request) {
+        return 0;
+      }
+
+      bool signaled =
+          cond_timed_wait(&g_assets.notify, &g_assets.mtx, reload_interval);
+      if (signaled) {
+        return 0;
+      }
+    }
 
     {
       PROFILE_BLOCK("check for updates");
@@ -100,21 +116,27 @@ static i32 hot_reload_thread(void *) {
       }
     }
   }
-
-  return 0;
 }
 
-void assets_setup() { g_assets.rw_lock = rw_make(); }
+void assets_setup() {
+  g_assets.rw_lock = rw_make();
+  g_assets.mtx = mutex_make();
+  g_assets.notify = cond_make();
+}
 
 void assets_shutdown() {
   if (g_assets.reload_thread != nullptr) {
-    PROFILE_BLOCK("wait for hot reload");
+    mutex_lock(&g_assets.mtx);
+    g_assets.shutdown_request = true;
+    mutex_unlock(&g_assets.mtx);
 
-    atomic_int_store(&g_assets.shutdown_request, 1);
+    cond_signal(&g_assets.notify);
     thread_join(g_assets.reload_thread);
   }
   array_trash(&g_assets.changes);
 
+  cond_trash(&g_assets.notify);
+  mutex_trash(&g_assets.mtx);
   rw_trash(&g_assets.rw_lock);
 
   for (auto [k, v] : g_assets.table) {

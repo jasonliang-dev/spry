@@ -57,6 +57,10 @@ void cond_wait(Cond *cv, Mutex *mtx) {
   SleepConditionVariableSRW(&cv->cv, &mtx->srwlock, INFINITE, 0);
 }
 
+bool cond_timed_wait(Cond *cv, Mutex *mtx, uint32_t ms) {
+  return SleepConditionVariableSRW(&cv->cv, &mtx->srwlock, ms, 0);
+}
+
 RWLock rw_make() { return {}; }
 void rw_trash(RWLock *rw) {}
 void rw_shared_lock(RWLock *rw) { AcquireSRWLockShared(&rw->srwlock); }
@@ -160,9 +164,31 @@ void thread_join(Thread *t) { pthread_join((pthread_t)t, nullptr); }
 #include <sys/syscall.h>
 #include <unistd.h>
 
+bool cond_timed_wait(Cond *cv, Mutex *mtx, uint32_t ms) {
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  ts.tv_sec += ms / 1000;
+  ts.tv_nsec += (ms % 1000) * 1000000;
+
+  int res = pthread_cond_timedwait(&cv->pt, &mtx->pt, &ts);
+  assert(res != EINVAL);
+  return res == 0;
+}
+
 uint64_t this_thread_id() {
   thread_local uint64_t s_tid = syscall(SYS_gettid);
   return s_tid;
 }
 
 #endif // IS_LINUX
+
+#ifdef IS_HTML5
+
+bool cond_timed_wait(Cond *cv, Mutex *mtx, uint32_t ms) {
+  pthread_cond_wait(&cv->pt, &mtx->pt);
+  return false;
+}
+
+uint64_t this_thread_id() { return 0; }
+
+#endif // IS_HTML5

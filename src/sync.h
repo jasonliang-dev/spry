@@ -60,6 +60,7 @@ void cond_trash(Cond *cv);
 void cond_signal(Cond *cv);
 void cond_broadcast(Cond *cv);
 void cond_wait(Cond *cv, Mutex *mtx);
+bool cond_timed_wait(Cond *cv, Mutex *mtx, uint32_t ms);
 
 RWLock rw_make();
 void rw_trash(RWLock *rw);

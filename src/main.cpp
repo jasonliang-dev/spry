@@ -295,28 +295,41 @@ static void frame() {
 static void actually_cleanup() {
   PROFILE_FUNC();
 
-  lua_close(g_app->L);
-  luaalloc_delete(g_app->LA);
-
-  if (g_app->default_font != nullptr) {
-    font_trash(g_app->default_font);
-    mem_free(g_app->default_font);
+  {
+    PROFILE_BLOCK("lua close");
+    lua_close(g_app->L);
+    luaalloc_delete(g_app->LA);
   }
 
-  for (Sound *sound : g_app->garbage_sounds) {
-    sound_trash(sound);
+  {
+    PROFILE_BLOCK("destroy assets");
+
+    if (g_app->default_font != nullptr) {
+      font_trash(g_app->default_font);
+      mem_free(g_app->default_font);
+    }
+
+    for (Sound *sound : g_app->garbage_sounds) {
+      sound_trash(sound);
+    }
+    array_trash(&g_app->garbage_sounds);
+
+    assets_shutdown();
+    mutex_trash(&g_app->frame_mtx);
   }
-  array_trash(&g_app->garbage_sounds);
 
-  ma_engine_uninit(&g_app->audio_engine);
-  mem_free(g_app->miniaudio_vfs);
+  {
+    PROFILE_BLOCK("audio uninit");
+    ma_engine_uninit(&g_app->audio_engine);
+    mem_free(g_app->miniaudio_vfs);
+  }
 
-  assets_shutdown();
-  mutex_trash(&g_app->frame_mtx);
-
-  sgl_destroy_pipeline(g_pipeline);
-  sgl_shutdown();
-  sg_shutdown();
+  {
+    PROFILE_BLOCK("destory sokol");
+    sgl_destroy_pipeline(g_pipeline);
+    sgl_shutdown();
+    sg_shutdown();
+  }
 
   vfs_trash();
 
@@ -525,7 +538,8 @@ commands:
     load_all_lua_scripts(L);
   }
 
-  atomic_int_store(&g_app->hot_reload_enabled, mount.can_hot_reload && hot_reload);
+  atomic_int_store(&g_app->hot_reload_enabled,
+                   mount.can_hot_reload && hot_reload);
   atomic_int_store(&g_app->reload_interval, (u32)(reload_interval * 1000));
 
   if (target_fps != 0) {
