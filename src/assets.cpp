@@ -16,7 +16,10 @@ struct Assets {
   HashMap<Asset> table;
   RWLock rw_lock;
 
-  Sema shutdown_request;
+  Mutex mtx;
+  Cond notify;
+  bool shutdown;
+
   Thread *reload_thread;
   Array<FileChange> changes;
 };
@@ -29,10 +32,19 @@ static i32 hot_reload_thread(void *) {
   while (true) {
     PROFILE_BLOCK("hot reload");
 
-    bool signaled =
-        sema_timed_wait(&g_assets.shutdown_request, reload_interval);
-    if (signaled) {
-      return 0;
+    {
+      mutex_lock(&g_assets.mtx);
+      defer(mutex_unlock(&g_assets.mtx));
+
+      if (g_assets.shutdown) {
+        return 0;
+      }
+
+      bool signaled =
+          cond_timed_wait(&g_assets.notify, &g_assets.mtx, reload_interval);
+      if (signaled) {
+        return 0;
+      }
     }
 
     {
@@ -108,17 +120,23 @@ static i32 hot_reload_thread(void *) {
 
 void assets_setup() {
   g_assets.rw_lock = rw_make();
-  g_assets.shutdown_request = sema_make(0);
+  g_assets.mtx = mutex_make();
+  g_assets.notify = cond_make();
 }
 
 void assets_shutdown() {
   if (g_assets.reload_thread != nullptr) {
-    sema_post(&g_assets.shutdown_request, 1);
+    mutex_lock(&g_assets.mtx);
+    g_assets.shutdown = true;
+    mutex_unlock(&g_assets.mtx);
+
+    cond_signal(&g_assets.notify);
     thread_join(g_assets.reload_thread);
   }
   array_trash(&g_assets.changes);
 
-  sema_trash(&g_assets.shutdown_request);
+  cond_trash(&g_assets.notify);
+  mutex_trash(&g_assets.mtx);
   rw_trash(&g_assets.rw_lock);
 
   for (auto [k, v] : g_assets.table) {

@@ -1,6 +1,14 @@
 #include "sync.h"
 #include "prelude.h"
-#include <semaphore.h>
+
+#ifndef IS_WIN32
+#include <errno.h>
+#endif
+
+#ifdef IS_LINUX
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
 
 #ifdef IS_WIN32
 
@@ -79,11 +87,6 @@ void sema_trash(Sema *s) { CloseHandle(s->handle); }
 void sema_post(Sema *s, int n) { ReleaseSemaphore(s->handle, n, nullptr); }
 void sema_wait(Sema *s) { WaitForSingleObjectEx(s->handle, INFINITE, false); }
 
-bool sema_timed_wait(Sema *s, uint32_t ms) {
-  DWORD wait = WaitForSingleObjectEx(s->handle, ms, false);
-  return wait == WAIT_OBJECT_0;
-}
-
 Thread *thread_make(ThreadStart fn, void *udata) {
   DWORD id = 0;
   HANDLE handle =
@@ -99,7 +102,6 @@ void thread_join(Thread *t) {
 uint64_t this_thread_id() { return GetCurrentThreadId(); }
 
 #else
-#include <errno.h>
 
 static struct timespec ms_from_now(u32 ms) {
   struct timespec ts;
@@ -206,12 +208,6 @@ void sema_post(Sema *s, int n) {
 
 void sema_wait(Sema *s) { sem_wait(s->sem); }
 
-bool sema_timed_wait(Sema *s, uint32_t ms) {
-  struct timespec ts = ms_from_now(ms);
-  int res = sem_timedwait(s->sem, &ts);
-  return res == 0;
-}
-
 Thread *thread_make(ThreadStart fn, void *udata) {
   pthread_t pt = {};
   pthread_create(&pt, nullptr, (void *(*)(void *))fn, udata);
@@ -223,8 +219,6 @@ void thread_join(Thread *t) { pthread_join((pthread_t)t, nullptr); }
 #endif
 
 #ifdef IS_LINUX
-#include <sys/syscall.h>
-#include <unistd.h>
 
 uint64_t this_thread_id() {
   thread_local uint64_t s_tid = syscall(SYS_gettid);
