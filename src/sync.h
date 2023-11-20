@@ -27,6 +27,7 @@ struct Sema {
 
 #else
 #include <pthread.h>
+#include <semaphore.h>
 
 using AtomicInt = int;
 
@@ -40,6 +41,10 @@ struct Cond {
 
 struct RWLock {
   pthread_rwlock_t pt;
+};
+
+struct Sema {
+  sem_t *sem;
 };
 
 #endif

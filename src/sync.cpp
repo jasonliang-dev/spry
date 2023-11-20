@@ -1,5 +1,6 @@
 #include "sync.h"
 #include "prelude.h"
+#include <semaphore.h>
 
 #ifdef IS_WIN32
 
@@ -98,6 +99,20 @@ void thread_join(Thread *t) {
 uint64_t this_thread_id() { return GetCurrentThreadId(); }
 
 #else
+#include <errno.h>
+
+static struct timespec ms_from_now(u32 ms) {
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+
+  unsigned long long tally = ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+  tally += ms;
+
+  ts.tv_sec = tally / 1000LL;
+  ts.tv_nsec = (tally % 1000LL) * 1000000LL;
+
+  return ts;
+}
 
 int atomic_int_load(AtomicInt *a) {
   return __atomic_load_n(a, __ATOMIC_SEQ_CST);
@@ -138,8 +153,8 @@ void mutex_lock(Mutex *mtx) { pthread_mutex_lock(&mtx->pt); }
 void mutex_unlock(Mutex *mtx) { pthread_mutex_unlock(&mtx->pt); }
 
 bool mutex_try_lock(Mutex *mtx) {
-  int err = pthread_mutex_trylock(&mtx->pt);
-  return err == 0;
+  int res = pthread_mutex_trylock(&mtx->pt);
+  return res == 0;
 }
 
 Cond cond_make() {
@@ -153,6 +168,12 @@ void cond_signal(Cond *cv) { pthread_cond_signal(&cv->pt); }
 void cond_broadcast(Cond *cv) { pthread_cond_broadcast(&cv->pt); }
 void cond_wait(Cond *cv, Mutex *mtx) { pthread_cond_wait(&cv->pt, &mtx->pt); }
 
+bool cond_timed_wait(Cond *cv, Mutex *mtx, uint32_t ms) {
+  struct timespec ts = ms_from_now(ms);
+  int res = pthread_cond_timedwait(&cv->pt, &mtx->pt, &ts);
+  return res == 0;
+}
+
 RWLock rw_make() {
   RWLock rw = {};
   pthread_rwlock_init(&rw.pt, nullptr);
@@ -164,6 +185,32 @@ void rw_shared_lock(RWLock *rw) { pthread_rwlock_rdlock(&rw->pt); }
 void rw_shared_unlock(RWLock *rw) { pthread_rwlock_unlock(&rw->pt); }
 void rw_unique_lock(RWLock *rw) { pthread_rwlock_wrlock(&rw->pt); }
 void rw_unique_unlock(RWLock *rw) { pthread_rwlock_unlock(&rw->pt); }
+
+Sema sema_make(int n) {
+  Sema s = {};
+  s.sem = (sem_t *)mem_alloc(sizeof(sem_t));
+  sem_init(s.sem, 0, n);
+  return s;
+}
+
+void sema_trash(Sema *s) {
+  sem_destroy(s->sem);
+  mem_free(s->sem);
+}
+
+void sema_post(Sema *s, int n) {
+  for (int i = 0; i < n; i++) {
+    sem_post(s->sem);
+  }
+}
+
+void sema_wait(Sema *s) { sem_wait(s->sem); }
+
+bool sema_timed_wait(Sema *s, uint32_t ms) {
+  struct timespec ts = ms_from_now(ms);
+  int res = sem_timedwait(s->sem, &ts);
+  return res == 0;
+}
 
 Thread *thread_make(ThreadStart fn, void *udata) {
   pthread_t pt = {};
@@ -179,17 +226,6 @@ void thread_join(Thread *t) { pthread_join((pthread_t)t, nullptr); }
 #include <sys/syscall.h>
 #include <unistd.h>
 
-bool cond_timed_wait(Cond *cv, Mutex *mtx, uint32_t ms) {
-  struct timespec ts;
-  clock_gettime(CLOCK_REALTIME, &ts);
-  ts.tv_sec += ms / 1000;
-  ts.tv_nsec += (ms % 1000) * 1000000;
-
-  int res = pthread_cond_timedwait(&cv->pt, &mtx->pt, &ts);
-  assert(res != EINVAL);
-  return res == 0;
-}
-
 uint64_t this_thread_id() {
   thread_local uint64_t s_tid = syscall(SYS_gettid);
   return s_tid;
@@ -198,11 +234,6 @@ uint64_t this_thread_id() {
 #endif // IS_LINUX
 
 #ifdef IS_HTML5
-
-bool cond_timed_wait(Cond *cv, Mutex *mtx, uint32_t ms) {
-  pthread_cond_wait(&cv->pt, &mtx->pt);
-  return false;
-}
 
 uint64_t this_thread_id() { return 0; }
 
