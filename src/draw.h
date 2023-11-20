@@ -1,7 +1,6 @@
 #pragma once
 
 #include "algebra.h"
-#include "deps/lua/lua.h"
 #include "font.h"
 #include "image.h"
 #include "sprite.h"
@@ -70,5 +69,6 @@ void draw_line_rect(RectDescription *desc);
 void draw_line_circle(float x, float y, float radius);
 void draw_line(float x0, float y0, float x1, float y1);
 
+struct lua_State;
 DrawDescription draw_description_args(lua_State *L, i32 arg_start);
 RectDescription rect_description_args(lua_State *L, i32 arg_start);

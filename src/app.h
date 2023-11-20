@@ -1,13 +1,10 @@
 #pragma once
 
-#define SPRY_VERSION_MAJOR "0"
-#define SPRY_VERSION_MINOR "7"
-#define SPRY_VERSION SPRY_VERSION_MAJOR "." SPRY_VERSION_MINOR
+#define SPRY_VERSION "0.7"
 
 #include "array.h"
 #include "deps/lua/lua.h"
 #include "deps/luaalloc.h"
-#include "deps/microui.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "font.h"

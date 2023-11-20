@@ -13,16 +13,25 @@ void luax_stack_dump(lua_State *L);
 int luax_msgh(lua_State *L);
 
 // set table value at top of stack
-void luax_set_field(lua_State *L, const char *key, lua_Number n);
-void luax_set_field(lua_State *L, const char *key, const char *str);
+void luax_set_number_field(lua_State *L, const char *key, lua_Number n);
+void luax_set_int_field(lua_State *L, const char *key, lua_Integer n);
+void luax_set_string_field(lua_State *L, const char *key, const char *str);
 
-// get value from table at top of stack
-lua_Number luax_number_field(lua_State *L, const char *key);
-lua_Number luax_number_field(lua_State *L, const char *key,
-                             lua_Number fallback);
-String luax_string_field(lua_State *L, const char *key);
-String luax_string_field(lua_State *L, const char *key, const char *fallback);
-bool luax_boolean_field(lua_State *L, const char *key, bool fallback = false);
+// get value from table
+lua_Number luax_number_field(lua_State *L, i32 arg, const char *key);
+lua_Number luax_opt_number_field(lua_State *L, i32 arg, const char *key,
+                                 lua_Number fallback);
+
+lua_Integer luax_int_field(lua_State *L, i32 arg, const char *key);
+lua_Integer luax_opt_int_field(lua_State *L, i32 arg, const char *key,
+                               lua_Integer fallback);
+
+String luax_string_field(lua_State *L, i32 arg, const char *key);
+String luax_opt_string_field(lua_State *L, i32 arg, const char *key,
+                             const char *fallback);
+
+bool luax_boolean_field(lua_State *L, i32 arg, const char *key,
+                        bool fallback = false);
 
 String luax_check_string(lua_State *L, i32 arg);
 String luax_opt_string(lua_State *L, i32 arg, String def);

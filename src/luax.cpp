@@ -106,26 +106,31 @@ int luax_msgh(lua_State *L) {
   return 0;
 }
 
-void luax_set_field(lua_State *L, const char *key, lua_Number n) {
+void luax_set_number_field(lua_State *L, const char *key, lua_Number n) {
   lua_pushnumber(L, n);
   lua_setfield(L, -2, key);
 }
 
-void luax_set_field(lua_State *L, const char *key, const char *str) {
+void luax_set_int_field(lua_State *L, const char *key, lua_Integer n) {
+  lua_pushinteger(L, n);
+  lua_setfield(L, -2, key);
+}
+
+void luax_set_string_field(lua_State *L, const char *key, const char *str) {
   lua_pushstring(L, str);
   lua_setfield(L, -2, key);
 }
 
-lua_Number luax_number_field(lua_State *L, const char *key) {
-  lua_getfield(L, -1, key);
+lua_Number luax_number_field(lua_State *L, i32 arg, const char *key) {
+  lua_getfield(L, arg, key);
   lua_Number num = luaL_checknumber(L, -1);
   lua_pop(L, 1);
   return num;
 }
 
-lua_Number luax_number_field(lua_State *L, const char *key,
-                             lua_Number fallback) {
-  i32 type = lua_getfield(L, -1, key);
+lua_Number luax_opt_number_field(lua_State *L, i32 arg, const char *key,
+                                 lua_Number fallback) {
+  i32 type = lua_getfield(L, arg, key);
 
   lua_Number num = fallback;
   if (type != LUA_TNIL) {
@@ -136,24 +141,45 @@ lua_Number luax_number_field(lua_State *L, const char *key,
   return num;
 }
 
-String luax_string_field(lua_State *L, const char *key) {
-  lua_getfield(L, -1, key);
+lua_Integer luax_int_field(lua_State *L, i32 arg, const char *key) {
+  lua_getfield(L, arg, key);
+  lua_Integer num = luaL_checkinteger(L, -1);
+  lua_pop(L, 1);
+  return num;
+}
+
+lua_Number luax_opt_int_field(lua_State *L, i32 arg, const char *key,
+                              lua_Number fallback) {
+  i32 type = lua_getfield(L, arg, key);
+
+  lua_Number num = fallback;
+  if (type != LUA_TNIL) {
+    num = luaL_optinteger(L, -1, fallback);
+  }
+
+  lua_pop(L, 1);
+  return num;
+}
+
+String luax_string_field(lua_State *L, i32 arg, const char *key) {
+  lua_getfield(L, arg, key);
   size_t len = 0;
   char *str = (char *)luaL_checklstring(L, -1, &len);
   lua_pop(L, 1);
   return {str, len};
 }
 
-String luax_string_field(lua_State *L, const char *key, const char *fallback) {
-  lua_getfield(L, -1, key);
+String luax_opt_string_field(lua_State *L, i32 arg, const char *key,
+                             const char *fallback) {
+  lua_getfield(L, arg, key);
   size_t len = 0;
   char *str = (char *)luaL_optlstring(L, -1, fallback, &len);
   lua_pop(L, 1);
   return {str, len};
 }
 
-bool luax_boolean_field(lua_State *L, const char *key, bool fallback) {
-  i32 type = lua_getfield(L, -1, key);
+bool luax_boolean_field(lua_State *L, i32 arg, const char *key, bool fallback) {
+  i32 type = lua_getfield(L, arg, key);
 
   bool b = fallback;
   if (type != LUA_TNIL) {

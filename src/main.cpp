@@ -14,10 +14,11 @@
 #include "draw.h"
 #include "font.h"
 #include "luax.h"
-#include "mui.h"
+#include "microui.h"
 #include "os.h"
 #include "prelude.h"
 #include "profile.h"
+#include "strings.h"
 #include "sync.h"
 #include "vfs.h"
 
@@ -78,7 +79,7 @@ static void init() {
     }
   }
 
-  mui_init();
+  microui_init();
 
   renderer_reset();
 
@@ -109,7 +110,7 @@ static void init() {
 }
 
 static void event(const sapp_event *e) {
-  mui_sokol_event(e);
+  microui_sokol_event(e);
 
   switch (e->type) {
   case SAPP_EVENTTYPE_KEY_DOWN: g_app->key_state[e->key_code] = true; break;
@@ -212,9 +213,6 @@ static void frame() {
     sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
   }
 
-  mu_begin(mui_ctx());
-  mui_test_window();
-
   if (g_app->error_mode) {
     if (g_app->default_font == nullptr) {
       g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
@@ -227,8 +225,7 @@ static void frame() {
     float y = 10;
     u64 font_size = 16;
 
-    draw_font(g_app->default_font, font_size, x, y,
-              "oh no! there's an error! :(");
+    draw_font(g_app->default_font, font_size, x, y, "-- ! Spry Error ! --");
     y += font_size * 2;
 
     draw_font(g_app->default_font, font_size, x, y, g_app->fatal_error);
@@ -238,6 +235,8 @@ static void frame() {
       draw_font(g_app->default_font, font_size, x, y, g_app->traceback);
     }
   } else {
+    microui_begin();
+
     lua_State *L = g_app->L;
     lua_getglobal(L, "spry");
 
@@ -259,10 +258,9 @@ static void frame() {
 
     lua_pop(L, 1);
     assert(lua_gettop(L) == 1);
-  }
 
-  mu_end(mui_ctx());
-  mui_draw();
+    microui_end_and_present();
+  }
 
   {
     PROFILE_BLOCK("end render pass");
@@ -305,7 +303,7 @@ static void frame() {
 static void actually_cleanup() {
   PROFILE_FUNC();
 
-  mui_trash();
+  microui_trash();
 
   {
     PROFILE_BLOCK("lua close");
@@ -531,18 +529,19 @@ commands:
     }
   }
 
-  win_console = win_console || luax_boolean_field(L, "win_console", false);
+  win_console = win_console || luax_boolean_field(L, -1, "win_console", false);
 
-  bool hot_reload = luax_boolean_field(L, "hot_reload", true);
+  bool hot_reload = luax_boolean_field(L, -1, "hot_reload", true);
   bool startup_load_scripts =
-      luax_boolean_field(L, "startup_load_scripts", true);
-  bool fullscreen = luax_boolean_field(L, "fullscreen", false);
-  lua_Number reload_interval = luax_number_field(L, "reload_interval", 0.1);
-  lua_Number swap_interval = luax_number_field(L, "swap_interval", 1);
-  lua_Number target_fps = luax_number_field(L, "target_fps", 0);
-  lua_Number width = luax_number_field(L, "window_width", 800);
-  lua_Number height = luax_number_field(L, "window_height", 600);
-  String title = luax_string_field(L, "window_title", "Spry");
+      luax_boolean_field(L, -1, "startup_load_scripts", true);
+  bool fullscreen = luax_boolean_field(L, -1, "fullscreen", false);
+  lua_Number reload_interval =
+      luax_opt_number_field(L, -1, "reload_interval", 0.1);
+  lua_Number swap_interval = luax_opt_number_field(L, -1, "swap_interval", 1);
+  lua_Number target_fps = luax_opt_number_field(L, -1, "target_fps", 0);
+  lua_Number width = luax_opt_number_field(L, -1, "window_width", 800);
+  lua_Number height = luax_opt_number_field(L, -1, "window_height", 600);
+  String title = luax_opt_string_field(L, -1, "window_title", "Spry");
 
   lua_pop(L, 1);
 

@@ -4,6 +4,7 @@
 #include "atlas.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
+#include "deps/microui.h"
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
@@ -11,6 +12,7 @@
 #include "font.h"
 #include "image.h"
 #include "luax.h"
+#include "microui.h"
 #include "prelude.h"
 #include "profile.h"
 #include "sound.h"
@@ -691,9 +693,9 @@ static int mt_tilemap_entities(lua_State *L) {
       for (TilemapEntity &entity : layer.entities) {
         lua_createtable(L, 0, 3);
 
-        luax_set_field(L, "id", entity.identifier.data);
-        luax_set_field(L, "x", entity.x + level.world_x);
-        luax_set_field(L, "y", entity.y + level.world_y);
+        luax_set_string_field(L, "id", entity.identifier.data);
+        luax_set_number_field(L, "x", entity.x + level.world_x);
+        luax_set_number_field(L, "y", entity.y + level.world_y);
 
         lua_rawseti(L, -2, i);
         i++;
@@ -715,7 +717,7 @@ static int mt_tilemap_make_collision(lua_State *L) {
   defer(array_trash(&walls));
 
   lua_Unsigned n = lua_rawlen(L, 4);
-  for (i32 i = 1; i <= n; i++) {
+  for (u32 i = 1; i <= n; i++) {
     lua_rawgeti(L, 4, i);
     lua_Number tile = luaL_checknumber(L, -1);
     array_push(&walls, (TilemapInt)tile);
@@ -800,8 +802,8 @@ static int mt_tilemap_astar(lua_State *L) {
     for (TileNode *n = end; n != nullptr; n = n->prev) {
       lua_createtable(L, 0, 2);
 
-      luax_set_field(L, "x", n->x * asset.tilemap.graph_grid_size);
-      luax_set_field(L, "y", n->y * asset.tilemap.graph_grid_size);
+      luax_set_number_field(L, "x", n->x * asset.tilemap.graph_grid_size);
+      luax_set_number_field(L, "y", n->y * asset.tilemap.graph_grid_size);
 
       lua_rawseti(L, -2, i);
       i++;
@@ -962,11 +964,11 @@ static int mt_b2_body_gc(lua_State *L) { return b2_body_unref(L, false); }
 
 static int mt_b2_body_destroy(lua_State *L) { return b2_body_unref(L, true); }
 
-static b2FixtureDef b2_fixture_def(lua_State *L) {
-  bool sensor = luax_boolean_field(L, "sensor");
-  lua_Number density = luax_number_field(L, "density", 1);
-  lua_Number friction = luax_number_field(L, "friction", 0.2);
-  lua_Number restitution = luax_number_field(L, "restitution", 0);
+static b2FixtureDef b2_fixture_def(lua_State *L, i32 arg) {
+  bool sensor = luax_boolean_field(L, arg, "sensor");
+  lua_Number density = luax_opt_number_field(L, arg, "density", 1);
+  lua_Number friction = luax_opt_number_field(L, arg, "friction", 0.2);
+  lua_Number restitution = luax_opt_number_field(L, arg, "restitution", 0);
   PhysicsUserData *pud = physics_userdata(L);
 
   b2FixtureDef def = {};
@@ -981,13 +983,13 @@ static b2FixtureDef b2_fixture_def(lua_State *L) {
 static int mt_b2_body_make_box_fixture(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   b2Body *body = physics->body;
-  b2FixtureDef fixture_def = b2_fixture_def(L);
+  b2FixtureDef fixture_def = b2_fixture_def(L, 2);
 
-  lua_Number x = luax_number_field(L, "x", 0);
-  lua_Number y = luax_number_field(L, "y", 0);
-  lua_Number w = luax_number_field(L, "w");
-  lua_Number h = luax_number_field(L, "h");
-  lua_Number angle = luax_number_field(L, "angle", 0);
+  lua_Number x = luax_opt_number_field(L, 2, "x", 0);
+  lua_Number y = luax_opt_number_field(L, 2, "y", 0);
+  lua_Number w = luax_number_field(L, 2, "w");
+  lua_Number h = luax_number_field(L, 2, "h");
+  lua_Number angle = luax_opt_number_field(L, 2, "angle", 0);
 
   b2Vec2 pos = {(float)x / physics->meter, (float)y / physics->meter};
 
@@ -1006,11 +1008,11 @@ static int mt_b2_body_make_box_fixture(lua_State *L) {
 static int mt_b2_body_make_circle_fixture(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_body");
   b2Body *body = physics->body;
-  b2FixtureDef fixture_def = b2_fixture_def(L);
+  b2FixtureDef fixture_def = b2_fixture_def(L, 2);
 
-  lua_Number x = luax_number_field(L, "x", 0);
-  lua_Number y = luax_number_field(L, "y", 0);
-  lua_Number radius = luax_number_field(L, "radius");
+  lua_Number x = luax_opt_number_field(L, 2, "x", 0);
+  lua_Number y = luax_opt_number_field(L, 2, "y", 0);
+  lua_Number radius = luax_number_field(L, 2, "radius");
 
   b2CircleShape circle = {};
   circle.m_radius = radius / physics->meter;
@@ -1237,14 +1239,15 @@ static int mt_b2_world_step(lua_State *L) {
   return 0;
 }
 
-static b2BodyDef b2_body_def(lua_State *L, Physics *physics) {
-  lua_Number x = luax_number_field(L, "x");
-  lua_Number y = luax_number_field(L, "y");
-  lua_Number vx = luax_number_field(L, "vx", 0);
-  lua_Number vy = luax_number_field(L, "vy", 0);
-  lua_Number angle = luax_number_field(L, "angle", 0);
-  lua_Number linear_damping = luax_number_field(L, "linear_damping", 0);
-  bool fixed_rotation = luax_boolean_field(L, "fixed_rotation");
+static b2BodyDef b2_body_def(lua_State *L, i32 arg, Physics *physics) {
+  lua_Number x = luax_number_field(L, arg, "x");
+  lua_Number y = luax_number_field(L, arg, "y");
+  lua_Number vx = luax_opt_number_field(L, arg, "vx", 0);
+  lua_Number vy = luax_opt_number_field(L, arg, "vy", 0);
+  lua_Number angle = luax_opt_number_field(L, arg, "angle", 0);
+  lua_Number linear_damping =
+      luax_opt_number_field(L, arg, "linear_damping", 0);
+  bool fixed_rotation = luax_boolean_field(L, arg, "fixed_rotation");
   PhysicsUserData *pud = physics_userdata(L);
 
   b2BodyDef def = {};
@@ -1260,7 +1263,7 @@ static b2BodyDef b2_body_def(lua_State *L, Physics *physics) {
 
 static int b2_make_body(lua_State *L, b2BodyType type) {
   Physics *physics = (Physics *)luaL_checkudata(L, 1, "mt_b2_world");
-  b2BodyDef body_def = b2_body_def(L, physics);
+  b2BodyDef body_def = b2_body_def(L, 2, physics);
   body_def.type = type;
 
   Physics p = weak_copy(physics);
@@ -1331,6 +1334,776 @@ static int open_mt_b2_world(lua_State *L) {
 
   luax_new_class(L, "mt_b2_world", reg);
   return 0;
+}
+
+// mt_mu_container
+
+static int mt_mu_container_rect(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  lua_mu_rect_push(L, container->rect);
+  return 1;
+}
+
+static int mt_mu_container_set_rect(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  container->rect = lua_mu_check_rect(L, 2);
+  return 0;
+}
+
+static int mt_mu_container_body(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  lua_mu_rect_push(L, container->body);
+  return 1;
+}
+
+static int mt_mu_container_content_size(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  lua_pushinteger(L, container->content_size.x);
+  lua_pushinteger(L, container->content_size.y);
+  return 2;
+}
+
+static int mt_mu_container_scroll(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  lua_pushinteger(L, container->scroll.x);
+  lua_pushinteger(L, container->scroll.y);
+  return 2;
+}
+
+static int mt_mu_container_set_scroll(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  container->scroll.x = luaL_checknumber(L, 2);
+  container->scroll.y = luaL_checknumber(L, 3);
+  return 0;
+}
+
+static int mt_mu_container_zindex(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  lua_pushinteger(L, container->zindex);
+  return 1;
+}
+
+static int mt_mu_container_open(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  lua_pushboolean(L, container->open);
+  return 1;
+}
+
+static int open_mt_mu_container(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"rect", mt_mu_container_rect},
+      {"set_rect", mt_mu_container_set_rect},
+      {"body", mt_mu_container_body},
+      {"content_size", mt_mu_container_content_size},
+      {"scroll", mt_mu_container_scroll},
+      {"set_scroll", mt_mu_container_set_scroll},
+      {"zindex", mt_mu_container_zindex},
+      {"open", mt_mu_container_open},
+      {nullptr, nullptr},
+  };
+
+  luax_new_class(L, "mt_mu_container", reg);
+  return 0;
+}
+
+static int mt_mu_style_size(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_pushinteger(L, style->size.x);
+  lua_pushinteger(L, style->size.y);
+  return 2;
+}
+
+static int mt_mu_style_set_size(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  style->size.x = luaL_checknumber(L, 2);
+  style->size.y = luaL_checknumber(L, 3);
+  return 0;
+}
+
+static int mt_mu_style_padding(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_pushinteger(L, style->padding);
+  return 1;
+}
+
+static int mt_mu_style_set_padding(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  style->padding = luaL_checknumber(L, 2);
+  return 0;
+}
+
+static int mt_mu_style_spacing(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_pushinteger(L, style->spacing);
+  return 1;
+}
+
+static int mt_mu_style_set_spacing(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  style->spacing = luaL_checknumber(L, 2);
+  return 0;
+}
+
+static int mt_mu_style_indent(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_pushinteger(L, style->indent);
+  return 1;
+}
+
+static int mt_mu_style_set_indent(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  style->indent = luaL_checknumber(L, 2);
+  return 0;
+}
+
+static int mt_mu_style_title_height(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_pushinteger(L, style->title_height);
+  return 1;
+}
+
+static int mt_mu_style_set_title_height(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  style->title_height = luaL_checknumber(L, 2);
+  return 0;
+}
+
+static int mt_mu_style_scrollbar_size(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_pushinteger(L, style->scrollbar_size);
+  return 1;
+}
+
+static int mt_mu_style_set_scrollbar_size(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  style->scrollbar_size = luaL_checknumber(L, 2);
+  return 0;
+}
+
+static int mt_mu_style_thumb_size(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_pushinteger(L, style->thumb_size);
+  return 1;
+}
+
+static int mt_mu_style_set_thumb_size(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  style->thumb_size = luaL_checknumber(L, 2);
+  return 0;
+}
+
+static int mt_mu_style_color(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_Integer colorid = luaL_checkinteger(L, 2);
+  if (colorid < 0 || colorid >= MU_COLOR_MAX) {
+    return luaL_error(L, "color id out of range");
+  }
+
+  lua_createtable(L, 0, 4);
+  luax_set_number_field(L, "r", style->colors[colorid].r);
+  luax_set_number_field(L, "g", style->colors[colorid].g);
+  luax_set_number_field(L, "b", style->colors[colorid].b);
+  luax_set_number_field(L, "a", style->colors[colorid].a);
+  return 1;
+}
+
+static int mt_mu_style_set_color(lua_State *L) {
+  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
+  lua_Integer colorid = luaL_checkinteger(L, 2);
+  mu_Color color = lua_mu_check_color(L, 3);
+
+  if (colorid < 0 || colorid >= MU_COLOR_MAX) {
+    return luaL_error(L, "color id out of range");
+  }
+
+  style->colors[colorid] = color;
+  return 0;
+}
+
+static int open_mt_mu_style(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"size", mt_mu_style_size},
+      {"set_size", mt_mu_style_set_size},
+      {"padding", mt_mu_style_padding},
+      {"set_padding", mt_mu_style_set_padding},
+      {"spacing", mt_mu_style_spacing},
+      {"set_spacing", mt_mu_style_set_spacing},
+      {"indent", mt_mu_style_indent},
+      {"set_indent", mt_mu_style_set_indent},
+      {"title_height", mt_mu_style_title_height},
+      {"set_title_height", mt_mu_style_set_title_height},
+      {"scrollbar_size", mt_mu_style_scrollbar_size},
+      {"set_scrollbar_size", mt_mu_style_set_scrollbar_size},
+      {"thumb_size", mt_mu_style_thumb_size},
+      {"set_thumb_size", mt_mu_style_set_thumb_size},
+      {"color", mt_mu_style_color},
+      {"set_color", mt_mu_style_set_color},
+      {nullptr, nullptr},
+  };
+
+  luax_new_class(L, "mt_mu_style", reg);
+  return 0;
+}
+
+// mt_mu_ref
+
+static int mt_mu_ref_gc(lua_State *L) {
+  MUIRef *ref = *(MUIRef **)luaL_checkudata(L, 1, "mt_mu_ref");
+  mem_free(ref);
+  return 0;
+}
+
+static int mt_mu_ref_get(lua_State *L) {
+  MUIRef *ref = *(MUIRef **)luaL_checkudata(L, 1, "mt_mu_ref");
+
+  switch (ref->kind) {
+  case MUIRefKind_Boolean: lua_pushboolean(L, ref->boolean); return 1;
+  case MUIRefKind_Real: lua_pushnumber(L, ref->real); return 1;
+  case MUIRefKind_String: lua_pushstring(L, ref->string); return 1;
+  case MUIRefKind_Nil:
+  default: return 0;
+  }
+}
+
+static int mt_mu_ref_set(lua_State *L) {
+  MUIRef *ref = *(MUIRef **)luaL_checkudata(L, 1, "mt_mu_ref");
+  lua_mu_set_ref(L, ref, 2);
+  return 0;
+}
+
+static int open_mt_mu_ref(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"__gc", mt_mu_ref_gc},
+      {"get", mt_mu_ref_get},
+      {"set", mt_mu_ref_set},
+      {nullptr, nullptr},
+  };
+  luax_new_class(L, "mt_mu_ref", reg);
+  return 0;
+}
+
+// microui api
+
+static int mui_set_focus(lua_State *L) {
+  lua_Integer id = luaL_checkinteger(L, 1);
+  mu_set_focus(microui_ctx(), (mu_Id)id);
+  return 0;
+}
+
+static int mui_get_id(lua_State *L) {
+  String name = luax_check_string(L, 1);
+  mu_Id id = mu_get_id(microui_ctx(), name.data, name.len);
+  lua_pushinteger(L, (lua_Integer)id);
+  return 1;
+}
+
+static int mui_push_id(lua_State *L) {
+  String name = luax_check_string(L, 1);
+  mu_push_id(microui_ctx(), name.data, name.len);
+  return 0;
+}
+
+static int mui_pop_id(lua_State *L) {
+  mu_pop_id(microui_ctx());
+  return 0;
+}
+
+static int mui_push_clip_rect(lua_State *L) {
+  mu_Rect rect = lua_mu_check_rect(L, 1);
+  mu_push_clip_rect(microui_ctx(), rect);
+  return 0;
+}
+
+static int mui_pop_clip_rect(lua_State *L) {
+  mu_pop_clip_rect(microui_ctx());
+  return 0;
+}
+
+static int mui_get_clip_rect(lua_State *L) {
+  mu_Rect rect = mu_get_clip_rect(microui_ctx());
+  lua_mu_rect_push(L, rect);
+  return 1;
+}
+
+static int mui_check_clip(lua_State *L) {
+  mu_Rect rect = lua_mu_check_rect(L, 1);
+
+  i32 clip = mu_check_clip(microui_ctx(), rect);
+  lua_pushinteger(L, clip);
+  return 1;
+}
+
+static int mui_get_current_container(lua_State *L) {
+  mu_Container *container = mu_get_current_container(microui_ctx());
+  luax_ptr_userdata(L, container, "mt_mu_container");
+  return 1;
+}
+
+static int mui_get_container(lua_State *L) {
+  String name = luax_check_string(L, 1);
+  mu_Container *container = mu_get_container(microui_ctx(), name.data);
+  luax_ptr_userdata(L, container, "mt_mu_container");
+  return 1;
+}
+
+static int mui_bring_to_front(lua_State *L) {
+  mu_Container *container =
+      *(mu_Container **)luaL_checkudata(L, 1, "mt_mu_container");
+  mu_bring_to_front(microui_ctx(), container);
+  return 0;
+}
+
+static int mui_set_clip(lua_State *L) {
+  mu_Rect rect = lua_mu_check_rect(L, 1);
+  mu_set_clip(microui_ctx(), rect);
+  return 0;
+}
+
+static int mui_draw_rect(lua_State *L) {
+  mu_Rect rect = lua_mu_check_rect(L, 1);
+  mu_Color color = lua_mu_check_color(L, 2);
+  mu_draw_rect(microui_ctx(), rect, color);
+  return 0;
+}
+
+static int mui_draw_box(lua_State *L) {
+  mu_Rect rect = lua_mu_check_rect(L, 1);
+  mu_Color color = lua_mu_check_color(L, 2);
+  mu_draw_box(microui_ctx(), rect, color);
+  return 0;
+}
+
+static int mui_draw_text(lua_State *L) {
+  String str = luax_check_string(L, 1);
+  lua_Number x = luaL_checknumber(L, 2);
+  lua_Number y = luaL_checknumber(L, 3);
+  mu_Color color = lua_mu_check_color(L, 4);
+
+  mu_Vec2 pos = {(int)x, (int)y};
+  mu_draw_text(microui_ctx(), nullptr, str.data, str.len, pos, color);
+  return 0;
+}
+
+static int mui_draw_icon(lua_State *L) {
+  lua_Integer id = luaL_checkinteger(L, 1);
+  mu_Rect rect = lua_mu_check_rect(L, 2);
+  mu_Color color = lua_mu_check_color(L, 3);
+
+  mu_draw_icon(microui_ctx(), id, rect, color);
+  return 0;
+}
+
+static int mui_layout_row(lua_State *L) {
+  lua_Number height = luaL_checknumber(L, 2);
+
+  i32 widths[MU_MAX_WIDTHS] = {};
+
+  lua_Unsigned n = lua_rawlen(L, 1);
+  for (u32 i = 0; i < n; i++) {
+    lua_rawgeti(L, 1, i + 1);
+    widths[i] = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+  }
+
+  mu_layout_row(microui_ctx(), n, widths, height);
+  return 0;
+}
+
+static int mui_layout_width(lua_State *L) {
+  lua_Number width = luaL_checknumber(L, 1);
+  mu_layout_width(microui_ctx(), width);
+  return 0;
+}
+
+static int mui_layout_height(lua_State *L) {
+  lua_Number height = luaL_checknumber(L, 1);
+  mu_layout_height(microui_ctx(), height);
+  return 0;
+}
+
+static int mui_layout_begin_column(lua_State *L) {
+  mu_layout_begin_column(microui_ctx());
+  return 0;
+}
+
+static int mui_layout_end_column(lua_State *L) {
+  mu_layout_end_column(microui_ctx());
+  return 0;
+}
+
+static int mui_layout_set_next(lua_State *L) {
+  mu_Rect rect = lua_mu_check_rect(L, 1);
+  bool relative = lua_toboolean(L, 2);
+  mu_layout_set_next(microui_ctx(), rect, relative);
+  return 0;
+}
+
+static int mui_layout_next(lua_State *L) {
+  mu_Rect rect = mu_layout_next(microui_ctx());
+  lua_mu_rect_push(L, rect);
+  return 1;
+}
+
+static int mui_draw_control_frame(lua_State *L) {
+  lua_Integer id = luaL_checkinteger(L, 1);
+  mu_Rect rect = lua_mu_check_rect(L, 2);
+  lua_Integer colorid = luaL_checkinteger(L, 3);
+  lua_Integer opt = luaL_checkinteger(L, 4);
+  mu_draw_control_frame(microui_ctx(), id, rect, colorid, opt);
+  return 0;
+}
+
+static int mui_draw_control_text(lua_State *L) {
+  String str = luax_check_string(L, 1);
+  mu_Rect rect = lua_mu_check_rect(L, 2);
+  lua_Integer colorid = luaL_checkinteger(L, 3);
+  lua_Integer opt = luaL_checkinteger(L, 4);
+  mu_draw_control_text(microui_ctx(), str.data, rect, colorid, opt);
+  return 0;
+}
+
+static int mui_mouse_over(lua_State *L) {
+  mu_Rect rect = lua_mu_check_rect(L, 1);
+  int res = mu_mouse_over(microui_ctx(), rect);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
+static int mui_update_control(lua_State *L) {
+  lua_Integer id = luaL_checkinteger(L, 1);
+  mu_Rect rect = lua_mu_check_rect(L, 2);
+  lua_Integer opt = luaL_checkinteger(L, 3);
+  mu_update_control(microui_ctx(), id, rect, opt);
+  return 0;
+}
+
+static int mui_text(lua_State *L) {
+  String text = luax_check_string(L, 1);
+  mu_text(microui_ctx(), text.data);
+  return 0;
+}
+
+static int mui_label(lua_State *L) {
+  String text = luax_check_string(L, 1);
+  mu_label(microui_ctx(), text.data);
+  return 0;
+}
+
+static int mui_button(lua_State *L) {
+  String text = luax_check_string(L, 1);
+  lua_Integer icon = luaL_optinteger(L, 2, 0);
+  lua_Integer opt = luaL_optinteger(L, 3, MU_OPT_ALIGNCENTER);
+  i32 res = mu_button_ex(microui_ctx(), text.data, icon, opt);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
+static int mui_checkbox(lua_State *L) {
+  String text = luax_check_string(L, 1);
+  MUIRef *ref = lua_mu_check_ref(L, 2, MUIRefKind_Boolean);
+
+  i32 res = mu_checkbox(microui_ctx(), text.data, &ref->boolean);
+  lua_pushinteger(L, res);
+  return 1;
+}
+
+static int mui_textbox_raw(lua_State *L) {
+  MUIRef *ref = lua_mu_check_ref(L, 1, MUIRefKind_String);
+  lua_Integer id = luaL_checkinteger(L, 2);
+  mu_Rect rect = lua_mu_check_rect(L, 3);
+  i32 opt = luaL_optinteger(L, 4, 0);
+
+  i32 res = mu_textbox_raw(microui_ctx(), ref->string, array_size(ref->string),
+                           id, rect, opt);
+  lua_pushinteger(L, res);
+  return 1;
+}
+
+static int mui_textbox(lua_State *L) {
+  MUIRef *ref = lua_mu_check_ref(L, 1, MUIRefKind_String);
+  i32 opt = luaL_optinteger(L, 2, 0);
+
+  i32 res =
+      mu_textbox_ex(microui_ctx(), ref->string, array_size(ref->string), opt);
+  lua_pushinteger(L, res);
+  return 1;
+}
+
+static int mui_slider(lua_State *L) {
+  MUIRef *ref = lua_mu_check_ref(L, 1, MUIRefKind_Real);
+  mu_Real low = (mu_Real)luaL_checknumber(L, 2);
+  mu_Real high = (mu_Real)luaL_checknumber(L, 3);
+  mu_Real step = (mu_Real)luaL_optnumber(L, 4, 0);
+  String fmt = luax_opt_string(L, 5, MU_SLIDER_FMT);
+  i32 opt = luaL_optinteger(L, 6, MU_OPT_ALIGNCENTER);
+
+  i32 res =
+      mu_slider_ex(microui_ctx(), &ref->real, low, high, step, fmt.data, opt);
+  lua_pushinteger(L, res);
+  return 1;
+}
+
+static int mui_number(lua_State *L) {
+  MUIRef *ref = lua_mu_check_ref(L, 1, MUIRefKind_Real);
+  mu_Real step = (mu_Real)luaL_checknumber(L, 2);
+  String fmt = luax_opt_string(L, 3, MU_SLIDER_FMT);
+  i32 opt = luaL_optinteger(L, 4, MU_OPT_ALIGNCENTER);
+
+  i32 res = mu_number_ex(microui_ctx(), &ref->real, step, fmt.data, opt);
+  lua_pushinteger(L, res);
+  return 1;
+}
+
+static int mui_header(lua_State *L) {
+  String text = luax_check_string(L, 1);
+  lua_Integer opt = luaL_optinteger(L, 2, 0);
+  i32 res = mu_header_ex(microui_ctx(), text.data, opt);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
+static int mui_begin_treenode(lua_State *L) {
+  String label = luax_check_string(L, 1);
+  lua_Integer opt = luaL_optinteger(L, 2, 0);
+
+  i32 res = mu_begin_treenode_ex(microui_ctx(), label.data, opt);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
+static int mui_end_treenode(lua_State *L) {
+  mu_end_treenode(microui_ctx());
+  return 0;
+}
+
+static int mui_begin_window(lua_State *L) {
+  String title = luax_check_string(L, 1);
+  mu_Rect rect = lua_mu_check_rect(L, 2);
+  lua_Integer opt = luaL_optinteger(L, 3, 0);
+
+  i32 res = mu_begin_window_ex(microui_ctx(), title.data, rect, opt);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
+static int mui_end_window(lua_State *L) {
+  mu_end_window(microui_ctx());
+  return 0;
+}
+
+static int mui_open_popup(lua_State *L) {
+  String name = luax_check_string(L, 1);
+  mu_open_popup(microui_ctx(), name.data);
+  return 0;
+}
+
+static int mui_begin_popup(lua_State *L) {
+  String name = luax_check_string(L, 1);
+  i32 res = mu_begin_popup(microui_ctx(), name.data);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
+static int mui_end_popup(lua_State *L) {
+  mu_end_popup(microui_ctx());
+  return 0;
+}
+
+static int mui_begin_panel(lua_State *L) {
+  String name = luax_check_string(L, 1);
+  lua_Integer opt = luaL_optinteger(L, 2, 0);
+  mu_begin_panel_ex(microui_ctx(), name.data, opt);
+  return 0;
+}
+
+static int mui_end_panel(lua_State *L) {
+  mu_end_panel(microui_ctx());
+  return 0;
+}
+
+static int mui_get_hover(lua_State *L) {
+  lua_pushinteger(L, microui_ctx()->hover);
+  return 1;
+}
+
+static int mui_get_focus(lua_State *L) {
+  lua_pushinteger(L, microui_ctx()->focus);
+  return 1;
+}
+
+static int mui_get_last_id(lua_State *L) {
+  lua_pushinteger(L, microui_ctx()->last_id);
+  return 1;
+}
+
+static int mui_get_style(lua_State *L) {
+  luax_ptr_userdata(L, microui_ctx()->style, "mt_mu_style");
+  return 1;
+}
+
+static int mui_rect(lua_State *L) {
+  lua_createtable(L, 0, 4);
+  luax_set_int_field(L, "x", luaL_checkinteger(L, 1));
+  luax_set_int_field(L, "y", luaL_checkinteger(L, 2));
+  luax_set_int_field(L, "w", luaL_checkinteger(L, 3));
+  luax_set_int_field(L, "h", luaL_checkinteger(L, 4));
+  return 1;
+}
+
+static int mui_color(lua_State *L) {
+  lua_createtable(L, 0, 4);
+  luax_set_int_field(L, "r", luaL_checkinteger(L, 1));
+  luax_set_int_field(L, "g", luaL_checkinteger(L, 2));
+  luax_set_int_field(L, "b", luaL_checkinteger(L, 3));
+  luax_set_int_field(L, "a", luaL_checkinteger(L, 4));
+  return 1;
+}
+
+static int mui_ref(lua_State *L) {
+  MUIRef *ref = (MUIRef *)mem_alloc(sizeof(MUIRef));
+  lua_mu_set_ref(L, ref, 1);
+  luax_ptr_userdata(L, ref, "mt_mu_ref");
+  return 1;
+}
+
+static int open_microui(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"set_focus", mui_set_focus},
+      {"get_id", mui_get_id},
+      {"push_id", mui_push_id},
+      {"pop_id", mui_pop_id},
+      {"push_clip_rect", mui_push_clip_rect},
+      {"pop_clip_rect", mui_pop_clip_rect},
+      {"get_clip_rect", mui_get_clip_rect},
+      {"check_clip", mui_check_clip},
+      {"get_current_container", mui_get_current_container},
+      {"get_container", mui_get_container},
+      {"bring_to_front", mui_bring_to_front},
+
+      {"set_clip", mui_set_clip},
+      {"draw_rect", mui_draw_rect},
+      {"draw_box", mui_draw_box},
+      {"draw_text", mui_draw_text},
+      {"draw_icon", mui_draw_icon},
+
+      {"layout_row", mui_layout_row},
+      {"layout_width", mui_layout_width},
+      {"layout_height", mui_layout_height},
+      {"layout_begin_column", mui_layout_begin_column},
+      {"layout_end_column", mui_layout_end_column},
+      {"layout_set_next", mui_layout_set_next},
+      {"layout_next", mui_layout_next},
+
+      {"draw_control_frame", mui_draw_control_frame},
+      {"draw_control_text", mui_draw_control_text},
+      {"mouse_over", mui_mouse_over},
+      {"update_control", mui_update_control},
+
+      {"text", mui_text},
+      {"label", mui_label},
+      {"button", mui_button},
+      {"checkbox", mui_checkbox},
+      {"textbox_raw", mui_textbox_raw},
+      {"textbox", mui_textbox},
+      {"slider", mui_slider},
+      {"number", mui_number},
+      {"header", mui_header},
+      {"begin_treenode", mui_begin_treenode},
+      {"end_treenode", mui_end_treenode},
+      {"begin_window", mui_begin_window},
+      {"end_window", mui_end_window},
+      {"open_popup", mui_open_popup},
+      {"begin_popup", mui_begin_popup},
+      {"end_popup", mui_end_popup},
+      {"begin_panel", mui_begin_panel},
+      {"end_panel", mui_end_panel},
+
+      // access
+      {"get_hover", mui_get_hover},
+      {"get_focus", mui_get_focus},
+      {"get_last_id", mui_get_last_id},
+      {"get_style", mui_get_style},
+
+      // utility
+      {"rect", mui_rect},
+      {"color", mui_color},
+      {"ref", mui_ref},
+      {nullptr, nullptr},
+  };
+
+  luaL_newlib(L, reg);
+
+  luax_set_string_field(L, "VERSION", MU_VERSION);
+
+  luax_set_int_field(L, "COMMANDLIST_SIZE", MU_COMMANDLIST_SIZE);
+  luax_set_int_field(L, "ROOTLIST_SIZE", MU_ROOTLIST_SIZE);
+  luax_set_int_field(L, "CONTAINERSTACK_SIZE", MU_CONTAINERSTACK_SIZE);
+  luax_set_int_field(L, "CLIPSTACK_SIZE", MU_CLIPSTACK_SIZE);
+  luax_set_int_field(L, "IDSTACK_SIZE", MU_IDSTACK_SIZE);
+  luax_set_int_field(L, "LAYOUTSTACK_SIZE", MU_LAYOUTSTACK_SIZE);
+  luax_set_int_field(L, "CONTAINERPOOL_SIZE", MU_CONTAINERPOOL_SIZE);
+  luax_set_int_field(L, "TREENODEPOOL_SIZE", MU_TREENODEPOOL_SIZE);
+  luax_set_int_field(L, "MAX_WIDTHS", MU_MAX_WIDTHS);
+  luax_set_string_field(L, "REAL_FMT", MU_REAL_FMT);
+  luax_set_string_field(L, "SLIDER_FMT", MU_SLIDER_FMT);
+  luax_set_int_field(L, "MAX_FMT", MU_MAX_FMT);
+
+  luax_set_int_field(L, "CLIP_PART", MU_CLIP_PART);
+  luax_set_int_field(L, "CLIP_ALL", MU_CLIP_ALL);
+
+  luax_set_int_field(L, "COMMAND_JUMP", MU_COMMAND_JUMP);
+  luax_set_int_field(L, "COMMAND_CLIP", MU_COMMAND_CLIP);
+  luax_set_int_field(L, "COMMAND_RECT", MU_COMMAND_RECT);
+  luax_set_int_field(L, "COMMAND_TEXT", MU_COMMAND_TEXT);
+  luax_set_int_field(L, "COMMAND_ICON", MU_COMMAND_ICON);
+
+  luax_set_int_field(L, "COLOR_TEXT", MU_COLOR_TEXT);
+  luax_set_int_field(L, "COLOR_BORDER", MU_COLOR_BORDER);
+  luax_set_int_field(L, "COLOR_WINDOWBG", MU_COLOR_WINDOWBG);
+  luax_set_int_field(L, "COLOR_TITLEBG", MU_COLOR_TITLEBG);
+  luax_set_int_field(L, "COLOR_TITLETEXT", MU_COLOR_TITLETEXT);
+  luax_set_int_field(L, "COLOR_PANELBG", MU_COLOR_PANELBG);
+  luax_set_int_field(L, "COLOR_BUTTON", MU_COLOR_BUTTON);
+  luax_set_int_field(L, "COLOR_BUTTONHOVER", MU_COLOR_BUTTONHOVER);
+  luax_set_int_field(L, "COLOR_BUTTONFOCUS", MU_COLOR_BUTTONFOCUS);
+  luax_set_int_field(L, "COLOR_BASE", MU_COLOR_BASE);
+  luax_set_int_field(L, "COLOR_BASEHOVER", MU_COLOR_BASEHOVER);
+  luax_set_int_field(L, "COLOR_BASEFOCUS", MU_COLOR_BASEFOCUS);
+  luax_set_int_field(L, "COLOR_SCROLLBASE", MU_COLOR_SCROLLBASE);
+  luax_set_int_field(L, "COLOR_SCROLLTHUMB", MU_COLOR_SCROLLTHUMB);
+
+  luax_set_int_field(L, "ICON_CLOSE", MU_ICON_CLOSE);
+  luax_set_int_field(L, "ICON_CHECK", MU_ICON_CHECK);
+  luax_set_int_field(L, "ICON_COLLAPSED", MU_ICON_COLLAPSED);
+  luax_set_int_field(L, "ICON_EXPANDED", MU_ICON_EXPANDED);
+
+  luax_set_int_field(L, "RES_ACTIVE", MU_RES_ACTIVE);
+  luax_set_int_field(L, "RES_SUBMIT", MU_RES_SUBMIT);
+  luax_set_int_field(L, "RES_CHANGE", MU_RES_CHANGE);
+
+  luax_set_int_field(L, "OPT_ALIGNCENTER", MU_OPT_ALIGNCENTER);
+  luax_set_int_field(L, "OPT_ALIGNRIGHT", MU_OPT_ALIGNRIGHT);
+  luax_set_int_field(L, "OPT_NOINTERACT", MU_OPT_NOINTERACT);
+  luax_set_int_field(L, "OPT_NOFRAME", MU_OPT_NOFRAME);
+  luax_set_int_field(L, "OPT_NORESIZE", MU_OPT_NORESIZE);
+  luax_set_int_field(L, "OPT_NOSCROLL", MU_OPT_NOSCROLL);
+  luax_set_int_field(L, "OPT_NOCLOSE", MU_OPT_NOCLOSE);
+  luax_set_int_field(L, "OPT_NOTITLE", MU_OPT_NOTITLE);
+  luax_set_int_field(L, "OPT_HOLDFOCUS", MU_OPT_HOLDFOCUS);
+  luax_set_int_field(L, "OPT_AUTOSIZE", MU_OPT_AUTOSIZE);
+  luax_set_int_field(L, "OPT_POPUP", MU_OPT_POPUP);
+  luax_set_int_field(L, "OPT_CLOSED", MU_OPT_CLOSED);
+  luax_set_int_field(L, "OPT_EXPANDED", MU_OPT_EXPANDED);
+
+  return 1;
 }
 
 // spry api
@@ -1750,10 +2523,10 @@ static sg_wrap str_to_wrap_mode(lua_State *L, String s) {
 }
 
 static int spry_make_sampler(lua_State *L) {
-  String min_filter = luax_string_field(L, "min_filter", "nearest");
-  String mag_filter = luax_string_field(L, "mag_filter", "nearest");
-  String wrap_u = luax_string_field(L, "wrap_u", "repeat");
-  String wrap_v = luax_string_field(L, "wrap_v", "repeat");
+  String min_filter = luax_opt_string_field(L, 1, "min_filter", "nearest");
+  String mag_filter = luax_opt_string_field(L, 1, "mag_filter", "nearest");
+  String wrap_u = luax_opt_string_field(L, 1, "wrap_u", "repeat");
+  String wrap_v = luax_opt_string_field(L, 1, "wrap_v", "repeat");
 
   sg_sampler_desc desc = {};
   desc.min_filter = str_to_filter_mode(L, min_filter);
@@ -1855,9 +2628,9 @@ static int spry_tilemap_load(lua_State *L) {
 }
 
 static int spry_b2_world(lua_State *L) {
-  lua_Number gx = luax_number_field(L, "gx", 0);
-  lua_Number gy = luax_number_field(L, "gy", 9.81);
-  lua_Number meter = luax_number_field(L, "meter", 16);
+  lua_Number gx = luax_opt_number_field(L, 1, "gx", 0);
+  lua_Number gy = luax_opt_number_field(L, 1, "gy", 9.81);
+  lua_Number meter = luax_opt_number_field(L, 1, "meter", 16);
 
   b2Vec2 gravity = {(float)gx, (float)gy};
 
@@ -1938,10 +2711,11 @@ static int open_spry(lua_State *L) {
 
 void open_spry_api(lua_State *L) {
   lua_CFunction mt_funcs[] = {
-      open_mt_sampler, open_mt_image,    open_mt_font,
-      open_mt_sound,   open_mt_sprite,   open_mt_atlas_image,
-      open_mt_atlas,   open_mt_tilemap,  open_mt_b2_fixture,
-      open_mt_b2_body, open_mt_b2_world,
+      open_mt_sampler,  open_mt_image,    open_mt_font,
+      open_mt_sound,    open_mt_sprite,   open_mt_atlas_image,
+      open_mt_atlas,    open_mt_tilemap,  open_mt_b2_fixture,
+      open_mt_b2_body,  open_mt_b2_world, open_mt_mu_container,
+      open_mt_mu_style, open_mt_mu_ref,
   };
 
   for (u32 i = 0; i < array_size(mt_funcs); i++) {
@@ -1949,5 +2723,9 @@ void open_spry_api(lua_State *L) {
   }
 
   luaL_requiref(L, "spry", open_spry, 1);
+
+  open_microui(L);
+  lua_setfield(L, -2, "microui");
+
   lua_pop(L, 1);
 }
