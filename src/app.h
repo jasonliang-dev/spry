@@ -4,12 +4,14 @@
 #define SPRY_VERSION_MINOR "7"
 #define SPRY_VERSION SPRY_VERSION_MAJOR "." SPRY_VERSION_MINOR
 
-#include "sound.h"
+#include "array.h"
 #include "deps/lua/lua.h"
 #include "deps/luaalloc.h"
+#include "deps/microui.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
-#include "draw.h"
+#include "font.h"
+#include "sound.h"
 
 struct AppTime {
   u64 last;
@@ -30,8 +32,6 @@ struct App {
   AtomicInt reload_interval;
 
   FontFamily *default_font;
-
-  Renderer2D renderer;
 
   bool error_mode;
   String fatal_error;

@@ -14,10 +14,10 @@
 #include "draw.h"
 #include "font.h"
 #include "luax.h"
+#include "mui.h"
 #include "os.h"
 #include "prelude.h"
 #include "profile.h"
-#include "strings.h"
 #include "sync.h"
 #include "vfs.h"
 
@@ -78,7 +78,9 @@ static void init() {
     }
   }
 
-  renderer_reset(&g_app->renderer);
+  mui_init();
+
+  renderer_reset();
 
   g_app->time.last = stm_now();
 
@@ -107,6 +109,8 @@ static void init() {
 }
 
 static void event(const sapp_event *e) {
+  mui_sokol_event(e);
+
   switch (e->type) {
   case SAPP_EVENTTYPE_KEY_DOWN: g_app->key_state[e->key_code] = true; break;
   case SAPP_EVENTTYPE_KEY_UP: g_app->key_state[e->key_code] = false; break;
@@ -192,10 +196,12 @@ static void frame() {
     if (g_app->error_mode) {
       pass.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
     } else {
-      pass.colors[0].clear_value.r = g_app->renderer.clear_color[0];
-      pass.colors[0].clear_value.g = g_app->renderer.clear_color[1];
-      pass.colors[0].clear_value.b = g_app->renderer.clear_color[2];
-      pass.colors[0].clear_value.a = g_app->renderer.clear_color[3];
+      float rgba[4];
+      renderer_get_clear_color(rgba);
+      pass.colors[0].clear_value.r = rgba[0];
+      pass.colors[0].clear_value.g = rgba[1];
+      pass.colors[0].clear_value.b = rgba[2];
+      pass.colors[0].clear_value.a = rgba[3];
     }
     sg_begin_default_pass(pass, sapp_width(), sapp_height());
 
@@ -206,29 +212,30 @@ static void frame() {
     sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
   }
 
+  mu_begin(mui_ctx());
+  mui_test_window();
+
   if (g_app->error_mode) {
     if (g_app->default_font == nullptr) {
       g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
       font_load_default(g_app->default_font);
     }
 
-    renderer_reset(&g_app->renderer);
+    renderer_reset();
 
     float x = 10;
     float y = 10;
     u64 font_size = 16;
 
-    draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
+    draw_font(g_app->default_font, font_size, x, y,
               "oh no! there's an error! :(");
     y += font_size * 2;
 
-    draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
-              g_app->fatal_error);
+    draw_font(g_app->default_font, font_size, x, y, g_app->fatal_error);
     y += font_size * 2;
 
     if (g_app->traceback.data) {
-      draw_font(&g_app->renderer, g_app->default_font, font_size, x, y,
-                g_app->traceback);
+      draw_font(g_app->default_font, font_size, x, y, g_app->traceback);
     }
   } else {
     lua_State *L = g_app->L;
@@ -253,6 +260,9 @@ static void frame() {
     lua_pop(L, 1);
     assert(lua_gettop(L) == 1);
   }
+
+  mu_end(mui_ctx());
+  mui_draw();
 
   {
     PROFILE_BLOCK("end render pass");
@@ -294,6 +304,8 @@ static void frame() {
 
 static void actually_cleanup() {
   PROFILE_FUNC();
+
+  mui_trash();
 
   {
     PROFILE_BLOCK("lua close");

@@ -43,40 +43,32 @@ struct Color {
   u8 r, g, b, a;
 };
 
-struct Renderer2D {
-  Matrix4 matrices[32];
-  u64 matrices_len;
+void renderer_reset();
+void renderer_use_sampler(u32 sampler);
+void renderer_get_clear_color(float *rgba);
+void renderer_set_clear_color(float *rgba);
+void renderer_apply_color();
+bool renderer_push_color(Color c);
+bool renderer_pop_color();
+bool renderer_push_matrix();
+bool renderer_pop_matrix();
+Matrix4 renderer_peek_matrix();
+void renderer_set_top_matrix(Matrix4 mat);
+void renderer_translate(float x, float y);
+void renderer_rotate(float angle);
+void renderer_scale(float x, float y);
+void renderer_push_quad(Vector4 pos, Vector4 tex);
+void renderer_push_xy(float x, float y);
 
-  float clear_color[4];
-  Color draw_colors[32];
-  u64 draw_colors_len;
-
-  u32 sampler;
-};
-
-void renderer_reset(Renderer2D *ren);
-void renderer_apply_color(Renderer2D *ren);
-bool renderer_push_color(Renderer2D *ren, Color c);
-bool renderer_pop_color(Renderer2D *ren);
-bool renderer_push_matrix(Renderer2D *ren);
-bool renderer_pop_matrix(Renderer2D *ren);
-Matrix4 renderer_peek_matrix(Renderer2D *ren);
-void renderer_set_top_matrix(Renderer2D *ren, Matrix4 mat);
-void renderer_translate(Renderer2D *ren, float x, float y);
-void renderer_rotate(Renderer2D *ren, float angle);
-void renderer_scale(Renderer2D *ren, float x, float y);
-void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex);
-void renderer_push_xy(Renderer2D *ren, float x, float y);
-
-void draw_image(Renderer2D *ren, const Image *img, DrawDescription *desc);
-void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc);
-void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
+void draw_image(const Image *img, DrawDescription *desc);
+void draw_sprite(Sprite *spr, DrawDescription *desc);
+void draw_font(FontFamily *font, float size, float x, float y,
                String text);
-void draw_tilemap(Renderer2D *ren, const Tilemap *tm);
-void draw_filled_rect(Renderer2D *ren, RectDescription *desc);
-void draw_line_rect(Renderer2D *ren, RectDescription *desc);
-void draw_line_circle(Renderer2D *ren, float x, float y, float radius);
-void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1);
+void draw_tilemap(const Tilemap *tm);
+void draw_filled_rect(RectDescription *desc);
+void draw_line_rect(RectDescription *desc);
+void draw_line_circle(float x, float y, float radius);
+void draw_line(float x0, float y0, float x1, float y1);
 
 DrawDescription draw_description_args(lua_State *L, i32 arg_start);
 RectDescription rect_description_args(lua_State *L, i32 arg_start);

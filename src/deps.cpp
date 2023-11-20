@@ -61,6 +61,10 @@
 #define MAKE_LIB
 #include "deps/lua/onelua.c"
 
+#undef RELATIVE
+#undef ABSOLUTE
+#include "deps/microui.c"
+
 #include "deps/miniz.c"
 
 #define SOKOL_IMPL

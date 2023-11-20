@@ -2,7 +2,6 @@
 #include "app.h"
 #include "assets.h"
 #include "atlas.h"
-#include "sound.h"
 #include "deps/lua/lauxlib.h"
 #include "deps/lua/lua.h"
 #include "deps/sokol_app.h"
@@ -12,9 +11,9 @@
 #include "font.h"
 #include "image.h"
 #include "luax.h"
-#include "os.h"
 #include "prelude.h"
 #include "profile.h"
+#include "sound.h"
 #include "sprite.h"
 #include "tilemap.h"
 #include <box2d/b2_body.h>
@@ -189,8 +188,7 @@ static void draw_fixtures_for_body(b2Body *body, float meter) {
     case b2Shape::e_circle: {
       b2CircleShape *circle = (b2CircleShape *)f->GetShape();
       b2Vec2 pos = body->GetWorldPoint(circle->m_p);
-      draw_line_circle(&g_app->renderer, pos.x * meter, pos.y * meter,
-                       circle->m_radius * meter);
+      draw_line_circle(pos.x * meter, pos.y * meter, circle->m_radius * meter);
       break;
     }
     case b2Shape::e_polygon: {
@@ -200,15 +198,15 @@ static void draw_fixtures_for_body(b2Body *body, float meter) {
         sgl_disable_texture();
         sgl_begin_line_strip();
 
-        renderer_apply_color(&g_app->renderer);
+        renderer_apply_color();
 
         for (i32 i = 0; i < poly->m_count; i++) {
           b2Vec2 pos = body->GetWorldPoint(poly->m_vertices[i]);
-          renderer_push_xy(&g_app->renderer, pos.x * meter, pos.y * meter);
+          renderer_push_xy(pos.x * meter, pos.y * meter);
         }
 
         b2Vec2 pos = body->GetWorldPoint(poly->m_vertices[0]);
-        renderer_push_xy(&g_app->renderer, pos.x * meter, pos.y * meter);
+        renderer_push_xy(pos.x * meter, pos.y * meter);
 
         sgl_end();
       }
@@ -234,7 +232,7 @@ static int mt_sampler_gc(lua_State *L) {
 
 static int mt_sampler_use(lua_State *L) {
   u32 *id = (u32 *)luaL_checkudata(L, 1, "mt_sampler");
-  g_app->renderer.sampler = *id;
+  renderer_use_sampler(*id);
   return 0;
 }
 
@@ -246,7 +244,7 @@ static int open_mt_sampler(lua_State *L) {
   };
 
   luax_new_class(L, "mt_sampler", reg);
-  return 1;
+  return 0;
 }
 
 // mt_image
@@ -255,7 +253,7 @@ static int mt_image_draw(lua_State *L) {
   Image img = check_asset_mt(L, 1, "mt_image").image;
 
   DrawDescription dd = draw_description_args(L, 2);
-  draw_image(&g_app->renderer, &img, &dd);
+  draw_image(&img, &dd);
   return 0;
 }
 
@@ -280,7 +278,7 @@ static int open_mt_image(lua_State *L) {
   };
 
   luax_new_class(L, "mt_image", reg);
-  return 1;
+  return 0;
 }
 
 // mt_font
@@ -318,7 +316,7 @@ static int mt_font_draw(lua_State *L) {
   lua_Number y = luaL_optnumber(L, 4, 0);
   lua_Number size = luaL_optnumber(L, 5, 12);
 
-  draw_font(&g_app->renderer, font, (u64)size, (float)x, (float)y, text);
+  draw_font(font, (u64)size, (float)x, (float)y, text);
   return 0;
 }
 
@@ -331,7 +329,7 @@ static int open_mt_font(lua_State *L) {
   };
 
   luax_new_class(L, "mt_font", reg);
-  return 1;
+  return 0;
 }
 
 // mt_sound
@@ -514,7 +512,7 @@ static int open_mt_sound(lua_State *L) {
   };
 
   luax_new_class(L, "mt_sound", reg);
-  return 1;
+  return 0;
 }
 
 // mt_sprite
@@ -544,7 +542,7 @@ static int mt_sprite_draw(lua_State *L) {
   Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
   DrawDescription dd = draw_description_args(L, 2);
 
-  draw_sprite(&g_app->renderer, spr, &dd);
+  draw_sprite(spr, &dd);
   return 0;
 }
 
@@ -593,7 +591,7 @@ static int open_mt_sprite(lua_State *L) {
   };
 
   luax_new_class(L, "mt_sprite", reg);
-  return 1;
+  return 0;
 }
 
 // mt_atlas_image
@@ -607,7 +605,7 @@ static int mt_atlas_image_draw(lua_State *L) {
   dd.u1 = atlas_img->u1;
   dd.v1 = atlas_img->v1;
 
-  draw_image(&g_app->renderer, &atlas_img->img, &dd);
+  draw_image(&atlas_img->img, &dd);
   return 0;
 }
 
@@ -632,7 +630,7 @@ static int open_mt_atlas_image(lua_State *L) {
   };
 
   luax_new_class(L, "mt_atlas_image", reg);
-  return 1;
+  return 0;
 }
 
 // mt_atlas
@@ -664,14 +662,14 @@ static int open_mt_atlas(lua_State *L) {
   };
 
   luax_new_class(L, "mt_atlas", reg);
-  return 1;
+  return 0;
 }
 
 // mt_tilemap
 
 static int mt_tilemap_draw(lua_State *L) {
   Tilemap tm = check_asset_mt(L, 1, "mt_tilemap").tilemap;
-  draw_tilemap(&g_app->renderer, &tm);
+  draw_tilemap(&tm);
   return 0;
 }
 
@@ -825,7 +823,7 @@ static int open_mt_tilemap(lua_State *L) {
   };
 
   luax_new_class(L, "mt_tilemap", reg);
-  return 1;
+  return 0;
 }
 
 // box2d fixture
@@ -923,7 +921,7 @@ static int open_mt_b2_fixture(lua_State *L) {
   };
 
   luax_new_class(L, "mt_b2_fixture", reg);
-  return 1;
+  return 0;
 }
 
 // box2d body
@@ -1202,7 +1200,7 @@ static int open_mt_b2_body(lua_State *L) {
   };
 
   luax_new_class(L, "mt_b2_body", reg);
-  return 1;
+  return 0;
 }
 
 // box2d world
@@ -1332,7 +1330,7 @@ static int open_mt_b2_world(lua_State *L) {
   };
 
   luax_new_class(L, "mt_b2_world", reg);
-  return 1;
+  return 0;
 }
 
 // spry api
@@ -1611,13 +1609,13 @@ static int spry_scroll_wheel(lua_State *L) {
 }
 
 static int spry_push_matrix(lua_State *L) {
-  bool ok = renderer_push_matrix(&g_app->renderer);
+  bool ok = renderer_push_matrix();
   return ok ? 0 : luaL_error(L, "matrix stack is full");
   return 0;
 }
 
 static int spry_pop_matrix(lua_State *L) {
-  bool ok = renderer_pop_matrix(&g_app->renderer);
+  bool ok = renderer_pop_matrix();
   return ok ? 0 : luaL_error(L, "matrix stack is full");
   return 0;
 }
@@ -1626,14 +1624,14 @@ static int spry_translate(lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number y = luaL_checknumber(L, 2);
 
-  renderer_translate(&g_app->renderer, (float)x, (float)y);
+  renderer_translate((float)x, (float)y);
   return 0;
 }
 
 static int spry_rotate(lua_State *L) {
   lua_Number angle = luaL_checknumber(L, 1);
 
-  renderer_rotate(&g_app->renderer, (float)angle);
+  renderer_rotate((float)angle);
   return 0;
 }
 
@@ -1641,7 +1639,7 @@ static int spry_scale(lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number y = luaL_checknumber(L, 2);
 
-  renderer_scale(&g_app->renderer, (float)x, (float)y);
+  renderer_scale((float)x, (float)y);
   return 0;
 }
 
@@ -1651,10 +1649,13 @@ static int spry_clear_color(lua_State *L) {
   lua_Number b = luaL_checknumber(L, 3);
   lua_Number a = luaL_checknumber(L, 4);
 
-  g_app->renderer.clear_color[0] = (float)r / 255.0f;
-  g_app->renderer.clear_color[1] = (float)g / 255.0f;
-  g_app->renderer.clear_color[2] = (float)b / 255.0f;
-  g_app->renderer.clear_color[3] = (float)a / 255.0f;
+  float rgba[4] = {
+      (float)r / 255.0f,
+      (float)g / 255.0f,
+      (float)b / 255.0f,
+      (float)a / 255.0f,
+  };
+  renderer_set_clear_color(rgba);
 
   return 0;
 }
@@ -1671,12 +1672,12 @@ static int spry_push_color(lua_State *L) {
   color.b = (u8)b;
   color.a = (u8)a;
 
-  bool ok = renderer_push_color(&g_app->renderer, color);
+  bool ok = renderer_push_color(color);
   return ok ? 0 : luaL_error(L, "color stack is full");
 }
 
 static int spry_pop_color(lua_State *L) {
-  bool ok = renderer_pop_color(&g_app->renderer);
+  bool ok = renderer_pop_color();
   return ok ? 0 : luaL_error(L, "color stack can't be less than 1");
 }
 
@@ -1692,13 +1693,13 @@ static int spry_default_font(lua_State *L) {
 
 static int spry_draw_filled_rect(lua_State *L) {
   RectDescription rd = rect_description_args(L, 1);
-  draw_filled_rect(&g_app->renderer, &rd);
+  draw_filled_rect(&rd);
   return 0;
 }
 
 static int spry_draw_line_rect(lua_State *L) {
   RectDescription rd = rect_description_args(L, 1);
-  draw_line_rect(&g_app->renderer, &rd);
+  draw_line_rect(&rd);
   return 0;
 }
 
@@ -1707,7 +1708,7 @@ static int spry_draw_line_circle(lua_State *L) {
   lua_Number y = luaL_checknumber(L, 2);
   lua_Number radius = luaL_checknumber(L, 3);
 
-  draw_line_circle(&g_app->renderer, x, y, radius);
+  draw_line_circle(x, y, radius);
   return 0;
 }
 
@@ -1717,7 +1718,7 @@ static int spry_draw_line(lua_State *L) {
   lua_Number x1 = luaL_checknumber(L, 3);
   lua_Number y1 = luaL_checknumber(L, 4);
 
-  draw_line(&g_app->renderer, x0, y0, x1, y1);
+  draw_line(x0, y0, x1, y1);
   return 0;
 }
 
@@ -1945,7 +1946,6 @@ void open_spry_api(lua_State *L) {
 
   for (u32 i = 0; i < array_size(mt_funcs); i++) {
     mt_funcs[i](L);
-    lua_pop(L, 1);
   }
 
   luaL_requiref(L, "spry", open_spry, 1);

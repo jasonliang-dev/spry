@@ -7,6 +7,7 @@
 #include "image.cpp"
 #include "json.cpp"
 #include "luax.cpp"
+#include "mui.cpp"
 #include "os.cpp"
 #include "profile.cpp"
 #include "scanner.cpp"

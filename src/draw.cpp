@@ -8,80 +8,104 @@
 #include "strings.h"
 #include <math.h>
 
-void renderer_reset(Renderer2D *ren) {
-  ren->clear_color[0] = 0.0f;
-  ren->clear_color[1] = 0.0f;
-  ren->clear_color[2] = 0.0f;
-  ren->clear_color[3] = 1.0f;
+struct Renderer2D {
+  Matrix4 matrices[32];
+  u64 matrices_len;
 
-  ren->draw_colors[0].r = 255;
-  ren->draw_colors[0].g = 255;
-  ren->draw_colors[0].b = 255;
-  ren->draw_colors[0].a = 255;
-  ren->draw_colors_len = 1;
+  float clear_color[4];
+  Color draw_colors[32];
+  u64 draw_colors_len;
 
-  ren->matrices[0] = {};
-  ren->matrices[0].cols[0][0] = 1.0f;
-  ren->matrices[0].cols[1][1] = 1.0f;
-  ren->matrices[0].cols[2][2] = 1.0f;
-  ren->matrices[0].cols[3][3] = 1.0f;
-  ren->matrices_len = 1;
+  u32 sampler;
+};
 
-  ren->sampler = SG_INVALID_ID;
+static Renderer2D g_renderer;
+
+void renderer_reset() {
+  g_renderer.clear_color[0] = 0.0f;
+  g_renderer.clear_color[1] = 0.0f;
+  g_renderer.clear_color[2] = 0.0f;
+  g_renderer.clear_color[3] = 1.0f;
+
+  g_renderer.draw_colors[0].r = 255;
+  g_renderer.draw_colors[0].g = 255;
+  g_renderer.draw_colors[0].b = 255;
+  g_renderer.draw_colors[0].a = 255;
+  g_renderer.draw_colors_len = 1;
+
+  g_renderer.matrices[0] = {};
+  g_renderer.matrices[0].cols[0][0] = 1.0f;
+  g_renderer.matrices[0].cols[1][1] = 1.0f;
+  g_renderer.matrices[0].cols[2][2] = 1.0f;
+  g_renderer.matrices[0].cols[3][3] = 1.0f;
+  g_renderer.matrices_len = 1;
+
+  g_renderer.sampler = SG_INVALID_ID;
 }
 
-void renderer_apply_color(Renderer2D *ren) {
-  Color c = ren->draw_colors[ren->draw_colors_len - 1];
+void renderer_use_sampler(u32 sampler) { g_renderer.sampler = sampler; }
+
+void renderer_get_clear_color(float *rgba) {
+  memcpy(rgba, g_renderer.clear_color, sizeof(float) * 4);
+}
+
+void renderer_set_clear_color(float *rgba) {
+  memcpy(g_renderer.clear_color, rgba, sizeof(float) * 4);
+}
+
+void renderer_apply_color() {
+  Color c = g_renderer.draw_colors[g_renderer.draw_colors_len - 1];
   sgl_c4b(c.r, c.g, c.b, c.a);
 }
 
-bool renderer_push_color(Renderer2D *ren, Color c) {
-  if (ren->draw_colors_len == array_size(ren->draw_colors)) {
+bool renderer_push_color(Color c) {
+  if (g_renderer.draw_colors_len == array_size(g_renderer.draw_colors)) {
     return false;
   }
 
-  ren->draw_colors[ren->draw_colors_len++] = c;
+  g_renderer.draw_colors[g_renderer.draw_colors_len++] = c;
   return true;
 }
 
-bool renderer_pop_color(Renderer2D *ren) {
-  if (ren->draw_colors_len == 1) {
+bool renderer_pop_color() {
+  if (g_renderer.draw_colors_len == 1) {
     return false;
   }
 
-  ren->draw_colors_len--;
+  g_renderer.draw_colors_len--;
   return true;
 }
 
-bool renderer_push_matrix(Renderer2D *ren) {
-  if (ren->matrices_len == array_size(ren->matrices)) {
+bool renderer_push_matrix() {
+  if (g_renderer.matrices_len == array_size(g_renderer.matrices)) {
     return false;
   }
 
-  ren->matrices[ren->matrices_len] = ren->matrices[ren->matrices_len - 1];
-  ren->matrices_len++;
+  g_renderer.matrices[g_renderer.matrices_len] =
+      g_renderer.matrices[g_renderer.matrices_len - 1];
+  g_renderer.matrices_len++;
   return true;
 }
 
-bool renderer_pop_matrix(Renderer2D *ren) {
-  if (ren->matrices_len == 1) {
+bool renderer_pop_matrix() {
+  if (g_renderer.matrices_len == 1) {
     return false;
   }
 
-  ren->matrices_len--;
+  g_renderer.matrices_len--;
   return true;
 }
 
-Matrix4 renderer_peek_matrix(Renderer2D *ren) {
-  return ren->matrices[ren->matrices_len - 1];
+Matrix4 renderer_peek_matrix() {
+  return g_renderer.matrices[g_renderer.matrices_len - 1];
 }
 
-void renderer_set_top_matrix(Renderer2D *ren, Matrix4 mat) {
-  ren->matrices[ren->matrices_len - 1] = mat;
+void renderer_set_top_matrix(Matrix4 mat) {
+  g_renderer.matrices[g_renderer.matrices_len - 1] = mat;
 }
 
-void renderer_translate(Renderer2D *ren, float x, float y) {
-  Matrix4 top = renderer_peek_matrix(ren);
+void renderer_translate(float x, float y) {
+  Matrix4 top = renderer_peek_matrix();
 
 #ifdef SSE_AVAILABLE
   __m128 xx = _mm_mul_ps(_mm_set1_ps(x), top.sse[0]);
@@ -95,11 +119,11 @@ void renderer_translate(Renderer2D *ren, float x, float y) {
   }
 #endif
 
-  renderer_set_top_matrix(ren, top);
+  renderer_set_top_matrix(top);
 }
 
-void renderer_rotate(Renderer2D *ren, float angle) {
-  Matrix4 top = renderer_peek_matrix(ren);
+void renderer_rotate(float angle) {
+  Matrix4 top = renderer_peek_matrix();
 
 #ifdef SSE_AVAILABLE
   __m128 v0 = top.sse[0];
@@ -121,11 +145,11 @@ void renderer_rotate(Renderer2D *ren, float angle) {
   }
 #endif
 
-  renderer_set_top_matrix(ren, top);
+  renderer_set_top_matrix(top);
 }
 
-void renderer_scale(Renderer2D *ren, float x, float y) {
-  Matrix4 top = renderer_peek_matrix(ren);
+void renderer_scale(float x, float y) {
+  Matrix4 top = renderer_peek_matrix();
 
 #ifdef SSE_AVAILABLE
   top.sse[0] = _mm_mul_ps(top.sse[0], _mm_set1_ps(x));
@@ -137,11 +161,11 @@ void renderer_scale(Renderer2D *ren, float x, float y) {
   }
 #endif
 
-  renderer_set_top_matrix(ren, top);
+  renderer_set_top_matrix(top);
 }
 
-void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex) {
-  Matrix4 top = renderer_peek_matrix(ren);
+void renderer_push_quad(Vector4 pos, Vector4 tex) {
+  Matrix4 top = renderer_peek_matrix();
   Vector4 a = vec4_mul_mat4(vec4_xy(pos.x, pos.y), top);
   Vector4 b = vec4_mul_mat4(vec4_xy(pos.x, pos.w), top);
   Vector4 c = vec4_mul_mat4(vec4_xy(pos.z, pos.w), top);
@@ -153,24 +177,24 @@ void renderer_push_quad(Renderer2D *ren, Vector4 pos, Vector4 tex) {
   sgl_v2f_t2f(d.x, d.y, tex.z, tex.y);
 }
 
-void renderer_push_xy(Renderer2D *ren, float x, float y) {
-  Matrix4 top = renderer_peek_matrix(ren);
+void renderer_push_xy(float x, float y) {
+  Matrix4 top = renderer_peek_matrix();
   Vector4 v = vec4_mul_mat4(vec4_xy(x, y), top);
   sgl_v2f(v.x, v.y);
 }
 
-void draw_image(Renderer2D *ren, const Image *img, DrawDescription *desc) {
-  bool ok = renderer_push_matrix(ren);
+void draw_image(const Image *img, DrawDescription *desc) {
+  bool ok = renderer_push_matrix();
   if (!ok) {
     return;
   }
 
-  renderer_translate(ren, desc->x, desc->y);
-  renderer_rotate(ren, desc->rotation);
-  renderer_scale(ren, desc->sx, desc->sy);
+  renderer_translate(desc->x, desc->y);
+  renderer_rotate(desc->rotation);
+  renderer_scale(desc->sx, desc->sy);
 
   sgl_enable_texture();
-  sgl_texture({img->id}, {ren->sampler});
+  sgl_texture({img->id}, {g_renderer.sampler});
   sgl_begin_quads();
 
   float x0 = -desc->ox;
@@ -178,18 +202,18 @@ void draw_image(Renderer2D *ren, const Image *img, DrawDescription *desc) {
   float x1 = (desc->u1 - desc->u0) * img->width - desc->ox;
   float y1 = (desc->v1 - desc->v0) * img->height - desc->oy;
 
-  renderer_apply_color(ren);
-  renderer_push_quad(ren, vec4(x0, y0, x1, y1),
+  renderer_apply_color();
+  renderer_push_quad(vec4(x0, y0, x1, y1),
                      vec4(desc->u0, desc->v0, desc->u1, desc->v1));
 
   sgl_end();
-  renderer_pop_matrix(ren);
+  renderer_pop_matrix();
 }
 
-void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
+void draw_sprite(Sprite *spr, DrawDescription *desc) {
   bool ok = false;
 
-  ok = renderer_push_matrix(ren);
+  ok = renderer_push_matrix();
   if (!ok) {
     return;
   }
@@ -200,12 +224,12 @@ void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
     return;
   }
 
-  renderer_translate(ren, desc->x, desc->y);
-  renderer_rotate(ren, desc->rotation);
-  renderer_scale(ren, desc->sx, desc->sy);
+  renderer_translate(desc->x, desc->y);
+  renderer_rotate(desc->rotation);
+  renderer_scale(desc->sx, desc->sy);
 
   sgl_enable_texture();
-  sgl_texture({view.data.img.id}, {ren->sampler});
+  sgl_texture({view.data.img.id}, {g_renderer.sampler});
   sgl_begin_quads();
 
   float x0 = -desc->ox;
@@ -216,22 +240,21 @@ void draw_sprite(Renderer2D *ren, Sprite *spr, DrawDescription *desc) {
   i32 frame = sprite_view_frame(&view);
   SpriteFrame f = view.data.frames[frame];
 
-  renderer_apply_color(ren);
-  renderer_push_quad(ren, vec4(x0, y0, x1, y1), vec4(f.u0, f.v0, f.u1, f.v1));
+  renderer_apply_color();
+  renderer_push_quad(vec4(x0, y0, x1, y1), vec4(f.u0, f.v0, f.u1, f.v1));
 
   sgl_end();
-  renderer_pop_matrix(ren);
+  renderer_pop_matrix();
 }
 
-void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
-               String text) {
+void draw_font(FontFamily *font, float size, float x, float y, String text) {
   PROFILE_FUNC();
 
   float start_x = x;
   y += size;
   sgl_enable_texture();
 
-  renderer_apply_color(ren);
+  renderer_apply_color();
 
   for (String line : SplitLines(text)) {
     for (Rune r : UTF8(line)) {
@@ -241,9 +264,9 @@ void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
       stbtt_aligned_quad q =
           font_quad(font, &atlas, &xpos, &ypos, size, rune_charcode(r));
 
-      sgl_texture({atlas}, {ren->sampler});
+      sgl_texture({atlas}, {g_renderer.sampler});
       sgl_begin_quads();
-      renderer_push_quad(ren, vec4(x + q.x0, y + q.y0, x + q.x1, y + q.y1),
+      renderer_push_quad(vec4(x + q.x0, y + q.y0, x + q.x1, y + q.y1),
                          vec4(q.s0, q.t0, q.s1, q.t1));
       sgl_end();
 
@@ -256,21 +279,21 @@ void draw_font(Renderer2D *ren, FontFamily *font, float size, float x, float y,
   }
 }
 
-void draw_tilemap(Renderer2D *ren, const Tilemap *tm) {
+void draw_tilemap(const Tilemap *tm) {
   PROFILE_FUNC();
 
   sgl_enable_texture();
-  renderer_apply_color(ren);
+  renderer_apply_color();
   for (const TilemapLevel &level : tm->levels) {
-    bool ok = renderer_push_matrix(ren);
+    bool ok = renderer_push_matrix();
     if (!ok) {
       return;
     }
 
-    renderer_translate(ren, level.world_x, level.world_y);
+    renderer_translate(level.world_x, level.world_y);
     for (i32 i = level.layers.len - 1; i >= 0; i--) {
       const TilemapLayer &layer = level.layers[i];
-      sgl_texture({layer.image.id}, {ren->sampler});
+      sgl_texture({layer.image.id}, {g_renderer.sampler});
       sgl_begin_quads();
       for (Tile tile : layer.tiles) {
         float x0 = tile.x;
@@ -278,26 +301,26 @@ void draw_tilemap(Renderer2D *ren, const Tilemap *tm) {
         float x1 = tile.x + layer.grid_size;
         float y1 = tile.y + layer.grid_size;
 
-        renderer_push_quad(ren, vec4(x0, y0, x1, y1),
+        renderer_push_quad(vec4(x0, y0, x1, y1),
                            vec4(tile.u0, tile.v0, tile.u1, tile.v1));
       }
       sgl_end();
     }
-    renderer_pop_matrix(ren);
+    renderer_pop_matrix();
   }
 }
 
-void draw_filled_rect(Renderer2D *ren, RectDescription *desc) {
+void draw_filled_rect(RectDescription *desc) {
   PROFILE_FUNC();
 
-  bool ok = renderer_push_matrix(ren);
+  bool ok = renderer_push_matrix();
   if (!ok) {
     return;
   }
 
-  renderer_translate(ren, desc->x, desc->y);
-  renderer_rotate(ren, desc->rotation);
-  renderer_scale(ren, desc->sx, desc->sy);
+  renderer_translate(desc->x, desc->y);
+  renderer_rotate(desc->rotation);
+  renderer_scale(desc->sx, desc->sy);
 
   sgl_disable_texture();
   sgl_begin_quads();
@@ -307,24 +330,24 @@ void draw_filled_rect(Renderer2D *ren, RectDescription *desc) {
   float x1 = desc->w - desc->ox;
   float y1 = desc->h - desc->oy;
 
-  renderer_apply_color(ren);
-  renderer_push_quad(ren, vec4(x0, y0, x1, y1), vec4(0, 0, 0, 0));
+  renderer_apply_color();
+  renderer_push_quad(vec4(x0, y0, x1, y1), vec4(0, 0, 0, 0));
 
   sgl_end();
-  renderer_pop_matrix(ren);
+  renderer_pop_matrix();
 }
 
-void draw_line_rect(Renderer2D *ren, RectDescription *desc) {
+void draw_line_rect(RectDescription *desc) {
   PROFILE_FUNC();
 
-  bool ok = renderer_push_matrix(ren);
+  bool ok = renderer_push_matrix();
   if (!ok) {
     return;
   }
 
-  renderer_translate(ren, desc->x, desc->y);
-  renderer_rotate(ren, desc->rotation);
-  renderer_scale(ren, desc->sx, desc->sy);
+  renderer_translate(desc->x, desc->y);
+  renderer_rotate(desc->rotation);
+  renderer_scale(desc->sx, desc->sy);
 
   sgl_disable_texture();
   sgl_begin_line_strip();
@@ -334,13 +357,13 @@ void draw_line_rect(Renderer2D *ren, RectDescription *desc) {
   float x1 = desc->w - desc->ox;
   float y1 = desc->h - desc->oy;
 
-  Matrix4 top = renderer_peek_matrix(ren);
+  Matrix4 top = renderer_peek_matrix();
   Vector4 a = vec4_mul_mat4(vec4_xy(x0, y0), top);
   Vector4 b = vec4_mul_mat4(vec4_xy(x0, y1), top);
   Vector4 c = vec4_mul_mat4(vec4_xy(x1, y1), top);
   Vector4 d = vec4_mul_mat4(vec4_xy(x1, y0), top);
 
-  renderer_apply_color(ren);
+  renderer_apply_color();
   sgl_v2f(a.x, a.y);
   sgl_v2f(b.x, b.y);
   sgl_v2f(c.x, c.y);
@@ -348,36 +371,36 @@ void draw_line_rect(Renderer2D *ren, RectDescription *desc) {
   sgl_v2f(a.x, a.y);
 
   sgl_end();
-  renderer_pop_matrix(ren);
+  renderer_pop_matrix();
 }
 
-void draw_line_circle(Renderer2D *ren, float x, float y, float radius) {
+void draw_line_circle(float x, float y, float radius) {
   PROFILE_FUNC();
 
   sgl_disable_texture();
   sgl_begin_line_strip();
 
-  renderer_apply_color(ren);
+  renderer_apply_color();
   constexpr float tau = MATH_PI * 2.0f;
   for (float i = 0; i <= tau + 0.001f; i += tau / 36.0f) {
     float c = cosf(i) * radius;
     float s = sinf(i) * radius;
-    renderer_push_xy(ren, x + c, y + s);
+    renderer_push_xy(x + c, y + s);
   }
 
   sgl_end();
 }
 
-void draw_line(Renderer2D *ren, float x0, float y0, float x1, float y1) {
+void draw_line(float x0, float y0, float x1, float y1) {
   PROFILE_FUNC();
 
   sgl_disable_texture();
   sgl_begin_lines();
 
-  renderer_apply_color(ren);
+  renderer_apply_color();
 
-  renderer_push_xy(ren, x0, y0);
-  renderer_push_xy(ren, x1, y1);
+  renderer_push_xy(x0, y0);
+  renderer_push_xy(x1, y1);
 
   sgl_end();
 }

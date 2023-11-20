@@ -200,4 +200,5 @@ void luax_new_class(lua_State *L, const char *mt_name, const luaL_Reg *l) {
   luaL_setfuncs(L, l, 0);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
+  lua_pop(L, 1);
 }
