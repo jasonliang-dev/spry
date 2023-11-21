@@ -1707,6 +1707,10 @@ static int mui_layout_row(lua_State *L) {
   i32 widths[MU_MAX_WIDTHS] = {};
 
   lua_Unsigned n = lua_rawlen(L, 1);
+  if (n > MU_MAX_WIDTHS) {
+    n = MU_MAX_WIDTHS;
+  }
+
   for (u32 i = 0; i < n; i++) {
     lua_rawgeti(L, 1, i + 1);
     widths[i] = luaL_checknumber(L, -1);
@@ -1951,19 +1955,19 @@ static int mui_get_style(lua_State *L) {
 
 static int mui_rect(lua_State *L) {
   lua_createtable(L, 0, 4);
-  luax_set_int_field(L, "x", luaL_checkinteger(L, 1));
-  luax_set_int_field(L, "y", luaL_checkinteger(L, 2));
-  luax_set_int_field(L, "w", luaL_checkinteger(L, 3));
-  luax_set_int_field(L, "h", luaL_checkinteger(L, 4));
+  luax_set_int_field(L, "x", luaL_checknumber(L, 1));
+  luax_set_int_field(L, "y", luaL_checknumber(L, 2));
+  luax_set_int_field(L, "w", luaL_checknumber(L, 3));
+  luax_set_int_field(L, "h", luaL_checknumber(L, 4));
   return 1;
 }
 
 static int mui_color(lua_State *L) {
   lua_createtable(L, 0, 4);
-  luax_set_int_field(L, "r", luaL_checkinteger(L, 1));
-  luax_set_int_field(L, "g", luaL_checkinteger(L, 2));
-  luax_set_int_field(L, "b", luaL_checkinteger(L, 3));
-  luax_set_int_field(L, "a", luaL_checkinteger(L, 4));
+  luax_set_int_field(L, "r", luaL_checknumber(L, 1));
+  luax_set_int_field(L, "g", luaL_checknumber(L, 2));
+  luax_set_int_field(L, "b", luaL_checknumber(L, 3));
+  luax_set_int_field(L, "a", luaL_checknumber(L, 4));
   return 1;
 }
 
