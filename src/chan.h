@@ -13,9 +13,11 @@ template <typename T> struct Chan {
   u64 capacity = 0;
 };
 
-template <typename T> void chan_make(Chan<T> *c) {
+template <typename T> void chan_make(Chan<T> *c, u64 capacity) {
   c->mtx = mutex_make();
   c->cv = cond_make();
+
+  chan_reserve(c, capacity);
 }
 
 template <typename T> void chan_trash(Chan<T> *c) {

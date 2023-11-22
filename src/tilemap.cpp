@@ -215,8 +215,7 @@ bool tilemap_load(Tilemap *tm, String filepath) {
     slice_from_arena(&levels, &arena, len);
     for (JSONArray *a = arr_levels; a != nullptr; a = a->next) {
       TilemapLevel level = {};
-      bool ok =
-          level_from_json(&level, &a->value, &arena, filepath, &images);
+      bool ok = level_from_json(&level, &a->value, &arena, filepath, &images);
       if (!ok) {
         return false;
       }
@@ -528,19 +527,17 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
     return nullptr;
   }
 
-  {
-    TileNode *begin = hashmap_get(&tm->graph, tile_key(sx, sy));
-    if (begin == nullptr) {
-      return nullptr;
-    }
-
-    float g = 0;
-    float h = tile_heuristic(begin, end);
-    float f = g + h;
-    begin->g = 0;
-    begin->flags |= TileNodeFlags_Open;
-    priority_queue_push(&tm->frontier, begin, f);
+  TileNode *begin = hashmap_get(&tm->graph, tile_key(sx, sy));
+  if (begin == nullptr) {
+    return nullptr;
   }
+
+  float g = 0;
+  float h = tile_heuristic(begin, end);
+  float f = g + h;
+  begin->g = 0;
+  begin->flags |= TileNodeFlags_Open;
+  priority_queue_push(&tm->frontier, begin, f);
 
   while (tm->frontier.len != 0) {
     TileNode *top = nullptr;

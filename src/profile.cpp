@@ -47,10 +47,8 @@ static i32 profile_recv_thread(void *) {
 void profile_setup() {
   g_profile = {};
 
-  chan_make(&g_profile.events);
+  chan_make(&g_profile.events, 256);
   g_profile.recv_thread = thread_make(profile_recv_thread, nullptr);
-
-  chan_reserve(&g_profile.events, 256);
 }
 
 void profile_shutdown() {
