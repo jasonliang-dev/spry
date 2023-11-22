@@ -5,12 +5,12 @@ Some random text.
 ## Future
 
 - Shaders
-  - If compiled online, how in the name of heck would I do this?
+  - If compiled online, how in the name of heck would I do this? Just write
+    multiple versions per backend?
   - If compiled offline, just use `sokol-shdc`? But how would uniforms work?
 - Networking
   - HTTP? UDP with enet? LuaSocket?
 - MobDebug (requires LuaSocket)
-- UI
 
 ## `defer` and RAII
 
@@ -49,8 +49,8 @@ types are used through macros:
 
 ## Dynamic dispatch
 
-I don't often use classes nor member functions in C++, but there's two places
-where this isn't true:
+I don't often use inheritance in C++, but there's two places where this isn't
+true:
 
 - `Allocator` in `prelude.h`
 - `FileSystem` in `vfs.cpp`
@@ -79,14 +79,24 @@ virtual functions.
 - Dynamic array
 - Open addressing hash map
 - Min heap priority queue
-- Unbounded queue backed by a ring buffer
+- Thread-safe unbounded queue
 
 STL exists, yes, but I would like to compile my program in a reasonable time
 please. Also, the STL containers hits debug performance pretty hard.
 
 ## Algorithms
 
-- `profile.cpp` - Producer/consumer with unbounded queue
+- `profile.cpp` - Producer/consumer
+
+  The queue lives in `chan.h` and uses a mutex + condition variable. I
+  replaced it with semaphores, but it was slower? This change was reverted.
+
+  `json_parse` timings (dungeon example project) on a decade old ThinkPad:
+
+  - mutex + condition variable: ~40ms debug, ~7ms release (woah one order of magnitude)
+  - semaphores + atomics: ~70ms debug, ~70ms release
+  - semaphores + mutex: ~80ms debug, ~80ms release
+
 - `json.cpp` -  recursive descent parsing
 - `tilemap.cpp` - A\* pathfinding
 
@@ -140,9 +150,3 @@ end
 ```
 
 This `__index` metamethod allows for hot reloading with classes.
-
-## Music
-
-When audio files are loaded into memory, the data is decoded into raw samples
-on the spot. This is fine for short sounds, but not good for music. A 1m50s
-`.ogg` file takes 200ms on my machine to decode (475ms for debug builds).
