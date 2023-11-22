@@ -9,6 +9,7 @@
 #include "luax.cpp"
 #include "microui.cpp"
 #include "os.cpp"
+#include "physics.cpp"
 #include "profile.cpp"
 #include "scanner.cpp"
 #include "sound.cpp"
