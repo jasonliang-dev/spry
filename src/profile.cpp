@@ -1,4 +1,5 @@
 #include "profile.h"
+#include "chan.h"
 
 #ifndef USE_PROFILER
 void profile_setup() {}
@@ -9,15 +10,11 @@ void profile_shutdown() {}
 
 #include "deps/sokol_time.h"
 #include "os.h"
-#include "queue.h"
 #include "strings.h"
 #include "sync.h"
 
 struct Profile {
-  Mutex mtx;
-  Cond cv;
-  Queue<TraceEvent> events;
-
+  Chan<TraceEvent> events;
   Thread *recv_thread;
 };
 
@@ -34,15 +31,7 @@ static i32 profile_recv_thread(void *) {
 
   fputs("[", f);
   while (true) {
-    mutex_lock(&g_profile.mtx);
-    while (g_profile.events.len == 0) {
-      cond_wait(&g_profile.cv, &g_profile.mtx);
-    }
-
-    TraceEvent e = {};
-    queue_pop(&g_profile.events, &e);
-    mutex_unlock(&g_profile.mtx);
-
+    TraceEvent e = chan_recv(&g_profile.events);
     if (e.name == nullptr) {
       return 0;
     }
@@ -55,32 +44,20 @@ static i32 profile_recv_thread(void *) {
   }
 }
 
-static void profile_send(TraceEvent e) {
-  mutex_lock(&g_profile.mtx);
-  queue_push(&g_profile.events, e);
-  mutex_unlock(&g_profile.mtx);
-
-  cond_signal(&g_profile.cv);
-}
-
 void profile_setup() {
   g_profile = {};
 
-  g_profile.mtx = mutex_make();
-  g_profile.cv = cond_make();
+  chan_make(&g_profile.events);
   g_profile.recv_thread = thread_make(profile_recv_thread, nullptr);
 
-  queue_reserve(&g_profile.events, 256);
+  chan_reserve(&g_profile.events, 256);
 }
 
 void profile_shutdown() {
-  profile_send({});
+  chan_send(&g_profile.events, {});
   thread_join(g_profile.recv_thread);
 
-  cond_trash(&g_profile.cv);
-  mutex_trash(&g_profile.mtx);
-
-  queue_trash(&g_profile.events);
+  chan_trash(&g_profile.events);
 }
 
 Instrument::Instrument(const char *cat, const char *name)
@@ -92,7 +69,7 @@ Instrument::Instrument(const char *cat, const char *name)
   e.ts = stm_now();
   e.tid = tid;
 
-  profile_send(e);
+  chan_send(&g_profile.events, e);
 }
 
 Instrument::~Instrument() {
@@ -103,7 +80,7 @@ Instrument::~Instrument() {
   e.ts = stm_now();
   e.tid = tid;
 
-  profile_send(e);
+  chan_send(&g_profile.events, e);
 }
 
 #endif // USE_PROFILER
