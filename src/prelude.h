@@ -71,6 +71,7 @@ struct DebugAllocInfo {
   size_t size;
   DebugAllocInfo *prev;
   DebugAllocInfo *next;
+  alignas(16) u8 buf[1];
 };
 
 struct DebugAllocator : Allocator {
@@ -85,7 +86,7 @@ struct DebugAllocator : Allocator {
     defer(mutex_unlock(&mtx));
 
     DebugAllocInfo *info =
-        (DebugAllocInfo *)malloc(sizeof(DebugAllocInfo) + bytes);
+        (DebugAllocInfo *)malloc(offsetof(DebugAllocInfo, buf[bytes]));
     info->file = file;
     info->line = line;
     info->size = bytes;
@@ -95,7 +96,7 @@ struct DebugAllocator : Allocator {
       head->prev = info;
     }
     head = info;
-    return info + 1;
+    return info->buf;
   }
 
   void free(void *ptr) {
@@ -106,7 +107,8 @@ struct DebugAllocator : Allocator {
     mutex_lock(&mtx);
     defer(mutex_unlock(&mtx));
 
-    DebugAllocInfo *info = (DebugAllocInfo *)ptr - 1;
+    DebugAllocInfo *info =
+        (DebugAllocInfo *)((u8 *)ptr - offsetof(DebugAllocInfo, buf));
 
     if (info->prev == nullptr) {
       head = info->next;

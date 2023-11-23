@@ -20,7 +20,7 @@ struct Profile {
 
 static Profile g_profile;
 
-static i32 profile_recv_thread(void *) {
+static void profile_recv_thread(void *) {
   StringBuilder sb = string_builder_make();
   defer(string_builder_trash(&sb));
 
@@ -33,7 +33,7 @@ static i32 profile_recv_thread(void *) {
   while (true) {
     TraceEvent e = chan_recv(&g_profile.events);
     if (e.name == nullptr) {
-      return 0;
+      return;
     }
 
     fprintf(

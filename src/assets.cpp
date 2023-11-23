@@ -26,7 +26,7 @@ struct Assets {
 
 static Assets g_assets = {};
 
-static i32 hot_reload_thread(void *) {
+static void hot_reload_thread(void *) {
   u32 reload_interval = atomic_int_load(&g_app->reload_interval);
 
   while (true) {
@@ -37,13 +37,13 @@ static i32 hot_reload_thread(void *) {
       defer(mutex_unlock(&g_assets.mtx));
 
       if (g_assets.shutdown) {
-        return 0;
+        return;
       }
 
       bool signaled =
           cond_timed_wait(&g_assets.notify, &g_assets.mtx, reload_interval);
       if (signaled) {
-        return 0;
+        return;
       }
     }
 
@@ -108,7 +108,7 @@ static i32 hot_reload_thread(void *) {
 
         if (!ok) {
           fatal_error(tmp_fmt("failed to hot reload: %s", a.name.data));
-          return 0;
+          return;
         }
 
         asset_write(a);

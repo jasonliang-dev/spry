@@ -84,8 +84,8 @@ void sema_post(Sema *s, int n);
 void sema_wait(Sema *s);
 
 using Thread = uintptr_t;
-typedef int(ThreadStart)(void *);
+typedef void (*ThreadProc)(void *);
 
-Thread *thread_make(ThreadStart fn, void *udata);
+Thread *thread_make(ThreadProc fn, void *udata);
 void thread_join(Thread *t);
 uint64_t this_thread_id();

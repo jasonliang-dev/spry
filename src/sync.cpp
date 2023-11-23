@@ -87,7 +87,7 @@ void sema_trash(Sema *s) { CloseHandle(s->handle); }
 void sema_post(Sema *s, int n) { ReleaseSemaphore(s->handle, n, nullptr); }
 void sema_wait(Sema *s) { WaitForSingleObjectEx(s->handle, INFINITE, false); }
 
-Thread *thread_make(ThreadStart fn, void *udata) {
+Thread *thread_make(ThreadProc fn, void *udata) {
   DWORD id = 0;
   HANDLE handle =
       CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)fn, udata, 0, &id);
@@ -208,7 +208,7 @@ void sema_post(Sema *s, int n) {
 
 void sema_wait(Sema *s) { sem_wait(s->sem); }
 
-Thread *thread_make(ThreadStart fn, void *udata) {
+Thread *thread_make(ThreadProc fn, void *udata) {
   pthread_t pt = {};
   pthread_create(&pt, nullptr, (void *(*)(void *))fn, udata);
   return (Thread *)pt;
