@@ -28,9 +28,8 @@ i32 luax_require_script(lua_State *L, String filepath) {
   }
   defer(mem_free(contents.data));
 
-  // [1] {}
   lua_newtable(L);
-  i32 table_index = lua_gettop(L);
+  i32 module_table = lua_gettop(L);
 
   {
     PROFILE_BLOCK("load lua script");
@@ -41,18 +40,16 @@ i32 luax_require_script(lua_State *L, String filepath) {
     }
   }
 
-  // [1] {}
-  // ...
-  // [n] any
+  // run script
   if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {
-    lua_pop(L, 2);
+    lua_pop(L, 2); // also pop module table
     return LUA_REFNIL;
   }
 
-  // [1] {...}
+  // copy return results to module table
   i32 top = lua_gettop(L);
-  for (i32 i = 1; i <= top - table_index; i++) {
-    lua_seti(L, table_index, i);
+  for (i32 i = 1; i <= top - module_table; i++) {
+    lua_seti(L, module_table, i);
   }
 
   return luaL_ref(L, LUA_REGISTRYINDEX);
@@ -82,6 +79,7 @@ int luax_msgh(lua_State *L) {
   String err = luax_check_string(L, -1);
   g_app->fatal_error = to_cstr(err);
 
+  // traceback = debug.traceback(nil, 2)
   lua_getglobal(L, "debug");
   lua_getfield(L, -1, "traceback");
   lua_remove(L, -2);
@@ -100,7 +98,7 @@ int luax_msgh(lua_State *L) {
   fprintf(stderr, "%s\n%s\n", g_app->fatal_error.data, g_app->traceback.data);
 
   g_app->error_mode = true;
-  lua_pop(L, 2);
+  lua_pop(L, 2); // traceback and error
   return 0;
 }
 

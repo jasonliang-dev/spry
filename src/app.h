@@ -1,13 +1,14 @@
 #pragma once
 
-#define SPRY_VERSION "0.7"
-
+#include "slice.h"
 #include "array.h"
 #include "deps/luaalloc.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "font.h"
 #include "sound.h"
+
+#define SPRY_VERSION "0.7"
 
 struct AppTime {
   u64 last;
@@ -25,14 +26,14 @@ struct App {
 
   AppTime time;
 
-  AtomicInt hot_reload_enabled;
-  AtomicInt reload_interval;
-
-  FontFamily *default_font;
+  Slice<String> args;
 
   bool error_mode;
   String fatal_error;
   String traceback;
+
+  AtomicInt hot_reload_enabled;
+  AtomicInt reload_interval;
 
   bool key_state[349];
   bool prev_key_state[349];
@@ -45,6 +46,8 @@ struct App {
   float mouse_y;
   float scroll_x;
   float scroll_y;
+
+  FontFamily *default_font;
 
   void *miniaudio_vfs;
   ma_engine audio_engine;

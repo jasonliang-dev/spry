@@ -21,6 +21,13 @@ template <typename T> struct Slice {
   }
 };
 
+template <typename T> void slice_from_len(Slice<T> *s, u64 len) {
+  T *buf = (T *)mem_alloc(sizeof(T) * len);
+
+  s->data = buf;
+  s->len = len;
+}
+
 template <typename T>
 void slice_from_arena(Slice<T> *s, Arena *arena, u64 len) {
   T *buf = (T *)arena_bump(arena, sizeof(T) * len);

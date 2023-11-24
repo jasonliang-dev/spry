@@ -1,6 +1,45 @@
 R"lua"--(
 
--- define these in case user doesn't define them
+-- default callbacks
+
+function spry.arg(arg)
+  local usage = false
+  local version = false
+  local console = false
+
+  for _, a in ipairs(arg) do
+    if a == "--help" or a == "-h" then
+      usage = true
+    elseif a == "--version" or a == "-v" then
+      version = true
+    elseif a == "--console" then
+      console = true
+    end
+  end
+
+  if usage then
+    local str = ([[usage:
+  %s [command...]
+commands:
+  --help, -h                  show this usage
+  --version, -v               show spry version
+  --console                   windows only. use console output
+  [directory or zip archive]  run the game using the given directory
+]]):format(spry.program_path())
+
+    print(str)
+    os.exit()
+  end
+
+  if version then
+    print(spry.version())
+    os.exit()
+  end
+
+  return {
+    console = console
+  }
+end
 
 function spry.conf() end
 
@@ -13,7 +52,7 @@ function spry.frame(dt)
     default_font = spry.default_font()
   end
 
-  local text = "no game!"
+  local text = "- no game! -"
   local text_size = 36
   local x = (spry.window_width() - default_font:width(text, text_size)) / 2
   local y = (spry.window_height() - text_size) * 0.45
@@ -525,7 +564,7 @@ end
 
 function map(arr, fn)
   local t = {}
-  for k, v in ipairs(arr) do
+  for k, v in pairs(arr) do
     t[k] = fn(v)
   end
   return t
@@ -552,6 +591,14 @@ end
 
 function choose(arr)
   return arr[math.random(#arr)]
+end
+
+function find(arr, x)
+  for k, v in pairs(arr) do
+    if v == x then
+      return k
+    end
+  end
 end
 
 function sortpairs(t)
@@ -596,6 +643,22 @@ end
 unsafe_require = require
 
 function require(name)
+  local loaded = package.loaded[name]
+  if loaded ~= nil then
+    return loaded
+  end
+
+  local preload = package.preload[name]
+  if preload ~= nil then
+    local loaded = preload(name)
+    if loaded == nil then
+      debug.getregistry()._LOADED[name] = true
+    else
+      debug.getregistry()._LOADED[name] = loaded
+    end
+    return loaded
+  end
+
   local path = name:gsub("%.", "/")
   if path:sub(-4) ~= ".lua" then
     path = path .. ".lua"

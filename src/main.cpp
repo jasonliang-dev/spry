@@ -91,7 +91,15 @@ static void init() {
       lua_getglobal(L, "spry");
       lua_getfield(L, -1, "start");
       lua_remove(L, -2);
-      if (lua_pcall(L, 0, 0, 1) != LUA_OK) {
+
+      Slice<String> args = g_app->args;
+      lua_createtable(L, args.len - 1, 0);
+      for (u64 i = 1; i < args.len; i++) {
+        lua_pushlstring(L, args[i].data, args[i].len);
+        lua_rawseti(L, -2, i);
+      }
+
+      if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
         lua_pop(L, 1);
       }
     }
@@ -253,7 +261,7 @@ static void frame() {
       }
     }
 
-    lua_pop(L, 1);
+    lua_pop(L, 1); // global spry
     assert(lua_gettop(L) == 1);
 
     microui_end_and_present();
@@ -342,6 +350,11 @@ static void actually_cleanup() {
 
   mem_free(g_app->fatal_error.data);
   mem_free(g_app->traceback.data);
+
+  for (String arg : g_app->args) {
+    mem_free(arg.data);
+  }
+  mem_free(g_app->args.data);
 
   mem_free(g_app);
 }
@@ -456,53 +469,24 @@ sapp_desc sokol_main(int argc, char **argv) {
   stm_setup();
 
   profile_setup();
-
   PROFILE_FUNC();
 
   const char *mount_path = nullptr;
-  bool usage = false;
-  bool version = false;
-  bool win_console = false;
 
-#ifndef __EMSCRIPTEN__
   for (i32 i = 1; i < argc; i++) {
-    switch (fnv1a(argv[i])) {
-    case "-h"_hash:
-    case "--help"_hash: usage = true; continue;
-    case "--console"_hash: win_console = true; continue;
-    case "-v"_hash:
-    case "--version"_hash: version = true; continue;
-    }
-
-    if (mount_path == nullptr) {
+    if (argv[i][0] != '-') {
       mount_path = argv[i];
-    } else {
-      usage = true;
+      break;
     }
-  }
-#endif
-
-  if (usage) {
-    printf(R"(usage:
-  %s [command] [--console]
-commands:
-  --help, -h                  show this usage
-  --version, -v               show spry version
-  --console                   windows only. use console output
-  [directory or zip archive]  run the game at the given directory
-  [no arguments]              if available, run with fused game data
-)",
-           os_program_path().data);
-    exit(0);
-  }
-
-  if (version) {
-    printf("%s\n", SPRY_VERSION);
-    exit(0);
   }
 
   g_app = (App *)mem_alloc(sizeof(App));
   memset(g_app, 0, sizeof(App));
+
+  slice_from_len(&g_app->args, argc);
+  for (i32 i = 0; i < argc; i++) {
+    g_app->args[i] = to_cstr(argv[i]);
+  }
 
   setup_lua();
   lua_State *L = g_app->L;
@@ -511,17 +495,40 @@ commands:
 
   MountResult mount = vfs_mount(mount_path);
 
-  lua_newtable(L);
+  bool win_console = false;
+
+  if (!g_app->error_mode && mount.ok) {
+    asset_load(AssetKind_LuaRef, "main.lua", nullptr);
+  }
 
   if (!g_app->error_mode) {
-    if (mount.ok) {
-      asset_load(AssetKind_LuaRef, "main.lua", nullptr);
+    lua_getglobal(L, "spry");
+    lua_getfield(L, -1, "arg");
+    lua_remove(L, -2);
+
+    lua_createtable(L, argc - 1, 0);
+    for (i32 i = 1; i < argc; i++) {
+      lua_pushstring(L, argv[i]);
+      lua_rawseti(L, -2, i);
     }
 
+    if (lua_pcall(L, 1, 1, 1) != LUA_OK) {
+      lua_pop(L, 1);
+    } else {
+      win_console = luax_boolean_field(L, -1, "console", false);
+    }
+
+    lua_pop(L, 1); // returned table
+  }
+
+  lua_newtable(L);
+  i32 conf_table = lua_gettop(L);
+
+  if (!g_app->error_mode) {
     lua_getglobal(L, "spry");
     lua_getfield(L, -1, "conf");
     lua_remove(L, -2);
-    lua_pushvalue(L, -2); // same as lua_newtable above
+    lua_pushvalue(L, conf_table);
     if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
       lua_pop(L, 1);
     }
@@ -541,9 +548,9 @@ commands:
   lua_Number height = luax_opt_number_field(L, -1, "window_height", 600);
   String title = luax_opt_string_field(L, -1, "window_title", "Spry");
 
-  lua_pop(L, 1);
+  lua_pop(L, 1); // conf table
 
-  if (startup_load_scripts && mount.ok) {
+  if (!g_app->error_mode && startup_load_scripts && mount.ok) {
     load_all_lua_scripts(L);
   }
 

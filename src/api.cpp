@@ -11,6 +11,7 @@
 #include "image.h"
 #include "luax.h"
 #include "microui.h"
+#include "os.h"
 #include "physics.h"
 #include "prelude.h"
 #include "profile.h"
@@ -1908,6 +1909,12 @@ static int spry_platform(lua_State *L) {
   return 1;
 }
 
+static int spry_program_path(lua_State *L) {
+  String path = os_program_path();
+  lua_pushlstring(L, path.data, path.len);
+  return 1;
+}
+
 static int spry_dt(lua_State *L) {
   lua_pushnumber(L, g_app->time.delta);
   return 1;
@@ -2411,6 +2418,7 @@ static int open_spry(lua_State *L) {
       {"version", spry_version},
       {"quit", spry_quit},
       {"platform", spry_platform},
+      {"program_path", spry_program_path},
       {"dt", spry_dt},
       {"fullscreen", spry_fullscreen},
       {"toggle_fullscreen", spry_toggle_fullscreen},
