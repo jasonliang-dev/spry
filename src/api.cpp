@@ -1872,6 +1872,29 @@ static int open_microui(lua_State *L) {
 
 // spry api
 
+static int spry_registry_load(lua_State *L) {
+  if (lua_gettop(L) < 2) {
+    luaL_error(L, "expected a name and a value");
+  }
+
+  String name = luax_check_string(L, 1);
+
+  // registry._LOADED
+  lua_pushliteral(L, LUA_LOADED_TABLE);
+  lua_gettable(L, LUA_REGISTRYINDEX);
+
+  if (lua_type(L, 2) == LUA_TNIL) {
+    lua_pushboolean(L, true);
+  } else {
+    lua_pushvalue(L, 2);
+  }
+  // _LOADED[name] = value
+  lua_setfield(L, -1, name.data);
+
+  lua_pushvalue(L, 2);
+  return 1;
+}
+
 static int spry_require_lua_script(lua_State *L) {
   PROFILE_FUNC();
 
@@ -2412,6 +2435,7 @@ static int spry_b2_world(lua_State *L) {
 static int open_spry(lua_State *L) {
   luaL_Reg reg[] = {
       // internal
+      {"_registry_load", spry_registry_load},
       {"_require_lua_script", spry_require_lua_script},
 
       // core

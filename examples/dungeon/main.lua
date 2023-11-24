@@ -6,7 +6,10 @@ function spry.conf(t)
   t.window_height = 600
 end
 
-function spry.start()
+function spry.start(arg)
+  if arg[#arg] == "-mobdebug" then unsafe_require "mobdebug".start() end
+  if arg[#arg] == "-lldebugger" then unsafe_require "lldebugger".start() end
+
   font = spry.default_font()
 
   cursor = Cursor(spry.image_load "cursor.png")

@@ -650,13 +650,7 @@ function require(name)
 
   local preload = package.preload[name]
   if preload ~= nil then
-    local loaded = preload(name)
-    if loaded == nil then
-      debug.getregistry()._LOADED[name] = true
-    else
-      debug.getregistry()._LOADED[name] = loaded
-    end
-    return loaded
+    return spry._registry_load(name, preload(name))
   end
 
   local path = name:gsub("%.", "/")

@@ -6,7 +6,10 @@ function spry.conf(t)
   t.window_title = "Plane Game"
 end
 
-function spry.start()
+function spry.start(arg)
+  if arg[#arg] == "-mobdebug" then unsafe_require "mobdebug".start() end
+  if arg[#arg] == "-lldebugger" then unsafe_require "lldebugger".start() end
+
   composite = spry.image_load "_composite.png"
   atlas = spry.atlas_load "atlas.rtpa"
   world = World()
