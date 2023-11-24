@@ -1,6 +1,5 @@
 #include "assets.h"
 #include "app.h"
-#include "deps/lua/lauxlib.h"
 #include "luax.h"
 #include "os.h"
 #include "profile.h"

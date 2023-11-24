@@ -1,7 +1,12 @@
 #pragma once
 
-#include "deps/lua/lauxlib.h"
+extern "C" {
 #include "deps/lua/lua.h"
+
+#include "deps/lua/lauxlib.h"
+#include "deps/lua/lualib.h"
+}
+
 #include "prelude.h"
 #include <initializer_list>
 

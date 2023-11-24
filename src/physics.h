@@ -2,7 +2,7 @@
 
 #include <box2d/box2d.h>
 #include "prelude.h"
-#include "deps/lua/lua.h"
+#include "luax.h"
 
 struct PhysicsUserData {
   i32 begin_contact_ref;

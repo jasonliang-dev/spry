@@ -2,8 +2,6 @@
 #include "app.h"
 #include "assets.h"
 #include "atlas.h"
-#include "deps/lua/lauxlib.h"
-#include "deps/lua/lua.h"
 #include "deps/microui.h"
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"

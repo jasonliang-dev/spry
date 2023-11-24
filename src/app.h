@@ -3,7 +3,6 @@
 #define SPRY_VERSION "0.7"
 
 #include "array.h"
-#include "deps/lua/lua.h"
 #include "deps/luaalloc.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
@@ -17,6 +16,7 @@ struct AppTime {
   double delta;
 };
 
+struct lua_State;
 struct App {
   Mutex frame_mtx;
 

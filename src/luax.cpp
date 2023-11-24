@@ -1,7 +1,5 @@
 #include "luax.h"
 #include "app.h"
-#include "deps/lua/lauxlib.h"
-#include "deps/lua/lua.h"
 #include "profile.h"
 #include "strings.h"
 #include "vfs.h"

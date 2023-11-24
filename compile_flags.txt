@@ -2,4 +2,5 @@
 -std=c++17
 -Wall
 -Isrc/deps/box2d
+-Isrc/deps/lua
 -DDEBUG

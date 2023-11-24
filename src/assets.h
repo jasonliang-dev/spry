@@ -1,6 +1,5 @@
 #pragma once
 
-#include "deps/lua/lua.h"
 #include "image.h"
 #include "sprite.h"
 #include "tilemap.h"
@@ -35,5 +34,6 @@ bool asset_load(AssetKind kind, String filepath, Asset *out);
 bool asset_read(u64 key, Asset *out);
 void asset_write(Asset asset);
 
+struct lua_State;
 Asset check_asset(lua_State *L, u64 key);
 Asset check_asset_mt(lua_State *L, i32 arg, const char *mt);
