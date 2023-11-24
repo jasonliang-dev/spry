@@ -19,6 +19,11 @@
 #include "tilemap.h"
 #include <box2d/box2d.h>
 
+extern "C" {
+#include "deps/luasocket/luasocket.h"
+#include "deps/luasocket/mime.h"
+}
+
 // mt_sampler
 
 static int mt_sampler_gc(lua_State *L) {
@@ -2478,4 +2483,18 @@ void open_spry_api(lua_State *L) {
   lua_setfield(L, -2, "microui");
 
   lua_pop(L, 1);
+}
+
+static void package_preload(lua_State *L, const char *name,
+                            lua_CFunction function) {
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "preload");
+  lua_pushcfunction(L, function);
+  lua_setfield(L, -2, name);
+  lua_pop(L, 2);
+}
+
+void open_luasocket(lua_State *L) {
+  package_preload(L, "socket.core", luaopen_socket_core);
+  package_preload(L, "mime.core", luaopen_mime_core);
 }

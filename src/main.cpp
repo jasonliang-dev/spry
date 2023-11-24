@@ -388,6 +388,7 @@ static void setup_lua() {
 
   luaL_openlibs(L);
   open_spry_api(L);
+  open_luasocket(L);
 
   // add error message handler. always at the bottom of stack.
   lua_pushcfunction(L, luax_msgh);
