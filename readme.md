@@ -55,22 +55,6 @@ spry examples/jump
 spry examples/boxes
 ```
 
-## Building from source
-
-Build `src/spry.cpp` and `src/deps.cpp` with a C++17 compiler.
-`src/deps/box2d` needs to be in the include path.
-
-An optimized build of Spry using MSVC looks like this:
-
-```sh
-cl /std:c++17 /O2 /EHsc /Isrc/deps/box2d src/spry.cpp src/deps.cpp
-```
-
-Depending on your platform, you might need to link to some system libraries.
-See [`build.bat`](https://github.com/jasonliang-dev/spry/blob/master/build.bat)
-and [`build.sh`](https://github.com/jasonliang-dev/spry/blob/master/build.sh)
-for details.
-
 ## Shoutouts
 
 Special thanks to:
