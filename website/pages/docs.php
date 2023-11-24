@@ -44,6 +44,33 @@ $b2fixture_def = [
   " .end_contact" => ["function", "Run a callback function when this fixture stops touching another.", "nil"],
 ];
 
+$mu_rect = [
+  "rect" => ["table", "Rectangle definition."],
+  " .x" => ["number", "The top left x position."],
+  " .y" => ["number", "The top left y position."],
+  " .w" => ["number", "The width of the rectangle."],
+  " .h" => ["number", "The height of the rectangle."],
+];
+
+$mu_color = [
+  "color" => ["table", "Color definition."],
+  " .r" => ["number", "The color's red channel, in the range [0, 255]."],
+  " .g" => ["number", "The color's green channel, in the range [0, 255]."],
+  " .b" => ["number", "The color's blue channel, in the range [0, 255]."],
+  " .a" => ["number", "The color's alpha channel, in the range [0, 255]."],
+];
+
+$mu_ref_desc = [
+  "mu_Ref",
+  "
+    A value from
+    <a
+      class=\"blue no-underline underline-hover\"
+      href=\"#microui.ref\"
+    ><code>microui.ref</code></a>.
+  "
+];
+
 $api_reference = [
   "Callback Functions" => [
     "spry.conf" => [
@@ -128,6 +155,16 @@ $api_reference = [
       "example" => "
         if spry.platform() ~= 'html5' then
           display_quit_button()
+        end
+      ",
+      "args" => [],
+      "return" => "string",
+    ],
+    "spry.program_path" => [
+      "desc" => "Returns the path to this executable.",
+      "example" => "
+        if spry.platform() ~= 'html5' then
+          print(spry.program_path())
         end
       ",
       "args" => [],
@@ -1311,6 +1348,558 @@ $api_reference = [
       "return" => "string | number",
     ],
   ],
+  "microui" => [
+    "spry.microui" => [
+      "desc" => "
+        Namespace for the [microui](https://github.com/rxi/microui/tree/master) module.
+        The API is similar to the one found in C.
+        The [`microui.ref`](#microui.ref) function is used for controls that
+        used to rely on pointers.
+
+        This namespace contains following constants:
+
+        `VERSION`
+
+        `COMMANDLIST_SIZE`, `ROOTLIST_SIZE`, `CONTAINERSTACK_SIZE`,
+        `CLIPSTACK_SIZE`, `IDSTACK_SIZE`, `LAYOUTSTACK_SIZE`,
+        `CONTAINERPOOL_SIZE`, `TREENODEPOOL_SIZE`, `MAX_WIDTHS`, `REAL_FMT`,
+        `SLIDER_FMT`, `MAX_FMT`
+
+        `CLIP_PART`, `CLIP_ALL`
+
+        `COMMAND_JUMP`, `COMMAND_CLIP`, `COMMAND_RECT`, `COMMAND_TEXT`,
+        `COMMAND_ICON`
+
+        `COLOR_TEXT`, `COLOR_BORDER`, `COLOR_WINDOWBG`, `COLOR_TITLEBG`,
+        `COLOR_TITLETEXT`, `COLOR_PANELBG`, `COLOR_BUTTON`,
+        `COLOR_BUTTONHOVER`, `COLOR_BUTTONFOCUS`, `COLOR_BASE`,
+        `COLOR_BASEHOVER`, `COLOR_BASEFOCUS`, `COLOR_SCROLLBASE`,
+        `COLOR_SCROLLTHUMB`
+
+        `ICON_CLOSE`, `ICON_CHECK`, `ICON_COLLAPSED`, `ICON_EXPANDED`
+
+        `RES_ACTIVE`, `RES_SUBMIT`, `RES_CHANGE`
+
+        `OPT_ALIGNCENTER`, `OPT_ALIGNRIGHT`, `OPT_NOINTERACT`, `OPT_NOFRAME`,
+        `OPT_NORESIZE`, `OPT_NOSCROLL`, `OPT_NOCLOSE`, `OPT_NOTITLE`,
+        `OPT_HOLDFOCUS`, `OPT_AUTOSIZE`, `OPT_POPUP`, `OPT_CLOSED`,
+        `OPT_EXPANDED`
+      ",
+      "example" => "
+        function spry.start()
+          mu = spry.microui
+        end
+
+        function spry.frame(dt)
+          if mu.begin_window('Test Window', mu.rect(40, 40, 300, 400)) then
+            if mu.header('Test Buttons', mu.OPT_EXPANDED) then
+              mu.layout_row({-1}, 0)
+              mu.label 'Test buttons 1:'
+              mu.layout_row({150, -1}, 0)
+              if mu.button 'Button 1' then print 'Pressed button 1' end
+              if mu.button 'Button 2' then print 'Pressed button 2' end
+            end
+
+            mu.end_window()
+          end
+        end
+      ",
+    ],
+    "microui.set_focus" => [
+      "args" => [ "id" => ["number"] ],
+      "return" => false,
+    ],
+    "microui.get_id" => [
+      "args" => [ "name" => ["string"] ],
+      "return" => "number",
+    ],
+    "microui.push_id" => [
+      "args" => [ "name" => ["string"] ],
+      "return" => false,
+    ],
+    "microui.pop_id" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.push_clip_rect" => [
+      "args" => $mu_rect,
+      "return" => false,
+    ],
+    "microui.pop_clip_rect" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.get_clip_rect" => [
+      "desc" => "Returns the clip rect with `x`, `y`, `w`, `h` keys.",
+      "args" => [],
+      "return" => "table",
+    ],
+    "microui.check_clip" => [
+      "desc" => "Check clip result by using `mu.CLIP_PART` and `mu.CLIP_ALL`.",
+      "args" => $mu_rect,
+      "return" => "number",
+    ],
+    "microui.get_current_container" => [
+      "args" => [],
+      "return" => "mu_Container",
+    ],
+    "microui.get_container" => [
+      "args" => [ "name" => ["string"] ],
+      "return" => "mu_Container",
+    ],
+    "microui.bring_to_front" => [
+      "args" => [ "container" => ["mu_Container"] ],
+      "return" => false,
+    ],
+    "microui.set_clip" => [
+      "args" => $mu_rect,
+      "return" => false,
+    ],
+    "microui.draw_rect" => [
+      "args" => array_merge($mu_rect, $mu_color),
+      "return" => false,
+    ],
+    "microui.draw_box" => [
+      "args" => array_merge($mu_rect, $mu_color),
+      "return" => false,
+    ],
+    "microui.draw_text" => [
+      "args" => array_merge([
+        "str" => ["string"],
+        "x" => ["number"],
+        "y" => ["number"],
+      ], $mu_color),
+      "return" => false,
+    ],
+    "microui.draw_icon" => [
+      "args" => array_merge([ "id" => ["number"] ], $mu_rect, $mu_color),
+      "return" => false,
+    ],
+    "microui.layout_row" => [
+      "desc" => "
+        Similar to C's version of `mu_layout_row`, takes two arguments instead
+        of three.
+      ",
+      "args" => [
+        "widths" => ["table", "Widths of each item in the row."],
+        "height" => ["number", "Height of the row."],
+      ],
+      "return" => false,
+    ],
+    "microui.layout_width" => [
+      "args" => [ "width" => ["number"] ],
+      "return" => false,
+    ],
+    "microui.layout_height" => [
+      "args" => [ "height" => ["number"] ],
+      "return" => false,
+    ],
+    "microui.layout_begin_column" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.layout_end_column" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.layout_set_next" => [
+      "args" => array_merge($mu_rect, [ "relative" => ["boolean"] ]),
+      "return" => false,
+    ],
+    "microui.draw_control_frame" => [
+      "args" => array_merge(
+        [ "id" => ["number"] ],
+        $mu_rect,
+        [ "colorid" => ["number"], "opt" => ["number"] ]
+      ),
+      "return" => false,
+    ],
+    "microui.draw_control_text" => [
+      "args" => array_merge(
+        [ "str" => ["string"] ],
+        $mu_rect,
+        [ "colorid" => ["number"], "opt" => ["number"] ]
+      ),
+      "return" => false,
+    ],
+    "microui.mouse_over" => [
+      "args" => $mu_rect,
+      "return" => "boolean",
+    ],
+    "microui.update_control" => [
+      "args" => array_merge(
+        [ "id" => ["number"] ],
+        $mu_rect,
+        [ "opt" => ["number"] ]
+      ),
+      "return" => false,
+    ],
+    "microui.text" => [
+      "args" => [ "text" => ["string"] ],
+      "return" => false,
+    ],
+    "microui.label" => [
+      "args" => [ "text" => ["string"] ],
+      "return" => false,
+    ],
+    "microui.button" => [
+      "args" => [
+        "text" => ["string"],
+        "icon" => ["number", "", 0],
+        "opt" => ["number", "", "microui.OPT_ALIGNCENTER"],
+      ],
+      "return" => "boolean",
+    ],
+    "microui.checkbox" => [
+      "args" => [
+        "text" => ["string"],
+        "ref" => $mu_ref_desc,
+      ],
+      "return" => "number",
+    ],
+    "microui.textbox_raw" => [
+      "args" => array_merge(
+        [ "ref" => $mu_ref_desc, "id" => ["number"] ],
+        $mu_rect,
+        [ "opt" => ["number", "", 0] ]
+      ),
+      "return" => "number",
+    ],
+    "microui.textbox" => [
+      "args" => [
+        "ref" => $mu_ref_desc,
+        "opt" => ["number", "", 0],
+      ],
+      "return" => "number",
+    ],
+    "microui.slider" => [
+      "args" => [
+        "ref" => $mu_ref_desc,
+        "low" => ["number"],
+        "high" => ["number"],
+        "step" => ["number", "", 0],
+        "fmt" => ["string", "", "microui.SLIDER_FMT"],
+        "opt" => ["number", "", "microui.OPT_ALIGNCENTER"],
+      ],
+      "return" => "number",
+    ],
+    "microui.number" => [
+      "args" => [
+        "ref" => $mu_ref_desc,
+        "step" => ["number"],
+        "fmt" => ["string", "", "microui.SLIDER_FMT"],
+        "opt" => ["number", "", "microui.OPT_ALIGNCENTER"],
+      ],
+      "return" => "number",
+    ],
+    "microui.header" => [
+      "args" => [
+        "text" => ["string"],
+        "opt" => ["number", "", 0],
+      ],
+      "return" => "boolean",
+    ],
+    "microui.header" => [
+      "args" => [
+        "text" => ["string"],
+        "opt" => ["number", "", 0],
+      ],
+      "return" => "boolean",
+    ],
+    "microui.begin_treenode" => [
+      "args" => [
+        "label" => ["string"],
+        "opt" => ["number", "", 0],
+      ],
+      "return" => "boolean",
+    ],
+    "microui.end_treenode" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.begin_window" => [
+      "args" => array_merge(
+        [ "title" => ["string"] ],
+        $mu_rect,
+        [ "opt" => ["number", "", 0] ]
+      ),
+      "return" => "boolean",
+    ],
+    "microui.end_window" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.open_popup" => [
+      "args" => [ "name" => ["string"] ],
+      "return" => false,
+    ],
+    "microui.begin_popup" => [
+      "args" => [ "name" => ["string"] ],
+      "return" => "boolean",
+    ],
+    "microui.end_popup" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.end_popup" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.begin_panel" => [
+      "args" => [
+        "name" => ["string"],
+        "opt" => ["number", "", 0],
+      ],
+      "return" => false,
+    ],
+    "microui.end_panel" => [
+      "args" => [],
+      "return" => false,
+    ],
+    "microui.get_hover" => [
+      "desc" => "Accessor for `mu_Context.hover`.",
+      "args" => [],
+      "return" => "number",
+    ],
+    "microui.get_focus" => [
+      "desc" => "Accessor for `mu_Context.focus`.",
+      "args" => [],
+      "return" => "number",
+    ],
+    "microui.get_last_id" => [
+      "desc" => "Accessor for `mu_Context.last_id`.",
+      "args" => [],
+      "return" => "number",
+    ],
+    "microui.get_style" => [
+      "desc" => "Accessor for `mu_Context.style`.",
+      "args" => [],
+      "return" => "mu_Style",
+    ],
+    "microui.rect" => [
+      "desc" => "Create a table with `x`, `y`, `w`, `h` keys.",
+      "example" => "
+        local rect0 = spry.microui.rect(10, 10, 400, 300)
+        local rect1 = { x = 10, y = 10, w = 400, h = 300 }
+
+        assert(rect0.x == rect1.x)
+        assert(rect0.y == rect1.y)
+        assert(rect0.w == rect1.w)
+        assert(rect0.h == rect1.h)
+      ",
+      "args" => [
+        "x" => ["number", "The top left x position."],
+        "y" => ["number", "The top left y position."],
+        "w" => ["number", "The width of the rectangle."],
+        "h" => ["number", "The height of the rectangle."],
+      ],
+      "return" => "table",
+    ],
+    "microui.color" => [
+      "desc" => "Create a table with `r`, `g`, `b`, `a` keys.",
+      "example" => "
+        local col0 = spry.microui.col(128, 128, 128, 255)
+        local col1 = { r = 128, g = 128, b = 128, a = 255 }
+
+        assert(col0.r == col1.r)
+        assert(col0.g == col1.g)
+        assert(col0.b == col1.b)
+        assert(col0.a == col1.a)
+      ",
+      "args" => [
+        "r" => ["number", "The color's red channel, in the range [0, 255]."],
+        "g" => ["number", "The color's green channel, in the range [0, 255]."],
+        "b" => ["number", "The color's blue channel, in the range [0, 255]."],
+        "a" => ["number", "The color's alpha channel, in the range [0, 255]."],
+      ],
+      "return" => "table",
+    ],
+  ],
+  "microui Container" => [
+    "mu_Container:rect" => [
+      "desc" => "Get the container rectangle with `x`, `y`, `w`, `h` keys.",
+      "args" => [],
+      "return" => "table",
+    ],
+    "mu_Container:set_rect" => [
+      "args" => $mu_rect,
+      "return" => false,
+    ],
+    "mu_Container:body" => [
+      "desc" => "Get the container body with `x`, `y`, `w`, `h` keys.",
+      "args" => [],
+      "return" => "table",
+    ],
+    "mu_Container:content_size" => [
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "mu_Container:scroll" => [
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "mu_Container:set_scroll" => [
+      "args" => [
+        "x" => ["number", "The x scroll position."],
+        "y" => ["number", "The y scroll position."],
+      ],
+      "return" => false,
+    ],
+    "mu_Container:zindex" => [
+      "args" => [],
+      "return" => "number",
+    ],
+    "mu_Container:open" => [
+      "args" => [],
+      "return" => "boolean",
+    ],
+  ],
+  "microui Style" => [
+    "mu_Style:size" => [
+      "args" => [],
+      "return" => "number, number",
+    ],
+    "mu_Style:set_size" => [
+      "args" => [ "x" => ["number"], "y" => ["number"] ],
+      "return" => false,
+    ],
+    "mu_Style:padding" => [
+      "args" => [],
+      "return" => "number",
+    ],
+    "mu_Style:set_padding" => [
+      "args" => [ "padding" => ["number"] ],
+      "return" => false,
+    ],
+    "mu_Style:spacing" => [
+      "args" => [],
+      "return" => "number",
+    ],
+    "mu_Style:set_spacing" => [
+      "args" => [ "spacing" => ["number"] ],
+      "return" => false,
+    ],
+    "mu_Style:indent" => [
+      "args" => [],
+      "return" => "number",
+    ],
+    "mu_Style:set_indent" => [
+      "args" => [ "indent" => ["number"] ],
+      "return" => false,
+    ],
+    "mu_Style:title_height" => [
+      "args" => [],
+      "return" => "number",
+    ],
+    "mu_Style:set_title_height" => [
+      "args" => [ "title_height" => ["number"] ],
+      "return" => false,
+    ],
+    "mu_Style:scrollbar_size" => [
+      "args" => [],
+      "return" => "number",
+    ],
+    "mu_Style:set_scrollbar_size" => [
+      "args" => [ "scrollbar_size" => ["number"] ],
+      "return" => false,
+    ],
+    "mu_Style:thumb_size" => [
+      "args" => [],
+      "return" => "number",
+    ],
+    "mu_Style:set_thumb_size" => [
+      "args" => [ "thumb_size" => ["number"] ],
+      "return" => false,
+    ],
+    "mu_Style:color" => [
+      "desc" => "Get the color with `r`, `g`, `b`, `a` keys using given id.",
+      "args" => [ "colorid" => ["number"] ],
+      "return" => "table",
+    ],
+    "mu_Style:set_color" => [
+      "args" => array_merge([ "colorid" => ["number"] ], $mu_color),
+      "return" => false,
+    ],
+  ],
+  "microui Ref" => [
+    "microui.ref" => [
+      "desc" => "
+        Returns userdata value that can be passed into several microui
+        functions.
+      ",
+      "example" => "
+        function spry.start()
+          mu = spry.microui
+
+          check = mu.ref(false)
+          text = mu.ref 'Hello, World!'
+          color = {
+            r = mu.ref(90),
+            g = mu.ref(95),
+            b = mu.ref(100),
+          }
+        end
+
+        function spry.frame(dt)
+          local col = {
+            r = color.r:get(),
+            g = color.g:get(),
+            b = color.b:get(),
+            a = 255,
+          }
+          spry.clear_color(col.r, col.g, col.b, col.a)
+
+          font:draw(text:get(), 400, 100, 24)
+
+          if mu.begin_window('Window', mu.rect(40, 40, 300, 400)) then
+            if mu.header('Inputs', mu.OPT_EXPANDED) then
+              mu.checkbox('My Checkbox', check)
+              mu.textbox(text)
+
+              mu.layout_row({50, -1}, 0)
+              mu.label 'Red:'; mu.slider(color.r, 0, 255)
+              mu.label 'Green:'; mu.slider(color.g, 0, 255)
+              mu.label 'Blue:'; mu.slider(color.b, 0, 255)
+            end
+
+            mu.end_window()
+          end
+        end
+      ",
+      "args" => [
+        "value" => ["any", "A boolean, number or string value."],
+      ],
+      "return" => "mu_Ref",
+    ],
+    "mu_Ref:get" => [
+      "desc" => "Get the internal value of this object.",
+      "example" => "
+        function spry.start()
+          mu = spry.microui
+          text = mu.ref 'Hello, World!'
+        end
+
+        function spry.frame(dt)
+          font:draw(text:get(), 400, 100, 24)
+        end
+      ",
+      "args" => [],
+      "return" => "any",
+    ],
+    "mu_Ref:set" => [
+      "desc" => "Set the internal value of this object.",
+      "example" => "
+        if (mu.textbox(text) & mu.RES_SUBMIT) ~= 0 then
+          mu.set_focus(mu.get_last_id())
+          text:set ''
+        end
+      ",
+      "args" => [
+        "value" => ["any", "A boolean, number or string value."],
+      ],
+      "return" => false,
+    ],
+  ],
   "2D Vector" => [
     "vec2" => [
       "desc" => "Create a new 2D vector.",
@@ -1841,18 +2430,41 @@ $api_reference = [
   "Utility Functions" => [
     "require" => [
       "desc" => "
-        Include a Lua file relative to the root of the project directory. The
-        format is in a similar style as the `require` function in vanilla
-        Lua. Path separators are `.` instead of `/`, and the `.lua` extension
-        is excluded.
+        Loads a Lua module. This is not the same function in standard Lua. It
+        ignores `package.searchers`, and it uses the virtual file system,
+        searching for files relative to the root of the project directory or
+        zip archive.
+
+        When searching for files, path separators are `.` instead of `/`, and
+        the `.lua` extension is excluded, similar to the standard version of
+        this function.
       ",
       "example" => "
+        local lume = require 'deps.lume'
+
         function spry.start()
-          lume = require 'deps.lume'
+          print(lume.serialize({ one = 1, arr = { 1, 2, 3 } }))
         end
       ",
       "args" => [
-        "file" => ["string", "The file to include."],
+        "name" => ["string", "The module to load."],
+      ],
+      "return" => "any",
+    ],
+    "unsafe_require" => [
+      "desc" => "
+        This is the `require` function from standard Lua, renamed because it
+        bypasses the virtual file system. This function can be used to load
+        files in the `LUA_PATH` environment variable, for debugging
+        purposes.
+      ",
+      "example" => "
+        if os.getenv 'LOCAL_LUA_DEBUGGER_VSCODE' == '1' then
+          unsafe_require 'lldebugger'.start()
+        end
+      ",
+      "args" => [
+        "name" => ["string", "The module to load."],
       ],
       "return" => "any",
     ],
@@ -2029,6 +2641,23 @@ $api_reference = [
       ],
       "return" => "any",
     ],
+    "find" => [
+      "desc" => "
+        Find the key in an array associated with the given value. Returns
+        `nil` if value wasn't found.
+      ",
+      "example" => "
+        local index = find(cards, 'queen:hearts')
+        if index ~= nil then
+          print('Queen of Hearts at index ' .. index)
+        end
+      ",
+      "args" => [
+        "arr" => ["table", "The array to search."],
+        "x" => ["any", "The value to search for."],
+      ],
+      "return" => "any",
+    ],
     "sortpairs" => [
       "desc" => "Returns an iterator over a table sorted by key.",
       "example" => "
@@ -2202,30 +2831,36 @@ $api_reference = [
             <a href="#<?= strtolower($name) ?>" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
                 <?php
-                $args = array_keys($func["args"]);
-                $args = array_filter($args, fn($a) => !str_starts_with($a, " "));
-                echo $name . "(" . implode(", ", $args) . ")";
+                echo $name;
+                if (isset($func["args"])) {
+                  $args = array_keys($func["args"]);
+                  $args = array_filter($args, fn($a) => !str_starts_with($a, " "));
+                  echo "(" . implode(", ", $args) . ")";
+                }
                 ?>
               </code>
             </a>
           </h2>
-          <div class="lh-copy prose">
-            <?= Parsedown::instance()->text(multiline_trim($func["desc"])); ?>
-          </div>
-          <div class="prose relative">
-            <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
-              Example
-            </span>
-            <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem"><?= multiline_trim($func["example"]) ?></code></pre>
-          </div>
-          <?php if (count($func["args"]) > 0): ?>
+          <?php if (isset($func["desc"])): ?>
+            <div class="lh-copy prose">
+              <?= Parsedown::instance()->text(multiline_trim($func["desc"])); ?>
+            </div>
+          <?php endif ?>
+          <?php if (isset($func["example"])): ?>
+            <div class="prose relative">
+              <span class="dib absolute top-0 left-0 pt1 pl2 br3 gray fw6 f7 ttu">
+                Example
+              </span>
+              <pre class="mv0"><code class="language-lua" style="padding-top: 1.5rem"><?= multiline_trim($func["example"]) ?></code></pre>
+            </div>
+          <?php endif ?>
+          <?php if (isset($func["args"]) && count($func["args"]) > 0): ?>
             <?php
+            $has_desc = false;
             $has_default = false;
             foreach ($func["args"] as $arr) {
-              if (count($arr) == 3) {
-                $has_default = true;
-                break;
-              }
+              if (count($arr) === 2 && $arr[1] !== "") { $has_desc = true; }
+              if (count($arr) === 3) { $has_default = true; }
             }
             ?>
             <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
@@ -2239,12 +2874,14 @@ $api_reference = [
                       <?php if ($has_default): ?>
                         <th class="tl pv2 ph3 fw6">Default</th>
                       <?php endif ?>
-                      <th class="tl pv2 ph3 fw6">Description</th>
+                      <?php if ($has_desc): ?>
+                        <th class="tl pv2 ph3 fw6">Description</th>
+                      <?php endif ?>
                     </tr>
                     <?php foreach ($func["args"] as $arg_name => $arg): ?>
                       <?php
                       $type = $arg[0];
-                      $desc = $arg[1];
+                      $desc = $arg[1] ?? "";
                       $default = $arg[2] ?? false;
                       ?>
                       <tr>
@@ -2263,7 +2900,9 @@ $api_reference = [
                             <?php endif ?>
                           </td>
                         <?php endif ?>
-                        <td class="pv2 ph3"><?= $desc ?></td>
+                        <?php if ($has_desc): ?>
+                          <td class="pv2 ph3"><?= $desc ?></td>
+                        <?php endif ?>
                       </tr>
                     <?php endforeach ?>
                   </tbody>
@@ -2272,16 +2911,19 @@ $api_reference = [
             </div>
           <?php endif ?>
 
-          <?php if ($func["return"]): ?>
-            <p class="mb0">
-              <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
-              <code class="inline-code"><?= $func["return"] ?></code>.
-            </p>
-          <?php else: ?>
-            <p class="i gray mb0">Returns nothing.</p>
+          <?php if (isset($func["return"])): ?>
+            <?php if ($func["return"]): ?>
+              <p class="mb0">
+                <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
+                <code class="inline-code"><?= $func["return"] ?></code>.
+              </p>
+            <?php else: ?>
+              <p class="i gray mb0">Returns nothing.</p>
+            <?php endif ?>
           <?php endif ?>
         </div>
       <?php endforeach ?>
+      <hr class="bn bg-black-20 dm-bg-white-20 mv4" style="height: 1px">
     <?php endforeach ?>
     <div class="mv4 tr">
       <a href="https://github.com/jasonliang-dev/spry" class="gray link underline-hover pv3 dib">
