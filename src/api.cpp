@@ -1847,7 +1847,7 @@ static int spry_registry_load(lua_State *L) {
     lua_pushvalue(L, 2);
   }
   // _LOADED[name] = value
-  lua_setfield(L, -1, name.data);
+  lua_setfield(L, -2, name.data);
 
   lua_pushvalue(L, 2);
   return 1;

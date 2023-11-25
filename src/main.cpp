@@ -494,7 +494,6 @@ sapp_desc sokol_main(int argc, char **argv) {
   assets_setup();
 
   MountResult mount = vfs_mount(mount_path);
-
   bool win_console = false;
 
   if (!g_app->error_mode && mount.ok) {
@@ -516,9 +515,8 @@ sapp_desc sokol_main(int argc, char **argv) {
       lua_pop(L, 1);
     } else {
       win_console = luax_boolean_field(L, -1, "console", false);
+      lua_pop(L, 1); // returned table
     }
-
-    lua_pop(L, 1); // returned table
   }
 
   lua_newtable(L);
