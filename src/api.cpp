@@ -7,6 +7,16 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "draw.h"
+#include "embed/ltn12_compressed.h"
+#include "embed/mbox_compressed.h"
+#include "embed/mime_compressed.h"
+#include "embed/socket_compressed.h"
+#include "embed/socket_ftp_compressed.h"
+#include "embed/socket_headers_compressed.h"
+#include "embed/socket_http_compressed.h"
+#include "embed/socket_smtp_compressed.h"
+#include "embed/socket_tp_compressed.h"
+#include "embed/socket_url_compressed.h"
 #include "font.h"
 #include "image.h"
 #include "luax.h"
@@ -17,6 +27,7 @@
 #include "profile.h"
 #include "sound.h"
 #include "sprite.h"
+#include "stb_decompress.h"
 #include "tilemap.h"
 #include <box2d/box2d.h>
 
@@ -1188,77 +1199,24 @@ static int mt_mu_style_set_size(lua_State *L) {
   return 0;
 }
 
-static int mt_mu_style_padding(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  lua_pushinteger(L, style->padding);
-  return 1;
-}
+#define MT_MU_STYLE_GETSET(name)                                               \
+  static int mt_mu_style_##name(lua_State *L) {                                \
+    mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");      \
+    lua_pushinteger(L, style->name);                                           \
+    return 1;                                                                  \
+  }                                                                            \
+  static int mt_mu_style_set_##name(lua_State *L) {                            \
+    mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");      \
+    style->name = luaL_checknumber(L, 2);                                      \
+    return 0;                                                                  \
+  }
 
-static int mt_mu_style_set_padding(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  style->padding = luaL_checknumber(L, 2);
-  return 0;
-}
-
-static int mt_mu_style_spacing(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  lua_pushinteger(L, style->spacing);
-  return 1;
-}
-
-static int mt_mu_style_set_spacing(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  style->spacing = luaL_checknumber(L, 2);
-  return 0;
-}
-
-static int mt_mu_style_indent(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  lua_pushinteger(L, style->indent);
-  return 1;
-}
-
-static int mt_mu_style_set_indent(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  style->indent = luaL_checknumber(L, 2);
-  return 0;
-}
-
-static int mt_mu_style_title_height(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  lua_pushinteger(L, style->title_height);
-  return 1;
-}
-
-static int mt_mu_style_set_title_height(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  style->title_height = luaL_checknumber(L, 2);
-  return 0;
-}
-
-static int mt_mu_style_scrollbar_size(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  lua_pushinteger(L, style->scrollbar_size);
-  return 1;
-}
-
-static int mt_mu_style_set_scrollbar_size(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  style->scrollbar_size = luaL_checknumber(L, 2);
-  return 0;
-}
-
-static int mt_mu_style_thumb_size(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  lua_pushinteger(L, style->thumb_size);
-  return 1;
-}
-
-static int mt_mu_style_set_thumb_size(lua_State *L) {
-  mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
-  style->thumb_size = luaL_checknumber(L, 2);
-  return 0;
-}
+MT_MU_STYLE_GETSET(padding);
+MT_MU_STYLE_GETSET(spacing);
+MT_MU_STYLE_GETSET(indent);
+MT_MU_STYLE_GETSET(title_height);
+MT_MU_STYLE_GETSET(scrollbar_size);
+MT_MU_STYLE_GETSET(thumb_size);
 
 static int mt_mu_style_color(lua_State *L) {
   mu_Style *style = *(mu_Style **)luaL_checkudata(L, 1, "mt_mu_style");
@@ -2526,7 +2484,69 @@ static void package_preload(lua_State *L, const char *name,
   lua_pop(L, 2);
 }
 
+#define LUAOPEN_EMBED_DATA(func, name, compressed_data, compressed_size)       \
+  static int func(lua_State *L) {                                              \
+    i32 top = lua_gettop(L);                                                   \
+                                                                               \
+    String contents = stb_decompress_data(compressed_data, compressed_size);   \
+    defer(mem_free(contents.data));                                            \
+                                                                               \
+    if (luaL_loadbuffer(L, contents.data, contents.len, name) != LUA_OK) {     \
+      luaL_error(L, "%s", lua_tostring(L, -1));                                \
+      return 0;                                                                \
+    }                                                                          \
+                                                                               \
+    if (lua_pcall(L, 0, LUA_MULTRET, 1) != LUA_OK) {                           \
+      luaL_error(L, "%s", lua_tostring(L, -1));                                \
+      return 0;                                                                \
+    }                                                                          \
+                                                                               \
+    return lua_gettop(L) - top;                                                \
+  }
+
+LUAOPEN_EMBED_DATA(open_embed_ltn12, "ltn12.lua", ltn12_compressed_data,
+                   ltn12_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_mbox, "mbox.lua", mbox_compressed_data,
+                   mbox_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_mime, "mime.lua", mime_compressed_data,
+                   mime_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_socket, "socket.lua", socket_compressed_data,
+                   socket_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_socket_ftp, "socket.ftp.lua",
+                   socket_ftp_compressed_data, socket_ftp_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_socket_headers, "socket.headers.lua",
+                   socket_headers_compressed_data,
+                   socket_headers_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_socket_http, "socket.http.lua",
+                   socket_http_compressed_data, socket_http_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_socket_smtp, "socket.smtp.lua",
+                   socket_smtp_compressed_data, socket_smtp_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_socket_tp, "socket.tp.lua",
+                   socket_tp_compressed_data, socket_tp_compressed_size);
+
+LUAOPEN_EMBED_DATA(open_embed_socket_url, "socket.url.lua",
+                   socket_url_compressed_data, socket_url_compressed_size);
+
 void open_luasocket(lua_State *L) {
   package_preload(L, "socket.core", luaopen_socket_core);
   package_preload(L, "mime.core", luaopen_mime_core);
+
+  package_preload(L, "ltn12", open_embed_ltn12);
+  package_preload(L, "mbox", open_embed_mbox);
+  package_preload(L, "mime", open_embed_mime);
+  package_preload(L, "socket", open_embed_socket);
+  package_preload(L, "socket.ftp", open_embed_socket_ftp);
+  package_preload(L, "socket.headers", open_embed_socket_headers);
+  package_preload(L, "socket.http", open_embed_socket_http);
+  package_preload(L, "socket.smtp", open_embed_socket_smtp);
+  package_preload(L, "socket.tp", open_embed_socket_tp);
+  package_preload(L, "socket.url", open_embed_socket_url);
 }
