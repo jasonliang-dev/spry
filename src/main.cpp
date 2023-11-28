@@ -230,11 +230,12 @@ static void frame() {
     float y = 10;
     u64 font_size = 16;
 
-    draw_font(g_app->default_font, font_size, x, y, "-- ! Spry Error ! --");
-    y += font_size * 2;
+    y = draw_font(g_app->default_font, font_size, x, y, "-- ! Spry Error ! --");
+    y += font_size;
 
-    draw_font(g_app->default_font, font_size, x, y, g_app->fatal_error);
-    y += font_size * 2;
+    y = draw_font_wrapped(g_app->default_font, font_size, x, y,
+                          g_app->fatal_error, sapp_widthf() - x);
+    y += font_size;
 
     if (g_app->traceback.data) {
       draw_font(g_app->default_font, font_size, x, y, g_app->traceback);

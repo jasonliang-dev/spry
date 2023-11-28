@@ -134,9 +134,17 @@ static int mt_font_draw(lua_State *L) {
   lua_Number x = luaL_optnumber(L, 3, 0);
   lua_Number y = luaL_optnumber(L, 4, 0);
   lua_Number size = luaL_optnumber(L, 5, 12);
+  lua_Number wrap = luaL_optnumber(L, 6, -1);
 
-  draw_font(font, (u64)size, (float)x, (float)y, text);
-  return 0;
+  float bottom = 0;
+  if (wrap < 0) {
+    bottom = draw_font(font, (u64)size, (float)x, (float)y, text);
+  } else {
+    bottom = draw_font_wrapped(font, (u64)size, (float)x, (float)y, text, (float)wrap);
+  }
+
+  lua_pushnumber(L, bottom);
+  return 1;
 }
 
 static int open_mt_font(lua_State *L) {
@@ -2132,6 +2140,16 @@ static int spry_scroll_wheel(lua_State *L) {
   return 2;
 }
 
+static int spry_scissor_rect(lua_State *L) {
+  lua_Number x = luaL_optnumber(L, 1, 0);
+  lua_Number y = luaL_optnumber(L, 2, 0);
+  lua_Number w = luaL_optnumber(L, 3, sapp_widthf());
+  lua_Number h = luaL_optnumber(L, 4, sapp_heightf());
+
+  sgl_scissor_rectf(x, y, w, h, true);
+  return 0;
+}
+
 static int spry_push_matrix(lua_State *L) {
   bool ok = renderer_push_matrix();
   return ok ? 0 : luaL_error(L, "matrix stack is full");
@@ -2420,6 +2438,7 @@ static int open_spry(lua_State *L) {
       {"scroll_wheel", spry_scroll_wheel},
 
       // draw
+      {"scissor_rect", spry_scissor_rect},
       {"push_matrix", spry_push_matrix},
       {"pop_matrix", spry_pop_matrix},
       {"translate", spry_translate},

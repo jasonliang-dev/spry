@@ -3,6 +3,7 @@
 #include "deps/stb_truetype.h"
 #include "hash_map.h"
 #include "image.h"
+#include "strings.h"
 
 struct FontRange {
   stbtt_bakedchar chars[256];
@@ -16,6 +17,7 @@ struct FontQuad {
 struct FontFamily {
   String ttf;
   HashMap<FontRange> ranges;
+  StringBuilder sb;
 };
 
 bool font_load(FontFamily *font, String filepath);

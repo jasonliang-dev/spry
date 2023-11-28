@@ -80,7 +80,7 @@ $api_reference = [
         "t" => ["table", "The table to edit options with."],
         " .win_console" => ["boolean", "Windows only. If true, use console output.", "false"],
         " .hot_reload" => ["boolean", "Enable/disable hot reloading of scripts and assets.", "true"],
-        " .startup_load_scripts" => ["boolean", "Enable/disable loading all lua scripts in the project", "true"],
+        " .startup_load_scripts" => ["boolean", "Enable/disable loading all lua scripts in the project.", "true"],
         " .fullscreen" => ["boolean", "If true, start the program in fullscreen mode.", "false"],
         " .reload_interval" => ["number", "The time in seconds to update files for hot reloading.", 0.1],
         " .swap_interval" => ["number", "Set the swap interval. Typically 1 for VSync, or 0 for no VSync.", 1],
@@ -335,6 +335,22 @@ $api_reference = [
     ],
   ],
   "Drawing" => [
+    "spry.scissor_rect" => [
+      "desc" => "Limit drawing within a rectangle.",
+      "example" => "
+        function Card:draw()
+          spry.scissor_rect(self.px, self.py, self.pw, self.ph)
+          font:draw(self.text, self.text_x, self.text_y, 24)
+        end
+      ",
+      "args" => [
+        "x" => ["number", "The top left x position of the rectangle.", 0],
+        "y" => ["number", "The top left y position of the rectangle.", 0],
+        "w" => ["number", "The width of the rectangle.", "spry.window_width()"],
+        "h" => ["number", "The height of the rectangle.", "spry.window_height()"],
+      ],
+      "return" => false,
+    ],
     "spry.push_matrix" => [
       "desc" => "Push a matrix onto the matrix transform stack.",
       "example" => "
@@ -596,15 +612,19 @@ $api_reference = [
       "return" => "number",
     ],
     "Font:draw" => [
-      "desc" => "Draw text onto the screen.",
+      "desc" => "
+        Draw text onto the screen. Returns the bottom y position of the text.
+        If `limit` is positive, words wrap by `limit` width per line.
+      ",
       "example" => "font:draw('Hello, World!', 100, 100, 30)",
       "args" => [
         "text" => ["string", "The text to draw."],
         "x" => ["number", "The x position to draw at.", 0],
         "y" => ["number", "The y position to draw at.", 0],
         "size" => ["number", "The size of the text.", 12],
+        "limit" => ["number", "Word wrap width.", -1],
       ],
-      "return" => false,
+      "return" => "number",
     ],
   ],
   "Sound" => [
@@ -1862,7 +1882,7 @@ $api_reference = [
         end
       ",
       "args" => [
-        "value" => ["any", "A boolean, number or string value."],
+        "value" => ["any", "A boolean, number, or string value."],
       ],
       "return" => "mu_Ref",
     ],
@@ -1890,7 +1910,7 @@ $api_reference = [
         end
       ",
       "args" => [
-        "value" => ["any", "A boolean, number or string value."],
+        "value" => ["any", "A boolean, number, or string value."],
       ],
       "return" => false,
     ],

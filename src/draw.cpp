@@ -2,9 +2,11 @@
 #include "algebra.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
+#include "font.h"
 #include "luax.h"
 #include "prelude.h"
 #include "profile.h"
+#include "scanner.h"
 #include "strings.h"
 #include <math.h>
 
@@ -247,36 +249,81 @@ void draw_sprite(Sprite *spr, DrawDescription *desc) {
   renderer_pop_matrix();
 }
 
-void draw_font(FontFamily *font, float size, float x, float y, String text) {
+static void draw_font_line(FontFamily *font, float size, float *start_x,
+                           float *start_y, String line) {
+  float x = *start_x;
+  float y = *start_y;
+  for (Rune r : UTF8(line)) {
+    u32 atlas = 0;
+    float xx = x;
+    float yy = y;
+    stbtt_aligned_quad q =
+        font_quad(font, &atlas, &xx, &yy, size, rune_charcode(r));
+
+    sgl_texture({atlas}, {g_renderer.sampler});
+    sgl_begin_quads();
+    renderer_push_quad(vec4(x + q.x0, y + q.y0, x + q.x1, y + q.y1),
+                       vec4(q.s0, q.t0, q.s1, q.t1));
+    sgl_end();
+
+    x = xx;
+    y = yy;
+  }
+
+  *start_y += size;
+}
+
+float draw_font(FontFamily *font, float size, float x, float y, String text) {
   PROFILE_FUNC();
 
-  float start_x = x;
   y += size;
   sgl_enable_texture();
-
   renderer_apply_color();
 
   for (String line : SplitLines(text)) {
-    for (Rune r : UTF8(line)) {
-      u32 atlas = 0;
-      float xpos = x;
-      float ypos = y;
-      stbtt_aligned_quad q =
-          font_quad(font, &atlas, &xpos, &ypos, size, rune_charcode(r));
+    draw_font_line(font, size, &x, &y, line);
+  }
 
-      sgl_texture({atlas}, {g_renderer.sampler});
-      sgl_begin_quads();
-      renderer_push_quad(vec4(x + q.x0, y + q.y0, x + q.x1, y + q.y1),
-                         vec4(q.s0, q.t0, q.s1, q.t1));
-      sgl_end();
+  return y - size;
+}
 
-      x = xpos;
-      y = ypos;
+float draw_font_wrapped(FontFamily *font, float size, float x, float y,
+                        String text, float limit) {
+  PROFILE_FUNC();
+
+  y += size;
+  sgl_enable_texture();
+  renderer_apply_color();
+
+  for (String line : SplitLines(text)) {
+    string_builder_clear(&font->sb);
+    Scanner scan = make_scanner(line);
+
+    for (String word = scan_next_string(&scan); word != "";
+         word = scan_next_string(&scan)) {
+
+      string_builder_concat(&font->sb, word);
+
+      float width = font_width(font, size, string_builder_as_string(&font->sb));
+      if (width < limit) {
+        string_builder_concat(&font->sb, " ");
+        continue;
+      }
+
+      font->sb.len -= word.len;
+      font->sb.data[font->sb.len] = '\0';
+
+      draw_font_line(font, size, &x, &y, string_builder_as_string(&font->sb));
+
+      string_builder_clear(&font->sb);
+      string_builder_concat(&font->sb, word);
+      string_builder_concat(&font->sb, " ");
     }
 
-    y += size;
-    x = start_x;
+    draw_font_line(font, size, &x, &y, string_builder_as_string(&font->sb));
   }
+
+  return y - size;
 }
 
 void draw_tilemap(const Tilemap *tm) {

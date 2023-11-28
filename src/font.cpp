@@ -19,6 +19,7 @@ bool font_load(FontFamily *font, String filepath) {
 
   FontFamily f = {};
   f.ttf = contents;
+  f.sb = string_builder_make();
   *font = f;
   return true;
 }
@@ -31,6 +32,7 @@ void font_load_default(FontFamily *font) {
 
   FontFamily f = {};
   f.ttf = contents;
+  f.sb = string_builder_make();
   *font = f;
 }
 
@@ -38,6 +40,7 @@ void font_trash(FontFamily *font) {
   for (auto [k, v] : font->ranges) {
     image_trash(&v->image);
   }
+  string_builder_trash(&font->sb);
   hashmap_trash(&font->ranges);
   mem_free(font->ttf.data);
 }
