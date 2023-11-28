@@ -1,10 +1,9 @@
 #pragma once
 
 extern "C" {
-#include "deps/lua/lua.h"
-
-#include "deps/lua/lauxlib.h"
-#include "deps/lua/lualib.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 }
 
 #include "prelude.h"

@@ -61,14 +61,9 @@ $mu_color = [
 ];
 
 $mu_ref_desc = [
-  "mu_Ref",
-  "
-    A value from
-    <a
-      class=\"blue no-underline underline-hover\"
-      href=\"#microui.ref\"
-    ><code>microui.ref</code></a>.
-  "
+  "<a class=\"blue no-underline underline-hover\" href=\"#microui.ref\">
+    mu_Ref
+  </a>",
 ];
 
 $api_reference = [
@@ -2554,13 +2549,13 @@ $api_reference = [
       "return" => "number, number",
     ],
     "dot" => [
-      "desc" => "Get the dot product of two points.",
+      "desc" => "Get the dot product of two vectors.",
       "example" => "local dp = dot(vel_x, vel_y, other_x, other_y)",
       "args" => [
-        "x0" => ["number", "The x component of a point."],
-        "y0" => ["number", "The y component of a point."],
-        "x1" => ["number", "The x component of another point."],
-        "y1" => ["number", "The y component of another point."],
+        "x0" => ["number", "The x component of a vector."],
+        "y0" => ["number", "The y component of a vector."],
+        "x1" => ["number", "The x component of another vector."],
+        "y1" => ["number", "The y component of another vector."],
       ],
       "return" => "number",
     ],
@@ -2578,8 +2573,8 @@ $api_reference = [
     ],
     "aabb_overlap" => [
       "desc" => "
-        Checks if an AABB overlaps another AABB. An AABB is defined by its top
-        left and bottom right edges.
+        Checks if an AABB overlaps another AABB. An AABB is defined by its
+        top, left, bottom, and right edges.
       ",
       "example" => "
         local overlap = aabb_overlap(
@@ -2602,7 +2597,7 @@ $api_reference = [
     "rect_overlap" => [
       "desc" => "
         Checks if a rectangle overlaps another rectangle. A rectangle is
-        defined by a point, width, and height.
+        defined by its top left point, width, and height.
       ",
       "example" => "
         local overlap = rect_overlap(b.x, b.y, b.w, b.h, spry.mouse_pos())
@@ -2903,7 +2898,7 @@ $api_reference = [
             $has_desc = false;
             $has_default = false;
             foreach ($func["args"] as $arr) {
-              if (count($arr) === 2 && $arr[1] !== "") { $has_desc = true; }
+              if (count($arr) >= 2 && $arr[1] !== "") { $has_desc = true; }
               if (count($arr) === 3) { $has_default = true; }
             }
             ?>
@@ -3015,13 +3010,6 @@ $api_reference = [
   }
 
   search.addEventListener('input', updateFunctionList)
-
-  for (const link of document.querySelectorAll('.function-link')) {
-    link.addEventListener('click', e => {
-      const detail = e.target.closest('details')
-      detail.dataset.open = 'true'
-    })
-  }
 
   document.addEventListener('keydown', e => {
     if (e.code === 'Slash' && document.activeElement !== search) {
