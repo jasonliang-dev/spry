@@ -2576,6 +2576,50 @@ $api_reference = [
       ],
       "return" => "number",
     ],
+    "aabb_overlap" => [
+      "desc" => "
+        Checks if an AABB overlaps another AABB. An AABB is defined by its top
+        left and bottom right edges.
+      ",
+      "example" => "
+        local overlap = aabb_overlap(
+          left.x0, left.y0, left.x1, left.y1,
+          right.x0, right.y0, right.x1, right.y1
+        )
+      ",
+      "args" => [
+        "ax0" => ["number", "First box's left position."],
+        "ay0" => ["number", "First box's top position."],
+        "ax1" => ["number", "First box's right position."],
+        "ay1" => ["number", "First box's bottom position."],
+        "bx0" => ["number", "Second box's left position."],
+        "by0" => ["number", "Second box's top position."],
+        "bx1" => ["number", "Second box's right position.", "bx0"],
+        "by1" => ["number", "Second box's bottom position.", "by0"],
+      ],
+      "return" => "boolean",
+    ],
+    "rect_overlap" => [
+      "desc" => "
+        Checks if a rectangle overlaps another rectangle. A rectangle is
+        defined by a point, width, and height.
+      ",
+      "example" => "
+        local overlap = rect_overlap(b.x, b.y, b.w, b.h, spry.mouse_pos())
+        local button_click = overlap and spry.mouse_click(0)
+      ",
+      "args" => [
+        "ax" => ["number", "First rectangle's x position."],
+        "ay" => ["number", "First rectangle's y position."],
+        "aw" => ["number", "First rectangle's width."],
+        "ah" => ["number", "First rectangle's height."],
+        "bx" => ["number", "Second rectangle's x position."],
+        "by" => ["number", "Second rectangle's y position."],
+        "bw" => ["number", "Second rectangle's width.", 0],
+        "bh" => ["number", "Second rectangle's height.", 0],
+      ],
+      "return" => "boolean",
+    ],
     "clone" => [
       "desc" => "Creates a new shallow copy of a table.",
       "example" => "local bullets_copy = clone(bullets)",

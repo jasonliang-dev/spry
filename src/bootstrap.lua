@@ -550,6 +550,20 @@ function random(min, max)
   return math.random() * (max - min) + min
 end
 
+function aabb_overlap(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1)
+  if bx1 == nil then bx1 = bx0 end
+  if by1 == nil then by1 = by0 end
+
+  return ax0 < bx1 and bx0 < ax1 and ay0 < by1 and by0 < ay1
+end
+
+function rect_overlap(ax, ay, aw, ah, bx, by, bw, bh)
+  if bw == nil then bw = 0 end
+  if bh == nil then bh = 0 end
+
+  return ax < (bx + bw) and bx < (ax + aw) and ay < (by + bh) and by < (ay + ah)
+end
+
 function clone(t)
   local tab = {}
   for k, v in pairs(t) do
