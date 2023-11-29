@@ -1417,6 +1417,8 @@ $api_reference = [
       "desc" => "
         LuaSocket module.
         Visit https://lunarmodules.github.io/luasocket/introduction.html for details.
+
+        This module is not available for web builds.
       ",
       "example" => "
         local socket = require 'socket'
