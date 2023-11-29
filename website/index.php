@@ -32,6 +32,11 @@ $pages = [
     "title" => "Hot Reloading",
   ],
   [
+    "path" => "debugging",
+    "file" => "pages/guide.php",
+    "title" => "Debugging",
+  ],
+  [
     "path" => "distribution",
     "file" => "pages/guide.php",
     "title" => "Distribution",

@@ -1,4 +1,4 @@
-## Hot Reloading
+# Hot Reloading
 
 Spry has the ablity to hot reload recently changed Lua scripts, Aseprite
 files, LDtk files, and images. While Spry is running, you can update a file

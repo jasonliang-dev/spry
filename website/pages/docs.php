@@ -68,17 +68,60 @@ $mu_ref_desc = [
 
 $api_reference = [
   "Callback Functions" => [
+    "spry.arg" => [
+      "desc" => "
+        Define this callback function to read command line arguments before
+        anything else runs.
+
+        You should return a table with `console` as the key, and a boolean
+        result as the value. This enables/disables the console output on
+        Windows. If the value of `console` is false, The value of
+        `win_console` in `spry.conf` is used instead.
+      ",
+      "example" => "
+        function spry.arg(arg)
+          local usage = false
+          local console = false
+
+          for _, a in ipairs(arg) do
+            if a == '--help' or a == '-h' then
+              usage = true
+            elseif a == '--console' then
+              console = true
+            end
+          end
+
+          if usage then
+            local str = ([[usage:
+          %s [command...]
+        commands:
+          --help, -h  show help
+          --console   use console output
+        ]]):format(spry.program_path())
+
+            print(str)
+            os.exit()
+          end
+
+          return { console = console }
+        end
+      ",
+      "args" => [
+        "arg" => ["table", "Command line arguments."],
+      ],
+      "return" => "table",
+    ],
     "spry.conf" => [
       "desc" => "Define this callback function to configure various program options.",
       "example" => "
         function spry.conf(t)
-          t.window_width = 800
-          t.window_height = 600
+          t.window_width = 1280
+          t.window_height = 720
         end
       ",
       "args" => [
         "t" => ["table", "The table to edit options with."],
-        " .win_console" => ["boolean", "Windows only. If true, use console output.", "false"],
+        " .win_console" => ["boolean", "Windows only. Use console output.", "false"],
         " .hot_reload" => ["boolean", "Enable/disable hot reloading of scripts and assets.", "true"],
         " .startup_load_scripts" => ["boolean", "Enable/disable loading all lua scripts in the project.", "true"],
         " .fullscreen" => ["boolean", "If true, start the program in fullscreen mode.", "false"],
@@ -97,12 +140,18 @@ $api_reference = [
         loading assets, or creating objects.
       ",
       "example" => "
-        function spry.start()
+        function spry.start(arg)
+          if os.getenv 'LOCAL_LUA_DEBUGGER_VSCODE' == '1' then
+            unsafe_require('lldebugger').start()
+          end
+
           img = spry.image_load 'tile.png'
           font = spry.font_load 'roboto.ttf'
         end
       ",
-      "args" => [],
+      "args" => [
+        "arg" => ["table", "Command line arguments."],
+      ],
       "return" => false,
     ],
     "spry.frame" => [
@@ -1361,6 +1410,23 @@ $api_reference = [
       "example" => "print(fixture:udata())",
       "args" => [],
       "return" => "string | number",
+    ],
+  ],
+  "LuaSocket" => [
+    "require('socket')" => [
+      "desc" => "
+        LuaSocket module.
+        Visit https://lunarmodules.github.io/luasocket/introduction.html for details.
+      ",
+      "example" => "
+        local socket = require 'socket'
+
+        function spry.start()
+          sock = socket.udp()
+          sock:setpeername('127.0.0.1', 3000)
+          sock:send 'Hello from client to server'
+        end
+      "
     ],
   ],
   "microui" => [
@@ -2825,8 +2891,20 @@ $api_reference = [
     style="transition: transform 200ms; width: 70%; max-width: 300px; top: <?= NAV_HEIGHT ?>"
     :class="open ? '' : 'translate-x-n120px'"
   >
-    <div class="top-0 bg-fade-down z-5" style="position: sticky">
-      <form onsubmit="event.preventDefault()" class="flex items-center pt3 pb3">
+    <div class="top-0 bg-fade-down z-5 pb3" style="position: sticky">
+      <button
+        x-data="{ expand: false }"
+        class="bn pointer f6 fw6 dark-gray dm-silver bg-none underline-hover pt3 pb1 ph1"
+        @click="
+          expand = !expand
+          for (const detail of details) {
+            detail.open = expand
+            detail.dataset.open = expand
+          }
+        "
+        x-text="expand ? 'Collapse all' : 'Expand all'"
+      >Expand all</button>
+      <form onsubmit="event.preventDefault()" class="flex items-center pt1">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px; margin-bottom: 1px" class="gray absolute ml2">
           <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
         </svg>
@@ -2840,18 +2918,6 @@ $api_reference = [
         />
       </form>
     </div>
-    <button
-      x-data="{ expand: false }"
-      class="bn pointer f6 fw6 dark-gray dm-silver mb3 bg-none underline-hover"
-      @click="
-        expand = !expand
-        for (const detail of details) {
-          detail.open = expand
-          detail.dataset.open = expand
-        }
-      "
-      x-text="expand ? 'Collapse all' : 'Expand all'"
-    >Expand all</button>
     <ul id="function-list" class="list pl1" style="margin-top: -1rem">
       <?php foreach ($api_reference as $header => $section): ?>
         <li class="mt3">

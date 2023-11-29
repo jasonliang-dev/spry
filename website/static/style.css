@@ -166,11 +166,11 @@ summary::marker {
 }
 
 .bg-fade-down {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #f4f4f4 50%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #f4f4f4 20%);
 }
 
 .dark-mode .bg-fade-down {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #111111 50%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, #111111 20%);
 }
 
 .placeholder::placeholder {
