@@ -55,6 +55,41 @@ spry examples/jump
 spry examples/boxes
 ```
 
+## Building from source
+
+Requires CMake and one of the following C/C++ compilers depending on the
+platform:
+
+- Visual Studio for Windows
+- Clang for Linux
+- Emscripten for web browsers
+
+Other compilers might work, but they haven't been tested.
+
+In the command line:
+
+```sh
+mkdir build
+cd build
+cmake .. # This command probably looks different
+cmake --build .
+```
+
+The first `cmake` command might need extra flags depending on the environment.
+For example, the command below generates a release build for a Linux machine
+that has both `gcc` and `clang` installed, since CMake would likely choose
+`gcc` over `clang`:
+
+```sh
+cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Release ..
+```
+
+This command should be used when building for web browsers:
+
+```sh
+emcmake cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+
 ## Shoutouts
 
 Special thanks to:
