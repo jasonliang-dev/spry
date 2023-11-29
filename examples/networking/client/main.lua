@@ -7,7 +7,7 @@ end
 function spry.start(arg)
   udp = socket.udp()
   udp:settimeout(0)
-  udp:setpeername("localhost", 4242)
+  udp:setpeername("127.0.0.1", 4242)
 
   my_id = os.time()
   entity = {
