@@ -8,7 +8,7 @@
 #include "font.h"
 #include "sound.h"
 
-#define SPRY_VERSION "0.7"
+#define SPRY_VERSION "0.8"
 
 struct AppTime {
   u64 last;
