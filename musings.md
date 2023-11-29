@@ -8,9 +8,10 @@ Some random text.
   - If compiled online, how in the name of heck would I do this? Just write
     multiple versions per backend?
   - If compiled offline, just use `sokol-shdc`? But how would uniforms work?
-- Networking
-  - HTTP? UDP with enet? LuaSocket?
-- MobDebug (requires LuaSocket)
+- Async file loading
+  - Promises? Threads/channels? Callbacks? A combination of the three?
+- Android support
+- Add debugger breakpoints on error. Is it even possible?
 
 ## `defer` and RAII
 
