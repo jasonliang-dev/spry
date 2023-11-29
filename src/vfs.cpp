@@ -353,7 +353,7 @@ MountResult vfs_mount(const char *filepath) {
   if (filepath == nullptr) {
     String path = os_program_path();
 
-#ifdef DEBUG
+#ifndef NDEBUG
     printf("program path: %s\n", path.data);
 #endif
 

@@ -22,9 +22,6 @@ extern "C" {
 #if defined(_WIN32)
 #define SOKOL_D3D11
 #define SOKOL_WIN32_FORCE_MAIN
-#ifdef DEBUG
-#define SOKOL_DEBUG
-#endif
 #elif defined(__linux__)
 #define SOKOL_GLCORE33
 #elif defined(__EMSCRIPTEN__)

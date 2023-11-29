@@ -5,8 +5,6 @@ set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_definitions(-DDEBUG)
-
 set(BOX2D
   src/deps/box2d/collision/b2_broad_phase.cpp
   src/deps/box2d/collision/b2_chain_shape.cpp
@@ -71,14 +69,16 @@ set(LUASOCKET
   src/deps/luasocket/udp.c
 )
 
-if (WIN32)
+if(EMSCRIPTEN)
+  set(LIBS -lpthread -sASYNCIFY -sNO_DISABLE_EXCEPTION_CATCHING -sALLOW_MEMORY_GROWTH -sUSE_WEBGL2)
+
+elseif(WIN32)
   set(LUASOCKET
     ${LUASOCKET}
     src/deps/luasocket/wsocket.c
   )
-endif()
 
-if (UNIX)
+elseif(UNIX)
   set(LUASOCKET
     ${LUASOCKET}
     src/deps/luasocket/serial.c

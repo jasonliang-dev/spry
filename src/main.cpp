@@ -109,7 +109,7 @@ static void init() {
 
   assets_start_hot_reload();
 
-#ifdef DEBUG
+#ifndef NDEBUG
   printf("end of init\n");
 #endif
 }
@@ -367,7 +367,7 @@ static void cleanup() {
   profile_shutdown();
 #endif
 
-#ifdef DEBUG
+#ifndef NDEBUG
   DebugAllocator *allocator = dynamic_cast<DebugAllocator *>(g_allocator);
   if (allocator != nullptr) {
     i32 allocs = 0;
@@ -386,7 +386,7 @@ static void cleanup() {
 
   mutex_trash(&g_init_mtx);
 
-#ifdef DEBUG
+#ifndef NDEBUG
   printf("bye\n");
 #endif
 }
@@ -459,7 +459,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   mutex_lock(&g_init_mtx);
   defer(mutex_unlock(&g_init_mtx));
 
-#ifdef DEBUG
+#ifndef NDEBUG
   g_allocator = new DebugAllocator();
 #else
   g_allocator = new HeapAllocator();
@@ -579,7 +579,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   sapp.swap_interval = (i32)swap_interval;
   sapp.fullscreen = fullscreen;
 
-#ifdef DEBUG
+#ifndef NDEBUG
   printf("debug build\n");
 #endif
   return sapp;
