@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.12...3.27)
-project(Spry LANGUAGES C CXX)
+project(spry LANGUAGES C CXX)
 
-set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -70,13 +69,13 @@ set(LUASOCKET
 )
 
 if(EMSCRIPTEN)
-  set(LIBS -lpthread -sASYNCIFY -sNO_DISABLE_EXCEPTION_CATCHING -sALLOW_MEMORY_GROWTH -sUSE_WEBGL2)
+  set(LUASOCKET)
+  add_compile_definitions(LUA_USE_LONGJMP LUA_USE_POSIX)
+  set(CFLAGS -fno-exceptions)
+  set(LFLAGS -lpthread -sASYNCIFY -sALLOW_MEMORY_GROWTH -sUSE_WEBGL2)
 
 elseif(WIN32)
-  set(LUASOCKET
-    ${LUASOCKET}
-    src/deps/luasocket/wsocket.c
-  )
+  set(LUASOCKET ${LUASOCKET} src/deps/luasocket/wsocket.c)
 
 elseif(UNIX)
   set(LUASOCKET
@@ -87,20 +86,12 @@ elseif(UNIX)
     src/deps/luasocket/unixstream.c
     src/deps/luasocket/usocket.c
   )
+  add_compile_definitions(LUA_USE_LINUX)
+  set(LFLAGS -lX11 -lXi -lXcursor -lasound -lGL -ldl -lpthread -lm)
 endif()
 
-file(GLOB SOURCES CONFIGURE_DEPENDS
-  src/*.cpp
-  src/*.h
-)
-
-add_executable(${PROJECT_NAME}
-  ${SOURCES}
-  ${BOX2D}
-  ${LUASOCKET}
-)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-  src/deps/box2d
-  src/deps/lua
-)
+file(GLOB SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.h)
+add_executable(${PROJECT_NAME} ${SOURCES} ${BOX2D} ${LUASOCKET})
+target_include_directories(${PROJECT_NAME} PRIVATE src/deps/box2d src/deps/lua)
+target_compile_options(${PROJECT_NAME} PRIVATE ${CFLAGS})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LFLAGS})

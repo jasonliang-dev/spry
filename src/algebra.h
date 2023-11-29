@@ -62,7 +62,7 @@ inline Vector4 vec4_mul_mat4(Vector4 v, Matrix4 m) {
   return out;
 #else
   Vector4 out = {};
-  for (i32 i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     out.x += v.arr[i] * m.cols[i][0];
     out.y += v.arr[i] * m.cols[i][1];
     out.z += v.arr[i] * m.cols[i][2];

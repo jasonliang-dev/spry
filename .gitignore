@@ -11,7 +11,13 @@ spry
 ignore
 dist
 *.data
+
 /spry.wasm
 /spry.js
-/profile.json
+/*.zip
+/*.json
 /build
+/debug
+/release
+/emdebug
+/emrelease

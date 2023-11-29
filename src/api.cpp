@@ -7,16 +7,6 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "draw.h"
-#include "embed/ltn12_compressed.h"
-#include "embed/mbox_compressed.h"
-#include "embed/mime_compressed.h"
-#include "embed/socket_compressed.h"
-#include "embed/socket_ftp_compressed.h"
-#include "embed/socket_headers_compressed.h"
-#include "embed/socket_http_compressed.h"
-#include "embed/socket_smtp_compressed.h"
-#include "embed/socket_tp_compressed.h"
-#include "embed/socket_url_compressed.h"
 #include "font.h"
 #include "image.h"
 #include "luax.h"
@@ -30,6 +20,19 @@
 #include "stb_decompress.h"
 #include "tilemap.h"
 #include <box2d/box2d.h>
+
+#ifndef IS_HTML5
+#include "embed/ltn12_compressed.h"
+#include "embed/mbox_compressed.h"
+#include "embed/mime_compressed.h"
+#include "embed/socket_compressed.h"
+#include "embed/socket_ftp_compressed.h"
+#include "embed/socket_headers_compressed.h"
+#include "embed/socket_http_compressed.h"
+#include "embed/socket_smtp_compressed.h"
+#include "embed/socket_tp_compressed.h"
+#include "embed/socket_url_compressed.h"
+#endif
 
 extern "C" {
 #include "deps/luasocket/luasocket.h"
@@ -140,7 +143,8 @@ static int mt_font_draw(lua_State *L) {
   if (wrap < 0) {
     bottom = draw_font(font, (u64)size, (float)x, (float)y, text);
   } else {
-    bottom = draw_font_wrapped(font, (u64)size, (float)x, (float)y, text, (float)wrap);
+    bottom = draw_font_wrapped(font, (u64)size, (float)x, (float)y, text,
+                               (float)wrap);
   }
 
   lua_pushnumber(L, bottom);
@@ -2503,6 +2507,9 @@ static void package_preload(lua_State *L, const char *name,
   lua_pop(L, 2);
 }
 
+#ifdef IS_HTML5
+void open_luasocket(lua_State *L) {}
+#else
 #define LUAOPEN_EMBED_DATA(func, name, compressed_data, compressed_size)       \
   static int func(lua_State *L) {                                              \
     i32 top = lua_gettop(L);                                                   \
@@ -2569,3 +2576,4 @@ void open_luasocket(lua_State *L) {
   package_preload(L, "socket.tp", open_embed_socket_tp);
   package_preload(L, "socket.url", open_embed_socket_url);
 }
+#endif // IS_HTML5
