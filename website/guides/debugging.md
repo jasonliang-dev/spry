@@ -5,12 +5,11 @@ variables, and step through your Lua code.
 
 ## With VS Code
 
-![Debugging with VS Code](/static/assets/debug-vscode.png)
+![Debugging with VS Code](static/assets/debug-vscode.png)
 
 Install [Local Lua Debugger](https://marketplace.visualstudio.com/items?itemName=tomblind.local-lua-debugger-vscode)
-from the Visual Studio Code Marketplace. Then in the project directory, create
-a new `.vscode/launch.json` file, changing the command to the actual location
-of the Spry executable:
+from the Visual Studio Code Marketplace. In the project directory, create
+a new `.vscode/launch.json` file:
 
 ```json
 {
@@ -29,7 +28,8 @@ of the Spry executable:
 }
 ```
 
-Add the following to the top of `spry.start`:
+Change the command as needed, then add the following to the top of
+`spry.start`:
 
 ```lua
 function spry.start()
@@ -42,7 +42,7 @@ end
 
 ## With ZeroBrane Studio
 
-![Debugging with ZeroBrane](/static/assets/debug-zerobrane.png)
+![Debugging with ZeroBrane](static/assets/debug-zerobrane.png)
 
 In ZeroBrane's installation directory, find the `interpreters` directory and
 add a new file called `spry.lua`:
@@ -89,7 +89,7 @@ return {
       rundebug and ' -mobdebug' or ''
     )
 
-    return CommandLineRun(cmd, projdir, true, true, nil, nil, nil)
+    return CommandLineRun(cmd, projdir, true, true)
   end,
   hasdebugger = true,
   scratchextloop = true,
