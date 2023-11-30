@@ -10,12 +10,12 @@
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
     <meta name="author" content="Jason Liang">
-    <meta name="og:title" content="Jump | Spry">
+    <meta name="og:title" content="Debugging | Spry">
     <meta name="og:site_name" content="Spry">
     <meta name="og:url" content="https://jasonliang.js.org/spry/">
     <meta name="og:description" content="Spry is a delightfully small 2D game framework made for rapid prototyping and game jams. Inspired by LÖVE.">
     <meta name="og:type" content="website">
-    <title>Jump | Spry</title>
+    <title>Debugging | Spry</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -163,50 +163,106 @@
       </div>
     </div>
     <div style="margin-top: 3.5rem">
-      <div class="flex flex-column items-center center" style="width: 500px">
-  <div class="prose w-100">
-    <h1>Jump</h1>
-    <ul>
-<li><code>A</code> and <code>D</code> to move left/right</li>
-<li><code>M</code> to unmute sound.</li>
-</ul>
-<p><strong>Volume warning:</strong> The music can be loud!</p>  </div>
-  <canvas
-    oncontextmenu="event.preventDefault()"
-    id="canvas"
-    tabindex="-1"
-    class="shadow ba b--black-10 dm-b--white-10 br3"
-    style="width: 500px; height: 700px"
-  ></canvas>
-  <div class="mt3 flex justify-between w-100">
-    <a class="blue link underline-hover inline-flex items-center" href="index.html">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-      </svg>
-      <span class="ml2">
-        Back to home
-      </span>
-    </a>
-    <a class="blue link underline-hover inline-flex items-center" href="https://github.com/jasonliang-dev/spry/tree/master/examples/jump">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-      </svg>
-      <span class="ml2">
-        View source code
-      </span>
-    </a>
-  </div>
-</div>
-<script type="text/javascript">
-  var canvas = document.getElementById('canvas')
-  var Module = {
-    canvas,
-    _ma_device__on_notification_unlocked() {},
-  }
-  var spryMount = 'static/demos/jump.zip'
-</script>
-<script src="static/demos/spry.js" type="text/javascript"></script>
-  <footer class="flex flex-wrap center mv5 mw7">
+          <article class="mw7 center prose pt3">
+      <h1>Debugging</h1>
+<p>Using a debugger with your Spry project allows you to set breakpoints, watch
+variables, and step through your Lua code.</p>
+<h2>With VS Code</h2>
+<p><img src="/static/assets/debug-vscode.png" alt="Debugging with VS Code" /></p>
+<p>Install <a href="https://marketplace.visualstudio.com/items?itemName=tomblind.local-lua-debugger-vscode">Local Lua Debugger</a>
+from the Visual Studio Code Marketplace. Then in the project directory, create
+a new <code>.vscode/launch.json</code> file, changing the command to the actual location
+of the Spry executable:</p>
+<pre><code class="language-json">{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Spry",
+      "type": "lua-local",
+      "request": "launch",
+      "program": {
+        "command": "C:\\path\\to\\spry.exe"
+      },
+      "args": [ "${workspaceFolder}" ]
+    }
+  ]
+}</code></pre>
+<p>Add the following to the top of <code>spry.start</code>:</p>
+<pre><code class="language-lua">function spry.start()
+  if os.getenv "LOCAL_LUA_DEBUGGER_VSCODE" == "1" then
+    unsafe_require("lldebugger").start()
+  end
+  -- rest of spry.start...
+end</code></pre>
+<h2>With ZeroBrane Studio</h2>
+<p><img src="/static/assets/debug-zerobrane.png" alt="Debugging with ZeroBrane" /></p>
+<p>In ZeroBrane's installation directory, find the <code>interpreters</code> directory and
+add a new file called <code>spry.lua</code>:</p>
+<pre><code class="language-lua">local spry = [[C:\path\to\spry.exe]]
+
+return {
+  name = "Spry",
+  description = "Spry framework",
+  api = {"baselib", ""},
+  luaversion = "5.4",
+  frun = function(self, wfilename, rundebug)
+    local projdir = self:fworkdir(wfilename)
+
+    local main = 'main.lua'
+    if not GetFullPathIfExists(projdir, main) then
+      local altpath = wfilename:GetPath(wx.wxPATH_GET_VOLUME)
+      local altname = GetFullPathIfExists(altpath, main)
+      if altname and wx.wxMessageBox(
+          ("Can't find '%s' file in the current project folder.\n"
+           .."Would you like to switch the project directory to '%s'?"):format(main, altpath),
+          "Spry",
+          wx.wxYES_NO + wx.wxCENTRE, ide:GetMainFrame()) == wx.wxYES then
+        ide:SetProject(altpath)
+        ide:ActivateFile(altname)
+        projdir = altpath
+      else
+        ide:Print(("Can't find '%s' file in the current project folder: '%s'.")
+          :format(main, projdir))
+        return
+      end
+    end
+
+    if rundebug then
+      ide:GetDebugger():SetOptions({runstart = ide.config.debugger.runonstart ~= false})
+    end
+
+    local params = self:GetCommandLineArg()
+    local cmd = ('"%s" "%s"%s%s'):format(
+      spry,
+      projdir,
+      params and " " .. params or "",
+      rundebug and ' -mobdebug' or ''
+    )
+
+    return CommandLineRun(cmd, projdir, true, true, nil, nil, nil)
+  end,
+  hasdebugger = true,
+  scratchextloop = true,
+  takeparameters = true,
+}</code></pre>
+<p>Change the <code>spry</code> variable as needed, then add the following to the top of
+<code>spry.start</code>:</p>
+<pre><code class="language-lua">function spry.start(arg)
+  if arg[#arg] == "-mobdebug" then
+    unsafe_require("mobdebug").start()
+  end
+  -- rest of spry.start...
+end</code></pre>
+<p>Add the <code>arg</code> parameter to <code>spry.start</code> if it isn't there already.</p>
+<h2>About <code>unsafe_require</code></h2>
+<p>Spry has the ability to read game data from a zip archive. The <code>require</code>
+function was changed to read files within the mounted directory or archive.</p>
+<p><code>unsafe_require</code> is the <code>require</code> function that you would find in standard
+Lua, which has the ability to load files outside of the virtual file system.
+The <code>LUA_PATH</code> environment variable is one of things <code>unsafe_require</code> uses as
+part of its search. Both Local Lua Debugger and ZeroBrane change <code>LUA_PATH</code>
+to make their debug modules visible.</p>    </article>
+      <footer class="flex flex-wrap center mv5 mw7">
     <div class="w-100 mr-auto pv3 w-auto-ns silver dm-mid-gray">
       &copy; 2023 Jason Liang
     </div>
