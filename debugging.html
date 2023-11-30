@@ -170,9 +170,8 @@ variables, and step through your Lua code.</p>
 <h2>With VS Code</h2>
 <p><img src="static/assets/debug-vscode.png" alt="Debugging with VS Code" /></p>
 <p>Install <a href="https://marketplace.visualstudio.com/items?itemName=tomblind.local-lua-debugger-vscode">Local Lua Debugger</a>
-from the Visual Studio Code Marketplace. Then in the project directory, create
-a new <code>.vscode/launch.json</code> file, changing the command to the actual location
-of the Spry executable:</p>
+from the Visual Studio Code Marketplace. In the project directory, create
+a new <code>.vscode/launch.json</code> file:</p>
 <pre><code class="language-json">{
   "version": "0.2.0",
   "configurations": [
@@ -187,7 +186,8 @@ of the Spry executable:</p>
     }
   ]
 }</code></pre>
-<p>Add the following to the top of <code>spry.start</code>:</p>
+<p>Change the command as needed, then add the following to the top of
+<code>spry.start</code>:</p>
 <pre><code class="language-lua">function spry.start()
   if os.getenv "LOCAL_LUA_DEBUGGER_VSCODE" == "1" then
     unsafe_require("lldebugger").start()
