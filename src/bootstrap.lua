@@ -469,7 +469,8 @@ end
 -- utility functions
 
 local function _stringify(value, visited, indent)
-  if type(value) == "table" then
+  local T = type(value)
+  if T == "table" then
     local mt = getmetatable(value)
     if mt ~= nil and rawget(mt, "__tostring") then
       return tostring(value)
@@ -485,6 +486,8 @@ local function _stringify(value, visited, indent)
     end
 
     return s .. string.rep(" ", indent) .. "}"
+  elseif T == "string" then
+    return "'" .. value .. "'"
   else
     return tostring(value)
   end
