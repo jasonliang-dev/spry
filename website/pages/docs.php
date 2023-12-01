@@ -1698,8 +1698,8 @@ $api_reference = [
     "microui.button" => [
       "args" => [
         "text" => ["string"],
-        "icon" => ["number", "", 0],
-        "opt" => ["number", "", "microui.OPT_ALIGNCENTER"],
+        "icon" => ["number", false, 0],
+        "opt" => ["number", false, "microui.OPT_ALIGNCENTER"],
       ],
       "return" => "boolean",
     ],
@@ -1714,14 +1714,14 @@ $api_reference = [
       "args" => array_merge(
         [ "ref" => $mu_ref_desc, "id" => ["number"] ],
         $mu_rect,
-        [ "opt" => ["number", "", 0] ]
+        [ "opt" => ["number", false, 0] ]
       ),
       "return" => "number",
     ],
     "microui.textbox" => [
       "args" => [
         "ref" => $mu_ref_desc,
-        "opt" => ["number", "", 0],
+        "opt" => ["number", false, 0],
       ],
       "return" => "number",
     ],
@@ -1730,9 +1730,9 @@ $api_reference = [
         "ref" => $mu_ref_desc,
         "low" => ["number"],
         "high" => ["number"],
-        "step" => ["number", "", 0],
-        "fmt" => ["string", "", "microui.SLIDER_FMT"],
-        "opt" => ["number", "", "microui.OPT_ALIGNCENTER"],
+        "step" => ["number", false, 0],
+        "fmt" => ["string", false, "microui.SLIDER_FMT"],
+        "opt" => ["number", false, "microui.OPT_ALIGNCENTER"],
       ],
       "return" => "number",
     ],
@@ -1740,29 +1740,29 @@ $api_reference = [
       "args" => [
         "ref" => $mu_ref_desc,
         "step" => ["number"],
-        "fmt" => ["string", "", "microui.SLIDER_FMT"],
-        "opt" => ["number", "", "microui.OPT_ALIGNCENTER"],
+        "fmt" => ["string", false, "microui.SLIDER_FMT"],
+        "opt" => ["number", false, "microui.OPT_ALIGNCENTER"],
       ],
       "return" => "number",
     ],
     "microui.header" => [
       "args" => [
         "text" => ["string"],
-        "opt" => ["number", "", 0],
+        "opt" => ["number", false, 0],
       ],
       "return" => "boolean",
     ],
     "microui.header" => [
       "args" => [
         "text" => ["string"],
-        "opt" => ["number", "", 0],
+        "opt" => ["number", false, 0],
       ],
       "return" => "boolean",
     ],
     "microui.begin_treenode" => [
       "args" => [
         "label" => ["string"],
-        "opt" => ["number", "", 0],
+        "opt" => ["number", false, 0],
       ],
       "return" => "boolean",
     ],
@@ -1774,7 +1774,7 @@ $api_reference = [
       "args" => array_merge(
         [ "title" => ["string"] ],
         $mu_rect,
-        [ "opt" => ["number", "", 0] ]
+        [ "opt" => ["number", false, 0] ]
       ),
       "return" => "boolean",
     ],
@@ -1801,7 +1801,7 @@ $api_reference = [
     "microui.begin_panel" => [
       "args" => [
         "name" => ["string"],
-        "opt" => ["number", "", 0],
+        "opt" => ["number", false, 0],
       ],
       "return" => false,
     ],
@@ -3059,11 +3059,13 @@ $api_reference = [
           <?php endif ?>
           <?php if (isset($func["args"]) && count($func["args"]) > 0): ?>
             <?php
+            $has_type = false;
             $has_desc = false;
             $has_default = false;
             foreach ($func["args"] as $arr) {
-              if (count($arr) >= 2 && $arr[1] !== "") { $has_desc = true; }
-              if (count($arr) === 3) { $has_default = true; }
+              if (count($arr) >= 1 && $arr[0] !== false) { $has_type = true; }
+              if (count($arr) >= 2 && $arr[1] !== false) { $has_desc = true; }
+              if (count($arr) >= 3 && $arr[2] !== false) { $has_default = true; }
             }
             ?>
             <h4 class="mid-gray dm-moon-gray mt3 mb2">Arguments</h4>
@@ -3073,7 +3075,9 @@ $api_reference = [
                   <tbody>
                     <tr class="bg-black-10 dm-bg-white-10 f6 black-70 dm-white-80">
                       <th class="tl pv2 ph3 fw6">Name</th>
-                      <th class="tl pv2 ph3 fw6">Type</th>
+                      <?php if ($has_type): ?>
+                        <th class="tl pv2 ph3 fw6">Type</th>
+                      <?php endif ?>
                       <?php if ($has_default): ?>
                         <th class="tl pv2 ph3 fw6">Default</th>
                       <?php endif ?>
@@ -3083,19 +3087,21 @@ $api_reference = [
                     </tr>
                     <?php foreach ($func["args"] as $arg_name => $arg): ?>
                       <?php
-                      $type = $arg[0];
-                      $desc = $arg[1] ?? "";
+                      $type = $arg[0] ?? false;
+                      $desc = $arg[1] ?? false;
                       $default = $arg[2] ?? false;
                       ?>
                       <tr>
                         <td class="pv2 ph3 pre overflow-hidden"><code><?= $arg_name ?></code></td>
-                        <td class="pv2 ph3">
-                          <?php if ($type): ?>
-                            <code><?= $type ?></code>
-                          <?php else: ?>
-                            <span class="i gray">N/A</span>
-                          <?php endif ?>
-                        </td>
+                        <?php if ($has_type): ?>
+                          <td class="pv2 ph3">
+                            <?php if ($type): ?>
+                              <code><?= $type ?></code>
+                            <?php else: ?>
+                              <span class="i gray">N/A</span>
+                            <?php endif ?>
+                          </td>
+                        <?php endif ?>
                         <?php if ($has_default): ?>
                           <td class="pv2 ph3">
                             <?php if ($default !== false): ?>
