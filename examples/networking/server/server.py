@@ -12,19 +12,26 @@ print("listening on port 4242")
 state = {}
 connections = {}
 
+cmd = {}
+
+def add_cmd(name):
+  def decor(fn):
+    cmd[name] = fn
+    def handle(*args, **kwargs):
+      fn(*args, **kwargs)
+    return handle
+  return decor
+
+@add_cmd("entity")
 def entity(ident, data, addr):
   x, y = re.search(r"(\S*) (.*)", data).groups()
   state[ident] = (x, y)
 
+@add_cmd("ping")
 def ping(ident, data, addr):
   arr = [f"[{k}]={{x={v[0]},y={v[1]}}}" for k, v in state.items()]
   payload = "state {" + ",".join(arr) + "}"
   udp.sendto(payload.encode(), addr)
-
-cmd = {
-  "entity": entity,
-  "ping": ping,
-}
 
 while True:
   while True:
