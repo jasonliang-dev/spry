@@ -19,6 +19,10 @@
 #include "sync.h"
 #include "vfs.h"
 
+extern "C" {
+#include <lualib.h>
+}
+
 static Mutex g_init_mtx;
 static sgl_pipeline g_pipeline;
 

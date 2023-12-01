@@ -125,10 +125,13 @@ template <typename T> bool hashmap_index(HashMap<T> *map, u64 key, T **value) {
 
   u64 index = hashmap_find_entry(map, key);
   bool exists = map->kinds[index] == HashMapKind_Some;
+  if (!exists) {
+    map->values[index] = {};
+  }
+
   if (map->kinds[index] == HashMapKind_None) {
     map->load++;
     map->keys[index] = key;
-    map->values[index] = {};
     map->kinds[index] = HashMapKind_Some;
   }
 

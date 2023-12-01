@@ -68,3 +68,4 @@ void json_print(JSON *json);
 
 struct lua_State;
 void json_to_lua(lua_State *L, JSON *json);
+void lua_to_json_string(lua_State *L, i32 arg, String *contents, String *err);

@@ -204,6 +204,12 @@ void string_builder_reserve(StringBuilder *sb, u64 capacity) {
   }
 }
 
+void string_builder_concat(StringBuilder *sb, String str, i32 times) {
+  for (i32 i = 0; i < times; i++) {
+    *sb << str;
+  }
+}
+
 StringBuilder &operator<<(StringBuilder &sb, String str) {
   u64 desired = sb.len + str.len + 1;
   u64 capacity = sb.capacity;

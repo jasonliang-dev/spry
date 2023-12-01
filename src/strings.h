@@ -59,12 +59,13 @@ void string_builder_reserve(StringBuilder *sb, u64 capacity);
 void string_builder_clear(StringBuilder *sb);
 void string_builder_swap_filename(StringBuilder *sb, String filepath,
                                   String file);
+void string_builder_concat(StringBuilder *sb, String str, i32 times);
 
 StringBuilder &operator<<(StringBuilder &sb, String str);
 
 #define BUILD_STRING(sbuilder)                                                 \
-    StringBuilder sbuilder = string_builder_make();                            \
-    defer(string_builder_trash(&sbuilder));                                    \
+  StringBuilder sbuilder = string_builder_make();                              \
+  defer(string_builder_trash(&sbuilder));
 
 FORMAT_ARGS(1) String str_fmt(const char *fmt, ...);
 FORMAT_ARGS(1) String tmp_fmt(const char *fmt, ...);

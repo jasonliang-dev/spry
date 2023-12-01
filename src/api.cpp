@@ -1,5 +1,6 @@
 #include "api.h"
 #include "app.h"
+#include "array.h"
 #include "assets.h"
 #include "atlas.h"
 #include "deps/microui.h"
@@ -549,12 +550,10 @@ static int mt_tilemap_make_collision(lua_State *L) {
   Array<TilemapInt> walls = {};
   defer(array_trash(&walls));
 
-  lua_Unsigned n = lua_rawlen(L, 4);
-  for (u32 i = 1; i <= n; i++) {
-    lua_rawgeti(L, 4, i);
+  array_reserve(&walls, luax_len(L, 4));
+  for (lua_pushnil(L); lua_next(L, -2); lua_pop(L, 1)) {
     lua_Number tile = luaL_checknumber(L, -1);
     array_push(&walls, (TilemapInt)tile);
-    lua_pop(L, 1);
   }
 
   tilemap_make_collision(&asset.tilemap, physics->world, physics->meter, name,
@@ -586,9 +585,8 @@ static int mt_tilemap_make_graph(lua_State *L) {
   defer(array_trash(&costs));
 
   lua_pushvalue(L, 3);
-  lua_pushnil(L);
 
-  while (lua_next(L, -2)) {
+  for (lua_pushnil(L); lua_next(L, -2); lua_pop(L, 1)) {
     lua_Number value = luaL_checknumber(L, -1);
     lua_Number key = luaL_checknumber(L, -2);
 
@@ -597,7 +595,6 @@ static int mt_tilemap_make_graph(lua_State *L) {
     cost.value = (float)value;
 
     array_push(&costs, cost);
-    lua_pop(L, 1);
   }
   lua_pop(L, 1);
 
@@ -1440,13 +1437,13 @@ static int mui_layout_row(lua_State *L) {
 
   i32 widths[MU_MAX_WIDTHS] = {};
 
-  lua_Unsigned n = lua_rawlen(L, 1);
+  lua_Integer n = luax_len(L, 1);
   if (n > MU_MAX_WIDTHS) {
     n = MU_MAX_WIDTHS;
   }
 
-  for (u32 i = 0; i < n; i++) {
-    lua_rawgeti(L, 1, i + 1);
+  for (i32 i = 0; i < n; i++) {
+    luax_geti(L, 1, i + 1);
     widths[i] = luaL_checknumber(L, -1);
     lua_pop(L, 1);
   }
@@ -1974,6 +1971,23 @@ static int spry_json_read(lua_State *L) {
   return 1;
 }
 
+static int spry_json_write(lua_State *L) {
+  PROFILE_FUNC();
+
+  String contents = {};
+  String err = {};
+  lua_to_json_string(L, 1, &contents, &err);
+  if (err.len != 0) {
+    lua_pushnil(L);
+    lua_pushlstring(L, err.data, err.len);
+    return 2;
+  }
+
+  lua_pushlstring(L, contents.data, contents.len);
+  mem_free(contents.data);
+  return 1;
+}
+
 static i32 keyboard_lookup(String str) {
   switch (fnv1a(str)) {
   case "space"_hash: return 32;
@@ -2470,6 +2484,7 @@ static int open_spry(lua_State *L) {
       {"time", spry_time},
       {"difftime", spry_difftime},
       {"json_read", spry_json_read},
+      {"json_write", spry_json_write},
 
       // input
       {"key_down", spry_key_down},

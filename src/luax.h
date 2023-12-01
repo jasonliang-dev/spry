@@ -3,7 +3,6 @@
 extern "C" {
 #include <lauxlib.h>
 #include <lua.h>
-#include <lualib.h>
 }
 
 #include "prelude.h"
@@ -15,6 +14,9 @@ void luax_stack_dump(lua_State *L);
 
 // message handler. prints error and traceback
 int luax_msgh(lua_State *L);
+
+lua_Integer luax_len(lua_State *L, i32 arg);
+void luax_geti(lua_State *L, i32 arg, lua_Integer n);
 
 // set table value at top of stack
 void luax_set_number_field(lua_State *L, const char *key, lua_Number n);

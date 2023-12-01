@@ -4,6 +4,11 @@
 #include "strings.h"
 #include "vfs.h"
 
+extern "C" {
+#include <lauxlib.h>
+#include <lua.h>
+}
+
 i32 luax_require_script(lua_State *L, String filepath) {
   PROFILE_FUNC();
 
@@ -95,6 +100,18 @@ int luax_msgh(lua_State *L) {
   g_app->error_mode = true;
   lua_pop(L, 2); // traceback and error
   return 0;
+}
+
+lua_Integer luax_len(lua_State *L, i32 arg) {
+  lua_len(L, arg);
+  lua_Integer len = luaL_checkinteger(L, -1);
+  lua_pop(L, 1);
+  return len;
+}
+
+void luax_geti(lua_State *L, i32 arg, lua_Integer n) {
+  lua_pushinteger(L, n);
+  lua_gettable(L, arg);
 }
 
 void luax_set_number_field(lua_State *L, const char *key, lua_Number n) {

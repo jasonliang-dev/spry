@@ -1,9 +1,13 @@
 #include "json.h"
 #include "arena.h"
+#include "hash_map.h"
+#include "luax.h"
+#include "prelude.h"
 #include "profile.h"
 #include "strings.h"
 
 extern "C" {
+#include <lauxlib.h>
 #include <lua.h>
 }
 
@@ -500,13 +504,12 @@ static void json_write_string(StringBuilder &sb, JSON *json, i32 level) {
   case JSONKind_Object: {
     sb << "{\n";
     for (JSONObject *o = json->object; o != nullptr; o = o->next) {
-      for (i32 i = 0; i <= level; i++) {
-        sb << "  ";
-      }
+      string_builder_concat(&sb, "  ", level);
       sb << o->key;
       json_write_string(sb, &o->value, level + 1);
       sb << ",\n";
     }
+    string_builder_concat(&sb, "  ", level - 1);
     for (i32 i = 0; i < level; i++) {
       sb << "  ";
     }
@@ -516,40 +519,24 @@ static void json_write_string(StringBuilder &sb, JSON *json, i32 level) {
   case JSONKind_Array: {
     sb << "[\n";
     for (JSONArray *a = json->array; a != nullptr; a = a->next) {
-      for (i32 i = 0; i <= level; i++) {
-        sb << "  ";
-      }
+      string_builder_concat(&sb, "  ", level);
       json_write_string(sb, &a->value, level + 1);
       sb << ",\n";
     }
-    for (i32 i = 0; i < level; i++) {
-      sb << "  ";
-    }
+    string_builder_concat(&sb, "  ", level - 1);
     sb << "]";
     break;
   }
-  case JSONKind_String: {
-    sb << "\"" << json->string << "\"";
-    break;
-  }
-  case JSONKind_Number: {
-    sb << tmp_fmt("%f", json->number);
-    break;
-  }
-  case JSONKind_Boolean: {
-    sb << (json->boolean ? "true" : "false");
-    break;
-  }
-  case JSONKind_Null: {
-    sb << "null";
-    break;
-  }
+  case JSONKind_String: sb << "\"" << json->string << "\""; break;
+  case JSONKind_Number: sb << tmp_fmt("%g", json->number); break;
+  case JSONKind_Boolean: sb << (json->boolean ? "true" : "false"); break;
+  case JSONKind_Null: sb << "null"; break;
   default: break;
   }
 }
 
 void json_write_string(StringBuilder *sb, JSON *json) {
-  json_write_string(*sb, json, 0);
+  json_write_string(*sb, json, 1);
 }
 
 void json_print(JSON *json) {
@@ -595,4 +582,114 @@ void json_to_lua(lua_State *L, JSON *json) {
   }
   default: break;
   }
+}
+
+static void lua_to_json_string(StringBuilder &sb, lua_State *L, HashMap<bool> *visited,
+                               String *err) {
+  if (err->len != 0) {
+    return;
+  }
+
+  i32 top = lua_gettop(L);
+  switch (lua_type(L, top)) {
+  case LUA_TTABLE: {
+    uintptr_t ptr = (uintptr_t)lua_topointer(L, top);
+
+    bool *visit = nullptr;
+    hashmap_index(visited, ptr, &visit);
+    if (*visit) {
+      *err = "table has cycles";
+      return;
+    }
+
+    *visit = true;
+
+    lua_pushnil(L);
+    if (lua_next(L, -2) == 0) {
+      sb << "[]";
+      return;
+    }
+
+    i32 key_type = lua_type(L, -2);
+
+    if (key_type == LUA_TNUMBER) {
+      sb << "[";
+      lua_to_json_string(sb, L, visited, err);
+
+      i32 len = luax_len(L, top);
+      assert(len > 0);
+      i32 i = 1;
+      for (lua_pop(L, 1); lua_next(L, -2); lua_pop(L, 1)) {
+        if (lua_type(L, -2) != LUA_TNUMBER) {
+          lua_pop(L, -2);
+          *err = "expected all keys to be numbers";
+          return;
+        }
+
+        sb << ",";
+        lua_to_json_string(sb, L, visited, err);
+        i++;
+      }
+      sb << "]";
+
+      if (i != len) {
+        *err = "array is not continuous";
+        return;
+      }
+    } else if (key_type == LUA_TSTRING) {
+      sb << "{";
+
+      lua_pushvalue(L, -2);
+      lua_to_json_string(sb, L, visited, err);
+      lua_pop(L, 1);
+      sb << ":";
+      lua_to_json_string(sb, L, visited, err);
+
+      for (lua_pop(L, 1); lua_next(L, -2); lua_pop(L, 1)) {
+        sb << ",";
+        if (lua_type(L, -2) != LUA_TSTRING) {
+          lua_pop(L, -2);
+          *err = "expected all keys to be strings";
+          return;
+        }
+
+        lua_pushvalue(L, -2);
+        lua_to_json_string(sb, L, visited, err);
+        lua_pop(L, 1);
+        sb << ":";
+        lua_to_json_string(sb, L, visited, err);
+      }
+      sb << "}";
+    } else {
+      lua_pop(L, 2); // key, value
+      *err = "expected table keys to be strings or numbers";
+      return;
+    }
+
+    hashmap_unset(visited, ptr);
+    break;
+  }
+  case LUA_TNIL: sb << "null"; break;
+  case LUA_TNUMBER: sb << tmp_fmt("%g", lua_tonumber(L, top)); break;
+  case LUA_TSTRING: sb << "\"" << luax_check_string(L, top) << "\""; break;
+  case LUA_TBOOLEAN: sb << (lua_toboolean(L, top) ? "true" : "false"); break;
+  default: *err = "type is not serializable";
+  }
+}
+
+void lua_to_json_string(lua_State *L, i32 arg, String *contents, String *err) {
+  StringBuilder sb = string_builder_make();
+
+  HashMap<bool> visited = {};
+  defer(hashmap_trash(&visited));
+
+  lua_pushvalue(L, arg);
+  lua_to_json_string(sb, L, &visited, err);
+  lua_pop(L, 1);
+
+  if (err->len != 0) {
+    string_builder_trash(&sb);
+  }
+
+  *contents = sb;
 }
