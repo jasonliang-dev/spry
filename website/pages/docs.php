@@ -248,6 +248,60 @@ $api_reference = [
       "args" => [],
       "return" => "number",
     ],
+    "spry.time" => [
+      "desc" => "
+        Get the current time in nanoseconds. The result is only useful when
+        comparing against other calls to `spry.time`.
+      ",
+      "example" => "local now = spry.time()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "spry.difftime" => [
+      "desc" => "Get the time elapsed from `t1` to `t2` in nanoseconds.",
+      "example" => "
+        local milliseconds = 1000000
+
+        now = spry.time()
+        contents = read_entire_file 'map.ldtk'
+        print(spry.difftime(spry.time(), now) / milliseconds)
+      ",
+      "args" => [
+        "t2" => ["number", "Time in nanoseconds, should be after t1."],
+        "t1" => ["number", "Time in nanoseconds, should be before t2."],
+      ],
+      "return" => "number",
+    ],
+    "spry.json_read" => [
+      "desc" => "Deserialize a JSON string into a Lua value.",
+      "example" => "local data, err = spry.json_read [[{
+        'x':10,
+        'y':20,
+        'fruits': ['apple','banana','orange']
+      }]]",
+      "args" => [
+        "str" => ["string", "The JSON string."],
+      ],
+      "return" => [
+        "on success" => "any",
+        "on failure" => "nil, string",
+      ],
+    ],
+    "spry.json_write" => [
+      "desc" => "Serialize a Lua value into a JSON string.",
+      "example" => "local data, err = spry.json_read [[{
+        'x':10,
+        'y':20,
+        'fruits': ['apple','banana','orange']
+      }]]",
+      "args" => [
+        "str" => ["string", "The JSON string."],
+      ],
+      "return" => [
+        "on success" => "string",
+        "on failure" => "nil, string",
+      ],
+    ],
   ],
   "Input" => [
     "spry.key_down" => [
@@ -602,7 +656,10 @@ $api_reference = [
       "args" => [
         "file" => ["string", "The image file to open."],
       ],
-      "return" => "Image",
+      "return" => [
+        "on success" => "Image",
+        "if image can't be loaded" => "nil",
+      ],
     ],
     "Image:draw" => [
       "desc" => "Draw an image onto the screen.",
@@ -643,7 +700,10 @@ $api_reference = [
       "args" => [
         "file" => ["string", "The font file to open."],
       ],
-      "return" => "Font",
+      "return" => [
+        "on success" => "Font",
+        "if font can't be loaded" => "nil",
+      ],
     ],
     "spry.default_font" => [
       "desc" => "Get the application's default font object.",
@@ -695,7 +755,10 @@ $api_reference = [
       "args" => [
         "file" => ["string", "The audio file to open."],
       ],
-      "return" => "Sound",
+      "return" => [
+        "on success" => "Sound",
+        "if sound can't be loaded" => "nil",
+      ],
     ],
     "Sound:frames" => [
       "desc" => "Returns the length of the sound in PCM frames.",
@@ -865,7 +928,10 @@ $api_reference = [
       "args" => [
         "file" => ["string", "The Aseprite file to open."],
       ],
-      "return" => "Sprite",
+      "return" => [
+        "on success" => "Sprite",
+        "if sprite can't be loaded" => "nil",
+      ],
     ],
     "Sprite:play" => [
       "desc" => "
@@ -940,7 +1006,10 @@ $api_reference = [
       "args" => [
         "file" => ["string", "The .rtpa file to open."],
       ],
-      "return" => "Atlas",
+      "return" => [
+        "on success" => "Atlas",
+        "if atlas can't be loaded" => "nil",
+      ],
     ],
     "Atlas:get_image" => [
       "desc" => "
@@ -988,7 +1057,10 @@ $api_reference = [
       "args" => [
         "file" => ["string", "The tilemap file to open."],
       ],
-      "return" => "Tilemap",
+      "return" => [
+        "on success" => "Tilemap",
+        "if tilemap can't be loaded" => "nil",
+      ],
     ],
     "Tilemap:draw" => [
       "desc" => "Draw an entire tilemap, including all of the map's levels and layers.",
@@ -2178,7 +2250,10 @@ $api_reference = [
       "args" => [
         "id" => ["number", "The actor id."],
       ],
-      "return" => "table",
+      "return" => [
+        "on success" => "table",
+        "if actor doesn't exist" => "nil",
+      ],
     ],
     "World:query_mt" => [
       "desc" => "Find actors with the given metatable. Returns a table of entities.",
@@ -2292,7 +2367,10 @@ $api_reference = [
       "args" => [
         "id" => ["number", "The entity id."],
       ],
-      "return" => "table",
+      "return" => [
+        "on success" => "table",
+        "if entity doesn't exist" => "nil",
+      ],
     ],
     "ECS:query" => [
       "desc" => "
@@ -3037,11 +3115,21 @@ $api_reference = [
           <?php endif ?>
 
           <?php if (isset($func["return"])): ?>
-            <?php if ($func["return"]): ?>
+            <?php if (gettype($func["return"]) === "string"): ?>
               <p class="mb0">
                 <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns</span>
                 <code class="inline-code"><?= $func["return"] ?></code>.
               </p>
+            <?php elseif (gettype($func["return"]) === "array"): ?>
+              <div class="mt3">
+                <span class="mid-gray dm-moon-gray mt3 mb2 fw6">Returns:</span>
+                <?php foreach ($func["return"] as $kind => $ret): ?>
+                  <p class="mt2 mb0">
+                    <code class="inline-code"><?= $ret ?></code>
+                    <span><?= $kind ?>.</span>
+                  </p>
+                <?php endforeach ?>
+              </div>
             <?php else: ?>
               <p class="i gray mb0">Returns nothing.</p>
             <?php endif ?>
