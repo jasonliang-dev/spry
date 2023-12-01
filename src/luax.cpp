@@ -17,13 +17,8 @@ i32 luax_require_script(lua_State *L, String filepath) {
   String contents;
   bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
-    StringBuilder sb = string_builder_make();
-    defer(string_builder_trash(&sb));
-
-    string_builder_concat(&sb, "failed to read file: ");
-    string_builder_concat(&sb, filepath);
-
-    fatal_error(string_builder_as_string(&sb));
+    BUILD_STRING(sb);
+    fatal_error(sb << "failed to read file: " << filepath);
     return LUA_REFNIL;
   }
   defer(mem_free(contents.data));
@@ -198,23 +193,18 @@ String luax_opt_string(lua_State *L, i32 arg, String def) {
 
 int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
                       String needle) {
-  StringBuilder sb = string_builder_make();
-  defer(string_builder_trash(&sb));
+  BUILD_STRING(sb);
 
-  string_builder_concat(&sb, "expected one of: {");
+  sb << "expected one of: {";
   for (String s : haystack) {
-    string_builder_concat(&sb, "\"");
-    string_builder_concat(&sb, s);
-    string_builder_concat(&sb, "\", ");
+    sb << "\"" << s << "\", ";
   }
   if (haystack.size() != 0) {
     sb.len -= 2;
   }
-  string_builder_concat(&sb, "} got: \"");
-  string_builder_concat(&sb, needle);
-  string_builder_concat(&sb, "\".");
+  sb << "} got: \"" << needle << "\".";
 
-  return luaL_error(L, sb.data);
+  return luaL_error(L, "%s", sb.data);
 }
 
 void luax_new_class(lua_State *L, const char *mt_name, const luaL_Reg *l) {

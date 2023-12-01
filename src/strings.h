@@ -53,23 +53,18 @@ struct UTF8 {
 UTF8Iterator begin(UTF8 utf8);
 UTF8Iterator end(UTF8 utf8);
 
-struct StringBuilder {
-  char *data;
-  u64 len;      // does not include null term
-  u64 capacity; // includes null term
-};
-
 StringBuilder string_builder_make();
 void string_builder_trash(StringBuilder *sb);
 void string_builder_reserve(StringBuilder *sb, u64 capacity);
-void string_builder_concat(StringBuilder *sb, String str);
 void string_builder_clear(StringBuilder *sb);
 void string_builder_swap_filename(StringBuilder *sb, String filepath,
                                   String file);
 
-inline String string_builder_as_string(StringBuilder *sb) {
-  return {sb->data, sb->len};
-}
+StringBuilder &operator<<(StringBuilder &sb, String str);
+
+#define BUILD_STRING(sbuilder)                                                 \
+    StringBuilder sbuilder = string_builder_make();                            \
+    defer(string_builder_trash(&sbuilder));                                    \
 
 FORMAT_ARGS(1) String str_fmt(const char *fmt, ...);
 FORMAT_ARGS(1) String tmp_fmt(const char *fmt, ...);

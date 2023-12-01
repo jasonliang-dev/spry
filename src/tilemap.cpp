@@ -41,20 +41,17 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
       json_array(json_lookup(json, "entityInstances"));
 
   if (tileset_rel_path->kind == JSONKind_String) {
-    StringBuilder sb = string_builder_make();
-    defer(string_builder_trash(&sb));
-
+    BUILD_STRING(sb);
     string_builder_swap_filename(&sb, filepath, json_string(tileset_rel_path));
 
-    String fullpath = string_builder_as_string(&sb);
-    u64 key = fnv1a(fullpath);
+    u64 key = fnv1a(sb);
 
     Image *img = hashmap_get(images, key);
     if (img != nullptr) {
       layer->image = *img;
     } else {
       Image create_img = {};
-      bool ok = image_load(&create_img, fullpath);
+      bool ok = image_load(&create_img, sb);
       if (!ok) {
         return false;
       }

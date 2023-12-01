@@ -28,8 +28,9 @@ struct JSON {
 
 struct JSONObject {
   JSON value;
+  String key;
   JSONObject *next;
-  u64 key;
+  u64 hash;
 };
 
 struct JSONArray {
@@ -64,3 +65,6 @@ inline double json_lookup_number(JSON *json, String key) {
 struct StringBuilder;
 void json_write_string(StringBuilder *sb, JSON *json);
 void json_print(JSON *json);
+
+struct lua_State;
+void json_to_lua(lua_State *L, JSON *json);

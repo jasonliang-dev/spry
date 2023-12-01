@@ -204,9 +204,9 @@ void string_builder_reserve(StringBuilder *sb, u64 capacity) {
   }
 }
 
-void string_builder_concat(StringBuilder *sb, String str) {
-  u64 desired = sb->len + str.len + 1;
-  u64 capacity = sb->capacity;
+StringBuilder &operator<<(StringBuilder &sb, String str) {
+  u64 desired = sb.len + str.len + 1;
+  u64 capacity = sb.capacity;
 
   if (desired >= capacity) {
     u64 growth = capacity > 0 ? capacity * 2 : 8;
@@ -214,12 +214,13 @@ void string_builder_concat(StringBuilder *sb, String str) {
       growth = desired;
     }
 
-    string_builder_reserve(sb, growth);
+    string_builder_reserve(&sb, growth);
   }
 
-  memcpy(&sb->data[sb->len], str.data, str.len);
-  sb->len += str.len;
-  sb->data[sb->len] = 0;
+  memcpy(&sb.data[sb.len], str.data, str.len);
+  sb.len += str.len;
+  sb.data[sb.len] = 0;
+  return sb;
 }
 
 void string_builder_clear(StringBuilder *sb) {
@@ -236,10 +237,10 @@ void string_builder_swap_filename(StringBuilder *sb, String filepath,
   u64 slash = last_of(filepath, '/');
   if (slash != (u64)-1) {
     String path = substr(filepath, 0, slash + 1);
-    string_builder_concat(sb, path);
+    *sb << path;
   }
 
-  string_builder_concat(sb, file);
+  *sb << file;
 }
 
 String str_fmt(const char *fmt, ...) {

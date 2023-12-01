@@ -1,6 +1,11 @@
 #include "json.h"
+#include "arena.h"
 #include "profile.h"
 #include "strings.h"
+
+extern "C" {
+#include <lua.h>
+}
 
 enum JSONTok : i32 {
   JSONTok_Invalid,
@@ -135,12 +140,9 @@ static JSONToken json_scan_ident(Arena *a, JSONScanner *scan) {
   } else if (t.str == "null") {
     t.kind = JSONTok_Null;
   } else {
-    StringBuilder sb = string_builder_make();
-    string_builder_concat(&sb, "unknown identifier: '");
-    string_builder_concat(&sb, t.str);
-    string_builder_concat(&sb, "'");
-
-    String s = arena_bump_string(a, string_builder_as_string(&sb));
+    BUILD_STRING(sb);
+    String s =
+        arena_bump_string(a, sb << "unknown identifier: '" << t.str << "'");
     return json_err_tok(scan, s);
   }
 
@@ -266,7 +268,8 @@ static String json_parse_object(Arena *a, JSONScanner *scan, JSONObject **out) {
 
     JSONObject *entry = (JSONObject *)arena_bump(a, sizeof(JSONObject));
     entry->next = obj;
-    entry->key = fnv1a(key.string.data, key.string.len);
+    entry->hash = fnv1a(key.string);
+    entry->key = key.string;
     entry->value = value;
 
     obj = entry;
@@ -353,11 +356,19 @@ static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
     json_scan_next(a, scan);
     return {};
   }
-  default:
+  case JSONTok_Error: {
+    BUILD_STRING(sb);
+    sb << scan->token.str
+       << tmp_fmt(" on line %d:%d", (i32)scan->token.line,
+                  (i32)scan->token.column);
+    return arena_bump_string(a, sb);
+  }
+  default: {
     String msg = tmp_fmt("unknown json token: %s on line %d:%d",
                          json_tok_string(scan->token.kind),
                          (i32)scan->token.line, (i32)scan->token.column);
     return arena_bump_string(a, msg);
+  }
   }
 }
 
@@ -407,7 +418,7 @@ JSON *json_lookup(JSON *obj, String key) {
 
   if (obj->kind == JSONKind_Object) {
     for (JSONObject *o = obj->object; o != nullptr; o = o->next) {
-      if (o->key == fnv1a(key)) {
+      if (o->hash == fnv1a(key)) {
         return &o->value;
       }
     }
@@ -484,60 +495,53 @@ double json_number(JSON *json) {
   }
 }
 
-static void json_write_string(StringBuilder *sb, JSON *json, i32 level) {
+static void json_write_string(StringBuilder &sb, JSON *json, i32 level) {
   switch (json->kind) {
   case JSONKind_Object: {
-    string_builder_concat(sb, "{\n");
+    sb << "{\n";
     for (JSONObject *o = json->object; o != nullptr; o = o->next) {
       for (i32 i = 0; i <= level; i++) {
-        string_builder_concat(sb, "  ");
+        sb << "  ";
       }
-      char buf[64];
-      snprintf(buf, sizeof(buf), "%llu", (unsigned long long)o->key);
-      string_builder_concat(sb, buf);
-
+      sb << o->key;
       json_write_string(sb, &o->value, level + 1);
-      string_builder_concat(sb, ",\n");
+      sb << ",\n";
     }
     for (i32 i = 0; i < level; i++) {
-      string_builder_concat(sb, "  ");
+      sb << "  ";
     }
-    string_builder_concat(sb, "}");
+    sb << "}";
     break;
   }
   case JSONKind_Array: {
-    string_builder_concat(sb, "[\n");
+    sb << "[\n";
     for (JSONArray *a = json->array; a != nullptr; a = a->next) {
       for (i32 i = 0; i <= level; i++) {
-        string_builder_concat(sb, "  ");
+        sb << "  ";
       }
       json_write_string(sb, &a->value, level + 1);
-      string_builder_concat(sb, ",\n");
+      sb << ",\n";
     }
     for (i32 i = 0; i < level; i++) {
-      string_builder_concat(sb, "  ");
+      sb << "  ";
     }
-    string_builder_concat(sb, "]");
+    sb << "]";
     break;
   }
   case JSONKind_String: {
-    string_builder_concat(sb, "\"");
-    string_builder_concat(sb, json->string);
-    string_builder_concat(sb, "\"");
+    sb << "\"" << json->string << "\"";
     break;
   }
   case JSONKind_Number: {
-    char buf[64];
-    snprintf(buf, sizeof(buf), "%f", json->number);
-    string_builder_concat(sb, buf);
+    sb << tmp_fmt("%f", json->number);
     break;
   }
   case JSONKind_Boolean: {
-    string_builder_concat(sb, json->boolean ? "true" : "false");
+    sb << (json->boolean ? "true" : "false");
     break;
   }
   case JSONKind_Null: {
-    string_builder_concat(sb, "null");
+    sb << "null";
     break;
   }
   default: break;
@@ -545,12 +549,50 @@ static void json_write_string(StringBuilder *sb, JSON *json, i32 level) {
 }
 
 void json_write_string(StringBuilder *sb, JSON *json) {
-  json_write_string(sb, json, 0);
+  json_write_string(*sb, json, 0);
 }
 
 void json_print(JSON *json) {
-  StringBuilder sb = string_builder_make();
-  defer(string_builder_trash(&sb));
+  BUILD_STRING(sb);
   json_write_string(&sb, json);
   printf("%s\n", sb.data);
+}
+
+void json_to_lua(lua_State *L, JSON *json) {
+  switch (json->kind) {
+  case JSONKind_Object: {
+    lua_newtable(L);
+    for (JSONObject *o = json->object; o != nullptr; o = o->next) {
+      lua_pushlstring(L, o->key.data, o->key.len);
+      json_to_lua(L, &o->value);
+      lua_rawset(L, -3);
+    }
+    break;
+  }
+  case JSONKind_Array: {
+    lua_newtable(L);
+    for (JSONArray *a = json->array; a != nullptr; a = a->next) {
+      json_to_lua(L, &a->value);
+      lua_rawseti(L, -2, a->index + 1);
+    }
+    break;
+  }
+  case JSONKind_String: {
+    lua_pushlstring(L, json->string.data, json->string.len);
+    break;
+  }
+  case JSONKind_Number: {
+    lua_pushnumber(L, json->number);
+    break;
+  }
+  case JSONKind_Boolean: {
+    lua_pushboolean(L, json->boolean);
+    break;
+  }
+  case JSONKind_Null: {
+    lua_pushnil(L);
+    break;
+  }
+  default: break;
+  }
 }

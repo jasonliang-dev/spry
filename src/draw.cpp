@@ -3,12 +3,15 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
 #include "font.h"
-#include "luax.h"
 #include "prelude.h"
 #include "profile.h"
 #include "scanner.h"
 #include "strings.h"
 #include <math.h>
+
+extern "C" {
+#include <lauxlib.h>
+}
 
 struct Renderer2D {
   Matrix4 matrices[32];
@@ -302,25 +305,24 @@ float draw_font_wrapped(FontFamily *font, float size, float x, float y,
     for (String word = scan_next_string(&scan); word != "";
          word = scan_next_string(&scan)) {
 
-      string_builder_concat(&font->sb, word);
+      font->sb << word;
 
-      float width = font_width(font, size, string_builder_as_string(&font->sb));
+      float width = font_width(font, size, font->sb);
       if (width < limit) {
-        string_builder_concat(&font->sb, " ");
+        font->sb << " ";
         continue;
       }
 
       font->sb.len -= word.len;
       font->sb.data[font->sb.len] = '\0';
 
-      draw_font_line(font, size, &x, &y, string_builder_as_string(&font->sb));
+      draw_font_line(font, size, &x, &y, font->sb);
 
       string_builder_clear(&font->sb);
-      string_builder_concat(&font->sb, word);
-      string_builder_concat(&font->sb, " ");
+      font->sb << word << " ";
     }
 
-    draw_font_line(font, size, &x, &y, string_builder_as_string(&font->sb));
+    draw_font_line(font, size, &x, &y, font->sb);
   }
 
   return y - size;

@@ -85,7 +85,7 @@ void *arena_rebump(Arena *arena, void *ptr, u64 old, u64 size) {
 String arena_bump_string(Arena *arena, String s) {
   if (s.len > 0) {
     char *cstr = (char *)arena_bump(arena, s.len + 1);
-    memcpy(cstr, s.data, s.len + 1);
+    memcpy(cstr, s.data, s.len);
     cstr[s.len] = '\0';
     return {cstr, s.len};
   } else {

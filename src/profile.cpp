@@ -22,11 +22,11 @@ static Profile g_profile;
 
 static void profile_recv_thread(void *) {
   StringBuilder sb = string_builder_make();
-  defer(string_builder_trash(&sb));
-
   string_builder_swap_filename(&sb, os_program_path(), "profile.json");
 
   FILE *f = fopen(sb.data, "w");
+  string_builder_trash(&sb);
+
   defer(fclose(f));
 
   fputs("[", f);

@@ -6,9 +6,11 @@
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
+#include "deps/sokol_time.h"
 #include "draw.h"
 #include "font.h"
 #include "image.h"
+#include "json.h"
 #include "luax.h"
 #include "microui.h"
 #include "os.h"
@@ -37,6 +39,8 @@
 extern "C" {
 #include "deps/luasocket/luasocket.h"
 #include "deps/luasocket/mime.h"
+#include <lauxlib.h>
+#include <lua.h>
 }
 
 // mt_sampler
@@ -1935,6 +1939,41 @@ static int spry_window_height(lua_State *L) {
   return 1;
 }
 
+static int spry_time(lua_State *L) {
+  lua_pushinteger(L, stm_now());
+  return 1;
+}
+
+static int spry_difftime(lua_State *L) {
+  lua_Integer t2 = luaL_checkinteger(L, 1);
+  lua_Integer t1 = luaL_checkinteger(L, 2);
+
+  lua_pushinteger(L, stm_diff(t2, t1));
+  return 1;
+}
+
+static int spry_json_read(lua_State *L) {
+  PROFILE_FUNC();
+
+  String str = luax_check_string(L, 1);
+
+  JSONDocument doc = {};
+  json_parse(&doc, str);
+  defer(json_trash(&doc));
+
+  if (doc.error.len != 0) {
+    lua_pushnil(L);
+    lua_pushlstring(L, doc.error.data, doc.error.len);
+    return 2;
+  }
+
+  {
+    PROFILE_BLOCK("json to lua");
+    json_to_lua(L, &doc.root);
+  }
+  return 1;
+}
+
 static i32 keyboard_lookup(String str) {
   switch (fnv1a(str)) {
   case "space"_hash: return 32;
@@ -2428,6 +2467,9 @@ static int open_spry(lua_State *L) {
       {"toggle_fullscreen", spry_toggle_fullscreen},
       {"window_width", spry_window_width},
       {"window_height", spry_window_height},
+      {"time", spry_time},
+      {"difftime", spry_difftime},
+      {"json_read", spry_json_read},
 
       // input
       {"key_down", spry_key_down},

@@ -145,6 +145,12 @@ inline bool is_alpha(char c) {
 
 inline bool is_digit(char c) { return c >= '0' && c <= '9'; }
 
+struct StringBuilder {
+  char *data;
+  u64 len;      // does not include null term
+  u64 capacity; // includes null term
+};
+
 struct String {
   char *data = nullptr;
   u64 len = 0;
@@ -152,6 +158,7 @@ struct String {
   String() = default;
   String(const char *cstr) : data((char *)cstr), len(strlen(cstr)) {}
   String(const char *cstr, u64 n) : data((char *)cstr), len(n) {}
+  String(StringBuilder sb) : data(sb.data), len(sb.len) {}
 };
 
 inline String to_cstr(String str) {

@@ -20,16 +20,13 @@ bool atlas_load(Atlas *atlas, String filepath) {
   for (String line : SplitLines(contents)) {
     switch (line.data[0]) {
     case 'a': {
-      StringBuilder sb = string_builder_make();
-      defer(string_builder_trash(&sb));
-
       Scanner scan = make_scanner(line);
       scan_next_string(&scan); // discard 'a'
       String filename = scan_next_string(&scan);
 
+      BUILD_STRING(sb);
       string_builder_swap_filename(&sb, filepath, filename);
-
-      bool ok = image_load(&img, string_builder_as_string(&sb));
+      bool ok = image_load(&img, sb);
       if (!ok) {
         return false;
       }
