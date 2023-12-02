@@ -12,6 +12,8 @@ Some random text.
   - Promises? Threads/channels? Callbacks? A combination of the three?
 - Android support
 - Add debugger breakpoints on error. Is it even possible?
+- Filesystem API
+- More Box2D
 
 ## `defer` and RAII
 
@@ -48,18 +50,10 @@ types are used through macros:
 - The macros `PROFILE_FUNC` and `PROFILE_BLOCK` uses `Instrument`
   (`profile.h`), which produces trace events in its constructor and destructor.
 
-## Dynamic dispatch
-
-I don't often use inheritance in C++, but there's two places where this isn't
-true:
-
-- `Allocator` in `prelude.h`
-- `FileSystem` in `vfs.cpp`
-
-The rationale for doing this is that I wanted vtables for these types. I found
-vtables hard to read when written in the way you would write them in C. Both
-`Allocator` and `FileSystem` are abstract base types, consisting of only pure
-virtual functions.
+The sync primitives (mutex, condition variables, etc), also uses RAII. It's a
+good fit for these types since copies and moves are not allowed.
+Non-copyable/moveable types removes a lot of the complexity that comes with
+RAII.
 
 ## Memory
 
