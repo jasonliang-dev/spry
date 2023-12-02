@@ -90,7 +90,7 @@ struct Sema {
   sem_t *sem;
 #endif
 
-  Sema(int n = 1);
+  Sema(int n = 0);
   ~Sema();
   Sema(Sema &&rhs) = delete;
   Sema &operator=(Sema &&rhs) = delete;
