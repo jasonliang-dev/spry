@@ -1023,7 +1023,10 @@ $api_reference = [
       "args" => [
         "name" => ["string", "The image name to get."],
       ],
-      "return" => "AtlasImage",
+      "return" => [
+        "on success" => "AtlasImage",
+        "if image was not found" => "nil",
+      ],
     ],
     "AtlasImage:draw" => [
       "desc" => "Draw an atlas image to the screen.",
