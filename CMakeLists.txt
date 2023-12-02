@@ -76,6 +76,7 @@ if(EMSCRIPTEN)
 
 elseif(WIN32)
   set(LUASOCKET ${LUASOCKET} src/deps/luasocket/wsocket.c)
+  add_compile_definitions(LUA_USE_LONGJMP)
 
 elseif(UNIX)
   set(LUASOCKET
