@@ -102,10 +102,21 @@ struct Sema {
 typedef void (*ThreadProc)(void *);
 
 struct Thread {
-  void *ptr;
+  void *ptr = nullptr;
 
   void make(ThreadProc fn, void *udata);
   void join();
 };
 
 uint64_t this_thread_id();
+
+struct LockGuard {
+  Mutex *mtx;
+
+  LockGuard(Mutex *mtx) : mtx(mtx) { mtx->lock(); }
+  ~LockGuard() { mtx->unlock(); }
+  LockGuard(LockGuard &&rhs) = delete;
+  LockGuard &operator=(LockGuard &&rhs) = delete;
+
+  operator bool() { return true; }
+};

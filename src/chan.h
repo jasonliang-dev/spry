@@ -36,8 +36,7 @@ template <typename T> struct Chan {
   }
 
   void send(T item) {
-    mtx.lock();
-    defer(mtx.unlock());
+    LockGuard lock(&mtx);
 
     if (len == capacity) {
       reserve(len > 0 ? len * 2 : 8);
@@ -51,8 +50,7 @@ template <typename T> struct Chan {
   }
 
   T recv() {
-    mtx.lock();
-    defer(mtx.unlock());
+    LockGuard lock(&mtx);
 
     while (len == 0) {
       cv.wait(&mtx);

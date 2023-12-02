@@ -40,9 +40,7 @@ static void panic(const char *fmt, ...) {
 
 static void init() {
   PROFILE_FUNC();
-
-  g_init_mtx.lock();
-  defer(g_init_mtx.unlock());
+  LockGuard lock(&g_init_mtx);
 
   {
     PROFILE_BLOCK("sokol");
@@ -142,9 +140,7 @@ static void event(const sapp_event *e) {
 
 static void frame() {
   PROFILE_FUNC();
-
-  g_app->frame_mtx.lock();
-  defer(g_app->frame_mtx.unlock());
+  LockGuard lock(&g_app->frame_mtx);
 
   {
     AppTime *time = &g_app->time;
@@ -453,8 +449,7 @@ static void load_all_lua_scripts(lua_State *L) {
 /* extern(prelude.h) */ Allocator *g_allocator;
 
 sapp_desc sokol_main(int argc, char **argv) {
-  g_init_mtx.lock();
-  defer(g_init_mtx.unlock());
+  LockGuard lock(&g_init_mtx);
 
 #ifndef NDEBUG
   g_allocator = new DebugAllocator();

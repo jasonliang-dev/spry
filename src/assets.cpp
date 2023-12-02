@@ -31,10 +31,7 @@ static void hot_reload_thread(void *) {
   while (true) {
     PROFILE_BLOCK("hot reload");
 
-    {
-      g_assets.mtx.lock();
-      defer(g_assets.mtx.unlock());
-
+    if (LockGuard lock{&g_assets.mtx}) {
       if (g_assets.shutdown) {
         return;
       }
@@ -68,9 +65,7 @@ static void hot_reload_thread(void *) {
 
     if (g_assets.changes.len > 0) {
       PROFILE_BLOCK("perform hot reload");
-
-      g_app->frame_mtx.lock();
-      defer(g_app->frame_mtx.unlock());
+      LockGuard lock(&g_app->frame_mtx);
 
       for (FileChange change : g_assets.changes) {
         Asset a = {};
@@ -122,9 +117,9 @@ void assets_shutdown() {
     return;
   }
 
-  g_assets.mtx.lock();
-  g_assets.shutdown = true;
-  g_assets.mtx.unlock();
+  if (LockGuard lock{&g_assets.mtx}) {
+    g_assets.shutdown = true;
+  }
 
   g_assets.notify.signal();
   g_assets.reload_thread.join();

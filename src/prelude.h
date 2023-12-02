@@ -75,8 +75,7 @@ struct DebugAllocator : Allocator {
   Mutex mtx = {};
 
   void *alloc(size_t bytes, const char *file, i32 line) {
-    mtx.lock();
-    defer(mtx.unlock());
+    LockGuard lock(&mtx);
 
     DebugAllocInfo *info =
         (DebugAllocInfo *)malloc(offsetof(DebugAllocInfo, buf[bytes]));
@@ -97,8 +96,7 @@ struct DebugAllocator : Allocator {
       return;
     }
 
-    mtx.lock();
-    defer(mtx.unlock());
+    LockGuard lock(&mtx);
 
     DebugAllocInfo *info =
         (DebugAllocInfo *)((u8 *)ptr - offsetof(DebugAllocInfo, buf));
