@@ -42,8 +42,8 @@ commands:
 end
 
 function spry.conf() end
-
 function spry.start() end
+function spry.before_quit() end
 
 function spry.frame(dt)
   if spry.key_down "esc" then spry.quit() end

@@ -28,6 +28,7 @@ struct App {
 
   Slice<String> args;
 
+  Mutex err_mtx;
   bool error_mode;
   String fatal_error;
   String traceback;

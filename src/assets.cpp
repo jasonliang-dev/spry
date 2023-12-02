@@ -113,17 +113,15 @@ static void hot_reload_thread(void *) {
 }
 
 void assets_shutdown() {
-  if (g_app->hot_reload_enabled.load() == 0) {
-    return;
-  }
+  if (g_app->hot_reload_enabled.load() != 0) {
+    if (LockGuard lock{&g_assets.mtx}) {
+      g_assets.shutdown = true;
+    }
 
-  if (LockGuard lock{&g_assets.mtx}) {
-    g_assets.shutdown = true;
+    g_assets.notify.signal();
+    g_assets.reload_thread.join();
+    g_assets.changes.trash();
   }
-
-  g_assets.notify.signal();
-  g_assets.reload_thread.join();
-  g_assets.changes.trash();
 
   for (auto [k, v] : g_assets.table) {
     mem_free(v->name.data);
@@ -180,18 +178,9 @@ bool asset_load(AssetKind kind, String filepath, Asset *out) {
       ok = true;
       break;
     }
-    case AssetKind_Image: {
-      ok = asset.image.load(filepath);
-      break;
-    }
-    case AssetKind_Sprite: {
-      ok = asset.sprite.load(filepath);
-      break;
-    }
-    case AssetKind_Tilemap: {
-      ok = asset.tilemap.load(filepath);
-      break;
-    }
+    case AssetKind_Image: ok = asset.image.load(filepath); break;
+    case AssetKind_Sprite: ok = asset.sprite.load(filepath); break;
+    case AssetKind_Tilemap: ok = asset.tilemap.load(filepath); break;
     default: break;
     }
 

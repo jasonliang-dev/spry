@@ -3,6 +3,7 @@
 #include "array.h"
 #include "assets.h"
 #include "atlas.h"
+#include "concurrency.h"
 #include "deps/microui.h"
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
@@ -71,6 +72,24 @@ static int open_mt_sampler(lua_State *L) {
   };
 
   luax_new_class(L, "mt_sampler", reg);
+  return 0;
+}
+
+// mt_thread
+
+static int mt_thread_join(lua_State *L) {
+  LuaThread *lt = *(LuaThread **)luaL_checkudata(L, 1, "mt_thread");
+  lt->join();
+  return 0;
+}
+
+static int open_mt_thread(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"join", mt_thread_join},
+      {nullptr, nullptr},
+  };
+
+  luax_new_class(L, "mt_thread", reg);
   return 0;
 }
 
@@ -2385,6 +2404,13 @@ static int spry_default_sampler(lua_State *L) {
   return 1;
 }
 
+static int spry_make_thread(lua_State *L) {
+  String contents = luax_check_string(L, 1);
+  LuaThread *lt = lua_thread_make(contents);
+  luax_ptr_userdata(L, lt, "mt_thread");
+  return 1;
+}
+
 static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
@@ -2533,6 +2559,7 @@ static int open_spry(lua_State *L) {
 
       // construct types
       {"make_sampler", spry_make_sampler},
+      {"make_thread", spry_make_thread},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
       {"sound_load", spry_sound_load},
@@ -2549,11 +2576,11 @@ static int open_spry(lua_State *L) {
 
 void open_spry_api(lua_State *L) {
   lua_CFunction mt_funcs[] = {
-      open_mt_sampler,  open_mt_image,    open_mt_font,
-      open_mt_sound,    open_mt_sprite,   open_mt_atlas_image,
-      open_mt_atlas,    open_mt_tilemap,  open_mt_b2_fixture,
-      open_mt_b2_body,  open_mt_b2_world, open_mt_mu_container,
-      open_mt_mu_style, open_mt_mu_ref,
+      open_mt_sampler,      open_mt_thread,   open_mt_image,
+      open_mt_font,         open_mt_sound,    open_mt_sprite,
+      open_mt_atlas_image,  open_mt_atlas,    open_mt_tilemap,
+      open_mt_b2_fixture,   open_mt_b2_body,  open_mt_b2_world,
+      open_mt_mu_container, open_mt_mu_style, open_mt_mu_ref,
   };
 
   for (u32 i = 0; i < array_size(mt_funcs); i++) {
@@ -2568,18 +2595,12 @@ void open_spry_api(lua_State *L) {
   lua_pop(L, 1);
 }
 
-static void package_preload(lua_State *L, const char *name,
-                            lua_CFunction function) {
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "preload");
-  lua_pushcfunction(L, function);
-  lua_setfield(L, -2, name);
-  lua_pop(L, 2);
-}
-
 #ifdef IS_HTML5
+
 void open_luasocket(lua_State *L) {}
+
 #else
+
 #define LUAOPEN_EMBED_DATA(func, name, compressed_data, compressed_size)       \
   static int func(lua_State *L) {                                              \
     i32 top = lua_gettop(L);                                                   \
@@ -2630,6 +2651,15 @@ LUAOPEN_EMBED_DATA(open_embed_socket_tp, "socket.tp.lua",
 
 LUAOPEN_EMBED_DATA(open_embed_socket_url, "socket.url.lua",
                    socket_url_compressed_data, socket_url_compressed_size);
+
+static void package_preload(lua_State *L, const char *name,
+                            lua_CFunction function) {
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "preload");
+  lua_pushcfunction(L, function);
+  lua_setfield(L, -2, name);
+  lua_pop(L, 2);
+}
 
 void open_luasocket(lua_State *L) {
   package_preload(L, "socket.core", luaopen_socket_core);

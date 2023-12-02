@@ -8,10 +8,10 @@
 using stb_uchar = unsigned char;
 using stb_uint = unsigned int;
 
-static unsigned char *stb__barrier;
-static unsigned char *stb__barrier2;
-static unsigned char *stb__barrier3;
-static unsigned char *stb__barrier4;
+thread_local static unsigned char *stb__barrier;
+thread_local static unsigned char *stb__barrier2;
+thread_local static unsigned char *stb__barrier3;
+thread_local static unsigned char *stb__barrier4;
 
 static stb_uchar *stb__dout;
 static void stb__match(stb_uchar *data, stb_uint length) {

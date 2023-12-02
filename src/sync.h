@@ -11,10 +11,13 @@
 
 struct AtomicInt {
 #ifdef _WIN32
-  alignas(8) long n;
+  alignas(8) long n = 0;
 #else
-  int n;
+  int n = 0;
 #endif
+
+  AtomicInt(AtomicInt &&) = delete;
+  AtomicInt &operator=(AtomicInt &&) = delete;
 
   int load();
   void store(int val);
@@ -23,7 +26,10 @@ struct AtomicInt {
 };
 
 struct AtomicPtr {
-  void *p;
+  void *p = nullptr;
+
+  AtomicPtr(AtomicPtr &&) = delete;
+  AtomicPtr &operator=(AtomicPtr &&) = delete;
 
   void *load();
   void store(void *val);
@@ -39,8 +45,8 @@ struct Mutex {
 
   Mutex();
   ~Mutex();
-  Mutex(Mutex &&rhs) = delete;
-  Mutex &operator=(Mutex &&rhs) = delete;
+  Mutex(Mutex &&) = delete;
+  Mutex &operator=(Mutex &&) = delete;
 
   void lock();
   void unlock();
@@ -56,8 +62,8 @@ struct Cond {
 
   Cond();
   ~Cond();
-  Cond(Cond &&rhs) = delete;
-  Cond &operator=(Cond &&rhs) = delete;
+  Cond(Cond &&) = delete;
+  Cond &operator=(Cond &&) = delete;
 
   void signal();
   void broadcast();
@@ -74,8 +80,8 @@ struct RWLock {
 
   RWLock();
   ~RWLock();
-  RWLock(RWLock &&rhs) = delete;
-  RWLock &operator=(RWLock &&rhs) = delete;
+  RWLock(RWLock &&) = delete;
+  RWLock &operator=(RWLock &&) = delete;
 
   void shared_lock();
   void shared_unlock();
@@ -92,8 +98,8 @@ struct Sema {
 
   Sema(int n = 0);
   ~Sema();
-  Sema(Sema &&rhs) = delete;
-  Sema &operator=(Sema &&rhs) = delete;
+  Sema(Sema &&) = delete;
+  Sema &operator=(Sema &&) = delete;
 
   void post(int n = 1);
   void wait();
@@ -115,8 +121,8 @@ struct LockGuard {
 
   LockGuard(Mutex *mtx) : mtx(mtx) { mtx->lock(); }
   ~LockGuard() { mtx->unlock(); }
-  LockGuard(LockGuard &&rhs) = delete;
-  LockGuard &operator=(LockGuard &&rhs) = delete;
+  LockGuard(LockGuard &&) = delete;
+  LockGuard &operator=(LockGuard &&) = delete;
 
   operator bool() { return true; }
 };

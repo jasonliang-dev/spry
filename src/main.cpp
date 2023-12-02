@@ -15,7 +15,6 @@
 #include "os.h"
 #include "prelude.h"
 #include "profile.h"
-#include "strings.h"
 #include "sync.h"
 #include "vfs.h"
 
@@ -307,11 +306,26 @@ static void frame() {
 static void actually_cleanup() {
   PROFILE_FUNC();
 
+  lua_State *L = g_app->L;
+
+  {
+    PROFILE_BLOCK("before quit");
+
+    lua_getglobal(L, "spry");
+    lua_getfield(L, -1, "before_quit");
+    lua_remove(L, -2);
+
+    if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+      String err = luax_check_string(L, -1);
+      panic("%s", err.data);
+    }
+  }
+
   microui_trash();
 
   {
     PROFILE_BLOCK("lua close");
-    lua_close(g_app->L);
+    lua_close(L);
     luaalloc_delete(g_app->LA);
   }
 

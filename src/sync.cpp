@@ -13,9 +13,7 @@
 #ifdef IS_WIN32
 
 int AtomicInt::load() { return _InterlockedCompareExchange(&n, 0, 0); }
-
 void AtomicInt::store(int val) { _InterlockedExchange(&n, val); }
-
 int AtomicInt::add(int val) { return _InterlockedExchangeAdd(&n, val); }
 
 bool AtomicInt::cas(int *expect, int val) {
