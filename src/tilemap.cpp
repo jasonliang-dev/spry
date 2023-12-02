@@ -13,46 +13,44 @@
 #include <box2d/b2_polygon_shape.h>
 #include <box2d/b2_world.h>
 
-static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
-                            String filepath, HashMap<Image> *images) {
+static bool layer_from_json(TilemapLayer *layer, JSON *json, bool *ok,
+                            Arena *arena, String filepath,
+                            HashMap<Image> *images) {
   PROFILE_FUNC();
 
   layer->identifier =
-      arena_bump_string(arena, json_lookup_string(json, "__identifier"));
-  layer->c_width = (i32)json_lookup_number(json, "__cWid");
-  layer->c_height = (i32)json_lookup_number(json, "__cHei");
-  layer->grid_size = json_lookup_number(json, "__gridSize");
+      arena->bump_string(json->lookup_string("__identifier", ok));
+  layer->c_width = (i32)json->lookup_number("__cWid", ok);
+  layer->c_height = (i32)json->lookup_number("__cHei", ok);
+  layer->grid_size = json->lookup_number("__gridSize", ok);
 
-  JSON *tileset_rel_path = json_lookup(json, "__tilesetRelPath");
-  if (tileset_rel_path == nullptr) {
-    return false;
-  }
+  JSON tileset_rel_path = json->lookup("__tilesetRelPath", ok);
 
-  JSONArray *int_grid_csv = json_array(json_lookup(json, "intGridCsv"));
+  JSONArray *int_grid_csv = json->lookup_array("intGridCsv", ok);
 
-  JSONArray *grid_tiles = json_array(json_lookup(json, "gridTiles"));
-  JSONArray *auto_layer_tiles = json_array(json_lookup(json, "autoLayerTiles"));
+  JSONArray *grid_tiles = json->lookup_array("gridTiles", ok);
+  JSONArray *auto_layer_tiles = json->lookup_array("autoLayerTiles", ok);
 
   JSONArray *arr_tiles = (grid_tiles != nullptr && grid_tiles->index != 0)
                              ? grid_tiles
                              : auto_layer_tiles;
 
-  JSONArray *entity_instances =
-      json_array(json_lookup(json, "entityInstances"));
+  JSONArray *entity_instances = json->lookup_array("entityInstances", ok);
 
-  if (tileset_rel_path->kind == JSONKind_String) {
-    BUILD_STRING(sb);
-    string_builder_swap_filename(&sb, filepath, json_string(tileset_rel_path));
+  if (tileset_rel_path.kind == JSONKind_String) {
+    StringBuilder sb = {};
+    defer(sb.trash());
+    sb.swap_filename(filepath, tileset_rel_path.as_string(ok));
 
     u64 key = fnv1a(sb);
 
-    Image *img = hashmap_get(images, key);
+    Image *img = images->get(key);
     if (img != nullptr) {
       layer->image = *img;
     } else {
       Image create_img = {};
-      bool ok = image_load(&create_img, sb);
-      if (!ok) {
+      bool success = create_img.load(sb);
+      if (!success) {
         return false;
       }
 
@@ -66,9 +64,9 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
     PROFILE_BLOCK("int grid");
 
     i32 len = int_grid_csv->index + 1;
-    slice_from_arena(&grid, arena, len);
+    grid.resize(arena, len);
     for (JSONArray *a = int_grid_csv; a != nullptr; a = a->next) {
-      grid[--len] = (TilemapInt)json_number(&a->value);
+      grid[--len] = (TilemapInt)a->value.as_number(ok);
     }
   }
   layer->int_grid = grid;
@@ -78,19 +76,19 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
     PROFILE_BLOCK("tiles");
 
     i32 len = arr_tiles->index + 1;
-    slice_from_arena(&tiles, arena, len);
+    tiles.resize(arena, len);
     for (JSONArray *a = arr_tiles; a != nullptr; a = a->next) {
-      JSON *px = json_lookup(&a->value, "px");
-      JSON *src = json_lookup(&a->value, "src");
+      JSON px = a->value.lookup("px", ok);
+      JSON src = a->value.lookup("src", ok);
 
       Tile tile = {};
-      tile.x = json_number(json_index(px, 0));
-      tile.y = json_number(json_index(px, 1));
+      tile.x = px.index_number(0, ok);
+      tile.y = px.index_number(1, ok);
 
-      tile.u = json_number(json_index(src, 0));
-      tile.v = json_number(json_index(src, 1));
+      tile.u = src.index_number(0, ok);
+      tile.v = src.index_number(1, ok);
 
-      tile.flip_bits = (i32)json_lookup_number(&a->value, "f");
+      tile.flip_bits = (i32)a->value.lookup_number("f", ok);
       tiles[--len] = tile;
     }
   }
@@ -123,15 +121,15 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
     PROFILE_BLOCK("entities");
 
     i32 len = entity_instances->index + 1;
-    slice_from_arena(&entities, arena, len);
+    entities.resize(arena, len);
     for (JSONArray *a = entity_instances; a != nullptr; a = a->next) {
-      JSON *px = json_lookup(&a->value, "px");
+      JSON px = a->value.lookup("px", ok);
 
       TilemapEntity entity = {};
-      entity.x = json_number(json_index(px, 0));
-      entity.y = json_number(json_index(px, 1));
-      entity.identifier = arena_bump_string(
-          arena, json_lookup_string(&a->value, "__identifier"));
+      entity.x = px.index_number(0, ok);
+      entity.y = px.index_number(1, ok);
+      entity.identifier =
+          arena->bump_string(a->value.lookup_string("__identifier", ok));
 
       entities[--len] = entity;
     }
@@ -141,28 +139,29 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, Arena *arena,
   return true;
 }
 
-static bool level_from_json(TilemapLevel *level, JSON *json, Arena *arena,
-                            String filepath, HashMap<Image> *images) {
+static bool level_from_json(TilemapLevel *level, JSON *json, bool *ok,
+                            Arena *arena, String filepath,
+                            HashMap<Image> *images) {
   PROFILE_FUNC();
 
-  level->identifier =
-      arena_bump_string(arena, json_lookup_string(json, "identifier"));
-  level->iid = arena_bump_string(arena, json_lookup_string(json, "iid"));
-  level->world_x = json_lookup_number(json, "worldX");
-  level->world_y = json_lookup_number(json, "worldY");
-  level->px_width = json_lookup_number(json, "pxWid");
-  level->px_height = json_lookup_number(json, "pxHei");
+  level->identifier = arena->bump_string(json->lookup_string("identifier", ok));
+  level->iid = arena->bump_string(json->lookup_string("iid", ok));
+  level->world_x = json->lookup_number("worldX", ok);
+  level->world_y = json->lookup_number("worldY", ok);
+  level->px_width = json->lookup_number("pxWid", ok);
+  level->px_height = json->lookup_number("pxHei", ok);
 
-  JSONArray *layer_instances = json_array(json_lookup(json, "layerInstances"));
+  JSONArray *layer_instances = json->lookup_array("layerInstances", ok);
 
   Slice<TilemapLayer> layers = {};
   if (layer_instances != nullptr) {
     i32 len = layer_instances->index + 1;
-    slice_from_arena(&layers, arena, len);
+    layers.resize(arena, len);
     for (JSONArray *a = layer_instances; a != nullptr; a = a->next) {
       TilemapLayer layer = {};
-      bool ok = layer_from_json(&layer, &a->value, arena, filepath, images);
-      if (!ok) {
+      bool success =
+          layer_from_json(&layer, &a->value, ok, arena, filepath, images);
+      if (!success) {
         return false;
       }
       layers[--len] = layer;
@@ -173,19 +172,20 @@ static bool level_from_json(TilemapLevel *level, JSON *json, Arena *arena,
   return true;
 }
 
-bool tilemap_load(Tilemap *tm, String filepath) {
+bool Tilemap::load(String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
-  bool ok = vfs_read_entire_file(&contents, filepath);
-  if (!ok) {
+  bool success = vfs_read_entire_file(&contents, filepath);
+  if (!success) {
     return false;
   }
   defer(mem_free(contents.data));
 
+  bool ok = true;
   JSONDocument doc = {};
-  json_parse(&doc, contents);
-  defer(json_trash(&doc));
+  doc.parse(contents);
+  defer(doc.trash());
 
   if (doc.error.len != 0) {
     return false;
@@ -193,31 +193,36 @@ bool tilemap_load(Tilemap *tm, String filepath) {
 
   Arena arena = {};
   HashMap<Image> images = {};
-  bool success = false;
+  bool created = false;
   defer({
-    if (!success) {
+    if (!created) {
       for (auto [k, v] : images) {
-        image_trash(v);
+        v->trash();
       }
-      hashmap_trash(&images);
-      arena_trash(&arena);
+      images.trash();
+      arena.trash();
     }
   });
 
-  JSONArray *arr_levels = json_array(json_lookup(&doc.root, "levels"));
+  JSONArray *arr_levels = doc.root.lookup_array("levels", &ok);
 
   Slice<TilemapLevel> levels = {};
   if (arr_levels != nullptr) {
     i32 len = arr_levels->index + 1;
-    slice_from_arena(&levels, &arena, len);
+    levels.resize(&arena, len);
     for (JSONArray *a = arr_levels; a != nullptr; a = a->next) {
       TilemapLevel level = {};
-      bool ok = level_from_json(&level, &a->value, &arena, filepath, &images);
-      if (!ok) {
+      bool success =
+          level_from_json(&level, &a->value, &ok, &arena, filepath, &images);
+      if (!success) {
         return false;
       }
       levels[--len] = level;
     }
+  }
+
+  if (!ok) {
+    return false;
   }
 
   Tilemap tilemap = {};
@@ -225,32 +230,28 @@ bool tilemap_load(Tilemap *tm, String filepath) {
   tilemap.levels = levels;
   tilemap.images = images;
 
-  if (doc.root.had_error) {
-    return false;
-  }
-
   printf("loaded tilemap with %llu levels\n",
          (unsigned long long)tilemap.levels.len);
-  *tm = tilemap;
-  success = true;
+  *this = tilemap;
+  created = true;
   return true;
 }
 
-void tilemap_trash(Tilemap *tm) {
-  for (auto [k, v] : tm->images) {
-    image_trash(v);
+void Tilemap::trash() {
+  for (auto [k, v] : images) {
+    v->trash();
   }
-  hashmap_trash(&tm->images);
+  images.trash();
 
-  hashmap_trash(&tm->bodies);
-  hashmap_trash(&tm->graph);
-  priority_queue_trash(&tm->frontier);
+  bodies.trash();
+  graph.trash();
+  frontier.trash();
 
-  arena_trash(&tm->arena);
+  arena.trash();
 }
 
-void tilemap_destroy_bodies(Tilemap *tm, b2World *world) {
-  for (auto [k, v] : tm->bodies) {
+void Tilemap::destroy_bodies(b2World *world) {
+  for (auto [k, v] : bodies) {
     world->DestroyBody(*v);
   }
 }
@@ -275,8 +276,8 @@ static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
   };
 
   Array<bool> filled = {};
-  defer(array_trash(&filled));
-  array_resize(&filled, layer->c_width * layer->c_height);
+  defer(filled.trash());
+  filled.resize(layer->c_width * layer->c_height);
   memset(filled.data, 0, layer->c_width * layer->c_height);
   for (i32 y = 0; y < layer->c_height; y++) {
     for (i32 x = 0; x < layer->c_width; x++) {
@@ -338,8 +339,8 @@ static void make_collision_for_layer(b2Body *body, TilemapLayer *layer,
   }
 }
 
-void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
-                            String layer_name, Slice<TilemapInt> walls) {
+void Tilemap::make_collision(b2World *world, float meter, String layer_name,
+                             Slice<TilemapInt> walls) {
   PROFILE_FUNC();
 
   b2Body *body = nullptr;
@@ -356,7 +357,7 @@ void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
     body = world->CreateBody(&def);
   }
 
-  for (TilemapLevel &level : tm->levels) {
+  for (TilemapLevel &level : levels) {
     for (TilemapLayer &l : level.layers) {
       if (l.identifier == layer_name) {
         make_collision_for_layer(body, &l, level.world_x, level.world_y, meter,
@@ -365,7 +366,7 @@ void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
     }
   }
 
-  tm->bodies[fnv1a(layer_name)] = body;
+  bodies[fnv1a(layer_name)] = body;
 }
 
 static float get_tile_cost(TilemapInt n, Slice<TileCost> costs) {
@@ -411,7 +412,7 @@ static bool tilemap_rect_overlaps_graph(HashMap<TileNode> *graph, i32 x0,
         continue;
       }
 
-      TileNode *node = hashmap_get(graph, tile_key(x, y));
+      TileNode *node = graph->get(tile_key(x, y));
       if (node == nullptr) {
         return false;
       }
@@ -437,7 +438,7 @@ static void create_neighbor_nodes(HashMap<TileNode> *graph, Arena *arena,
 
         i32 dx = v->x + x;
         i32 dy = v->y + y;
-        TileNode *node = hashmap_get(graph, tile_key(dx, dy));
+        TileNode *node = graph->get(tile_key(dx, dy));
         if (node != nullptr) {
           bool ok = tilemap_rect_overlaps_graph(graph, v->x, v->y, dx, dy);
           if (!ok) {
@@ -446,7 +447,7 @@ static void create_neighbor_nodes(HashMap<TileNode> *graph, Arena *arena,
 
           if (len == neighbors.len) {
             i32 grow = len > 0 ? len * 2 : 8;
-            slice_resize(&neighbors, arena, grow);
+            neighbors.resize(arena, grow);
           }
 
           neighbors[len] = node;
@@ -455,31 +456,24 @@ static void create_neighbor_nodes(HashMap<TileNode> *graph, Arena *arena,
       }
     }
 
-    slice_resize(&neighbors, arena, len);
+    neighbors.resize(arena, len);
     v->neighbors = neighbors;
   }
 }
 
-void tilemap_make_graph(Tilemap *tm, i32 bloom, String layer_name,
-                        Slice<TileCost> costs) {
-  HashMap<TileNode> graph = {};
-  float grid_size = 0;
-
-  for (TilemapLevel &level : tm->levels) {
+void Tilemap::make_graph(i32 bloom, String layer_name, Slice<TileCost> costs) {
+  for (TilemapLevel &level : levels) {
     for (TilemapLayer &l : level.layers) {
       if (l.identifier == layer_name) {
-        if (grid_size == 0) {
-          grid_size = l.grid_size;
+        if (graph_grid_size == 0) {
+          graph_grid_size = l.grid_size;
         }
         make_graph_for_layer(&graph, &l, level.world_x, level.world_y, costs);
       }
     }
   }
 
-  create_neighbor_nodes(&graph, &tm->arena, bloom);
-
-  tm->graph = graph;
-  tm->graph_grid_size = grid_size;
+  create_neighbor_nodes(&graph, &arena, bloom);
 }
 
 static float tile_distance(TileNode *lhs, TileNode *rhs) {
@@ -509,22 +503,22 @@ static void astar_reset(Tilemap *tm) {
   }
 }
 
-TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
+TileNode *Tilemap::astar(TilePoint start, TilePoint goal) {
   PROFILE_FUNC();
 
-  astar_reset(tm);
+  astar_reset(this);
 
-  i32 sx = (i32)(start.x / tm->graph_grid_size);
-  i32 sy = (i32)(start.y / tm->graph_grid_size);
-  i32 ex = (i32)(goal.x / tm->graph_grid_size);
-  i32 ey = (i32)(goal.y / tm->graph_grid_size);
+  i32 sx = (i32)(start.x / graph_grid_size);
+  i32 sy = (i32)(start.y / graph_grid_size);
+  i32 ex = (i32)(goal.x / graph_grid_size);
+  i32 ey = (i32)(goal.y / graph_grid_size);
 
-  TileNode *end = hashmap_get(&tm->graph, tile_key(ex, ey));
+  TileNode *end = graph.get(tile_key(ex, ey));
   if (end == nullptr) {
     return nullptr;
   }
 
-  TileNode *begin = hashmap_get(&tm->graph, tile_key(sx, sy));
+  TileNode *begin = graph.get(tile_key(sx, sy));
   if (begin == nullptr) {
     return nullptr;
   }
@@ -534,11 +528,11 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
   float f = g + h;
   begin->g = 0;
   begin->flags |= TileNodeFlags_Open;
-  priority_queue_push(&tm->frontier, begin, f);
+  frontier.push(begin, f);
 
-  while (tm->frontier.len != 0) {
+  while (frontier.len != 0) {
     TileNode *top = nullptr;
-    priority_queue_pop(&tm->frontier, &top);
+    frontier.pop(&top);
     top->flags |= TileNodeFlags_Closed;
 
     if (top == end) {
@@ -561,7 +555,7 @@ TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal) {
         next->prev = top;
         next->flags |= TileNodeFlags_Open;
 
-        priority_queue_push(&tm->frontier, next, f);
+        frontier.push(next, f);
       }
     }
   }

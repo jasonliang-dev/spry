@@ -110,33 +110,36 @@ static int open_mt_image(lua_State *L) {
 
 // mt_font
 
-static int mt_font_gc(lua_State *L) {
-  FontFamily **udata = (FontFamily **)luaL_checkudata(L, 1, "mt_font");
+static FontFamily *check_font_udata(lua_State *L, i32 arg) {
+  FontFamily **udata = (FontFamily **)luaL_checkudata(L, arg, "mt_font");
   FontFamily *font = *udata;
+  return font;
+}
+
+static int mt_font_gc(lua_State *L) {
+  FontFamily *font = check_font_udata(L, 1);
 
   if (font != g_app->default_font) {
-    font_trash(font);
+    font->trash();
     mem_free(font);
   }
   return 0;
 }
 
 static int mt_font_width(lua_State *L) {
-  FontFamily **udata = (FontFamily **)luaL_checkudata(L, 1, "mt_font");
-  FontFamily *font = *udata;
+  FontFamily *font = check_font_udata(L, 1);
 
   String text = luax_check_string(L, 2);
   lua_Number size = luaL_checknumber(L, 3);
 
-  float w = font_width(font, size, text);
+  float w = font->width(size, text);
 
   lua_pushnumber(L, w);
   return 1;
 }
 
 static int mt_font_draw(lua_State *L) {
-  FontFamily **udata = (FontFamily **)luaL_checkudata(L, 1, "mt_font");
-  FontFamily *font = *udata;
+  FontFamily *font = check_font_udata(L, 1);
 
   String text = luax_check_string(L, 2);
   lua_Number x = luaL_optnumber(L, 3, 0);
@@ -181,10 +184,10 @@ static int mt_sound_gc(lua_State *L) {
   Sound *sound = *udata;
 
   if (ma_sound_at_end(&sound->ma)) {
-    sound_trash(sound);
+    sound->trash();
   } else {
     sound->zombie = true;
-    array_push(&g_app->garbage_sounds, sound);
+    g_app->garbage_sounds.push(sound);
   }
 
   return 0;
@@ -353,12 +356,17 @@ static int open_mt_sound(lua_State *L) {
 
 // mt_sprite
 
+static Sprite *check_sprite_udata(lua_State *L, i32 arg) {
+  Sprite *spr = (Sprite *)luaL_checkudata(L, arg, "mt_sprite");
+  return spr;
+}
+
 static int mt_sprite_play(lua_State *L) {
-  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  Sprite *spr = check_sprite_udata(L, 1);
   String tag = luax_check_string(L, 2);
   bool restart = lua_toboolean(L, 3);
 
-  bool same = sprite_play(spr, tag);
+  bool same = spr->play(tag);
   if (!same || restart) {
     spr->current_frame = 0;
     spr->elapsed = 0;
@@ -367,15 +375,15 @@ static int mt_sprite_play(lua_State *L) {
 }
 
 static int mt_sprite_update(lua_State *L) {
-  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  Sprite *spr = check_sprite_udata(L, 1);
   lua_Number dt = luaL_checknumber(L, 2);
 
-  sprite_update(spr, (float)dt);
+  spr->update((float)dt);
   return 0;
 }
 
 static int mt_sprite_draw(lua_State *L) {
-  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  Sprite *spr = check_sprite_udata(L, 1);
   DrawDescription dd = draw_description_args(L, 2);
 
   draw_sprite(spr, &dd);
@@ -383,7 +391,7 @@ static int mt_sprite_draw(lua_State *L) {
 }
 
 static int mt_sprite_width(lua_State *L) {
-  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  Sprite *spr = check_sprite_udata(L, 1);
   SpriteData data = check_asset(L, spr->sprite).sprite;
 
   lua_pushnumber(L, (lua_Number)data.width);
@@ -391,7 +399,7 @@ static int mt_sprite_width(lua_State *L) {
 }
 
 static int mt_sprite_height(lua_State *L) {
-  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  Sprite *spr = check_sprite_udata(L, 1);
   SpriteData data = check_asset(L, spr->sprite).sprite;
 
   lua_pushnumber(L, (lua_Number)data.height);
@@ -399,15 +407,15 @@ static int mt_sprite_height(lua_State *L) {
 }
 
 static int mt_sprite_set_frame(lua_State *L) {
-  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  Sprite *spr = check_sprite_udata(L, 1);
   lua_Integer frame = luaL_checknumber(L, 2);
 
-  sprite_set_frame(spr, (i32)frame);
+  spr->set_frame((i32)frame);
   return 0;
 }
 
 static int mt_sprite_total_frames(lua_State *L) {
-  Sprite *spr = (Sprite *)luaL_checkudata(L, 1, "mt_sprite");
+  Sprite *spr = check_sprite_udata(L, 1);
   SpriteData data = check_asset(L, spr->sprite).sprite;
 
   lua_pushinteger(L, data.frames.len);
@@ -432,8 +440,14 @@ static int open_mt_sprite(lua_State *L) {
 
 // mt_atlas_image
 
+static AtlasImage *check_atlas_image_udata(lua_State *L, i32 arg) {
+  AtlasImage *atlas_img =
+      (AtlasImage *)luaL_checkudata(L, arg, "mt_atlas_image");
+  return atlas_img;
+}
+
 static int mt_atlas_image_draw(lua_State *L) {
-  AtlasImage *atlas_img = (AtlasImage *)luaL_checkudata(L, 1, "mt_atlas_image");
+  AtlasImage *atlas_img = check_atlas_image_udata(L, 1);
   DrawDescription dd = draw_description_args(L, 2);
 
   dd.u0 = atlas_img->u0;
@@ -446,13 +460,13 @@ static int mt_atlas_image_draw(lua_State *L) {
 }
 
 static int mt_atlas_image_width(lua_State *L) {
-  AtlasImage *atlas_img = (AtlasImage *)luaL_checkudata(L, 1, "mt_atlas_image");
+  AtlasImage *atlas_img = check_atlas_image_udata(L, 1);
   lua_pushnumber(L, atlas_img->width);
   return 1;
 }
 
 static int mt_atlas_image_height(lua_State *L) {
-  AtlasImage *atlas_img = (AtlasImage *)luaL_checkudata(L, 1, "mt_atlas_image");
+  AtlasImage *atlas_img = check_atlas_image_udata(L, 1);
   lua_pushnumber(L, atlas_img->height);
   return 1;
 }
@@ -473,7 +487,7 @@ static int open_mt_atlas_image(lua_State *L) {
 
 static int mt_atlas_gc(lua_State *L) {
   Atlas *atlas = (Atlas *)luaL_checkudata(L, 1, "mt_atlas");
-  atlas_trash(atlas);
+  atlas->trash();
   return 0;
 }
 
@@ -481,7 +495,7 @@ static int mt_atlas_get_image(lua_State *L) {
   Atlas *atlas = (Atlas *)luaL_checkudata(L, 1, "mt_atlas");
   String name = luax_check_string(L, 2);
 
-  AtlasImage *atlas_img = atlas_get(atlas, name);
+  AtlasImage *atlas_img = atlas->get(name);
   if (atlas_img == nullptr) {
     return 0;
   }
@@ -542,22 +556,21 @@ static int mt_tilemap_entities(lua_State *L) {
 
 static int mt_tilemap_make_collision(lua_State *L) {
   Asset asset = check_asset_mt(L, 1, "mt_tilemap");
-  defer(asset_write(asset));
 
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
 
   Array<TilemapInt> walls = {};
-  defer(array_trash(&walls));
+  defer(walls.trash());
 
-  array_reserve(&walls, luax_len(L, 4));
+  walls.reserve(luax_len(L, 4));
   for (lua_pushnil(L); lua_next(L, -2); lua_pop(L, 1)) {
     lua_Number tile = luaL_checknumber(L, -1);
-    array_push(&walls, (TilemapInt)tile);
+    walls.push((TilemapInt)tile);
   }
 
-  tilemap_make_collision(&asset.tilemap, physics->world, physics->meter, name,
-                         walls);
+  asset.tilemap.make_collision(physics->world, physics->meter, name, walls);
+  asset_write(asset);
   return 0;
 }
 
@@ -566,7 +579,7 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
   Physics *physics = (Physics *)luaL_checkudata(L, 2, "mt_b2_world");
   String name = luax_check_string(L, 3);
 
-  b2Body **body = hashmap_get(&tm.bodies, fnv1a(name));
+  b2Body **body = tm.bodies.get(fnv1a(name));
   if (body != nullptr) {
     draw_fixtures_for_body(*body, physics->meter);
   }
@@ -576,13 +589,12 @@ static int mt_tilemap_draw_fixtures(lua_State *L) {
 
 static int mt_tilemap_make_graph(lua_State *L) {
   Asset asset = check_asset_mt(L, 1, "mt_tilemap");
-  defer(asset_write(asset));
 
   String name = luax_check_string(L, 2);
   i32 bloom = (i32)luaL_optnumber(L, 4, 1);
 
   Array<TileCost> costs = {};
-  defer(array_trash(&costs));
+  defer(costs.trash());
 
   lua_pushvalue(L, 3);
 
@@ -594,11 +606,12 @@ static int mt_tilemap_make_graph(lua_State *L) {
     cost.cell = (TilemapInt)key;
     cost.value = (float)value;
 
-    array_push(&costs, cost);
+    costs.push(cost);
   }
   lua_pop(L, 1);
 
-  tilemap_make_graph(&asset.tilemap, bloom, name, costs);
+  asset.tilemap.make_graph(bloom, name, costs);
+  asset_write(asset);
   return 0;
 }
 
@@ -621,7 +634,7 @@ static int mt_tilemap_astar(lua_State *L) {
   goal.x = (i32)ex;
   goal.y = (i32)ey;
 
-  TileNode *end = tilemap_astar(&asset.tilemap, goal, start);
+  TileNode *end = asset.tilemap.astar(goal, start);
 
   {
     PROFILE_BLOCK("construct path");
@@ -1955,8 +1968,8 @@ static int spry_json_read(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   JSONDocument doc = {};
-  json_parse(&doc, str);
-  defer(json_trash(&doc));
+  doc.parse(str);
+  defer(doc.trash());
 
   if (doc.error.len != 0) {
     lua_pushnil(L);
@@ -2283,7 +2296,7 @@ static int spry_pop_color(lua_State *L) {
 static int spry_default_font(lua_State *L) {
   if (g_app->default_font == nullptr) {
     g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
-    font_load_default(g_app->default_font);
+    g_app->default_font->load_default();
   }
 
   luax_ptr_userdata(L, g_app->default_font, "mt_font");
@@ -2389,7 +2402,7 @@ static int spry_font_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   FontFamily *font = (FontFamily *)mem_alloc(sizeof(FontFamily));
-  bool ok = font_load(font, str);
+  bool ok = font->load(str);
   if (!ok) {
     mem_free(font);
     return 0;
@@ -2431,7 +2444,7 @@ static int spry_atlas_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Atlas atlas = {};
-  bool ok = atlas_load(&atlas, str);
+  bool ok = atlas.load(str);
   if (!ok) {
     return 0;
   }

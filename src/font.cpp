@@ -8,7 +8,7 @@
 #include "vfs.h"
 #include <stdio.h>
 
-bool font_load(FontFamily *font, String filepath) {
+bool FontFamily::load(String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
@@ -19,12 +19,12 @@ bool font_load(FontFamily *font, String filepath) {
 
   FontFamily f = {};
   f.ttf = contents;
-  f.sb = string_builder_make();
-  *font = f;
+  f.sb = {};
+  *this = f;
   return true;
 }
 
-void font_load_default(FontFamily *font) {
+void FontFamily::load_default() {
   PROFILE_FUNC();
 
   String contents =
@@ -32,17 +32,17 @@ void font_load_default(FontFamily *font) {
 
   FontFamily f = {};
   f.ttf = contents;
-  f.sb = string_builder_make();
-  *font = f;
+  f.sb = {};
+  *this = f;
 }
 
-void font_trash(FontFamily *font) {
-  for (auto [k, v] : font->ranges) {
-    image_trash(&v->image);
+void FontFamily::trash() {
+  for (auto [k, v] : ranges) {
+    v->image.trash();
   }
-  string_builder_trash(&font->sb);
-  hashmap_trash(&font->ranges);
-  mem_free(font->ttf.data);
+  sb.trash();
+  ranges.trash();
+  mem_free(ttf.data);
 }
 
 struct FontKey {
@@ -117,7 +117,7 @@ static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
 
 static FontRange *get_range(FontFamily *font, FontKey key) {
   u64 hash = *(u64 *)&key;
-  FontRange *range = hashmap_get(&font->ranges, hash);
+  FontRange *range = font->ranges.get(hash);
   if (range == nullptr) {
     range = &font->ranges[hash];
     make_font_range(range, font, key);
@@ -126,9 +126,9 @@ static FontRange *get_range(FontFamily *font, FontKey key) {
   return range;
 }
 
-stbtt_aligned_quad font_quad(FontFamily *font, u32 *img, float *x, float *y,
-                             float size, i32 ch) {
-  FontRange *range = get_range(font, font_key(size, ch));
+stbtt_aligned_quad FontFamily::quad(u32 *img, float *x, float *y, float size,
+                                    i32 ch) {
+  FontRange *range = get_range(this, font_key(size, ch));
   assert(range != nullptr);
 
   ch = ch % array_size(FontRange::chars);
@@ -145,11 +145,11 @@ stbtt_aligned_quad font_quad(FontFamily *font, u32 *img, float *x, float *y,
   return q;
 }
 
-float font_width(FontFamily *font, float size, String text) {
+float FontFamily::width(float size, String text) {
   float width = 0;
   for (Rune r : UTF8(text)) {
     u32 code = rune_charcode(r);
-    FontRange *range = get_range(font, font_key(size, code));
+    FontRange *range = get_range(this, font_key(size, code));
     assert(range != nullptr);
 
     const stbtt_bakedchar *baked =

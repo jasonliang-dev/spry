@@ -69,7 +69,7 @@ static bool list_all_files_help(Array<String> *files, String path) {
         defer(mem_free(s.data));
         list_all_files_help(files, s);
       } else {
-        array_push(files, str_fmt("%s%s", path.data, file.name));
+        files->push(str_fmt("%s%s", path.data, file.name));
       }
     }
 
@@ -251,7 +251,7 @@ struct ZipFileSystem : FileSystem {
       }
 
       String name = {file_stat.m_filename, strlen(file_stat.m_filename)};
-      array_push(files, to_cstr(name));
+      files->push(to_cstr(name));
     }
 
     return true;
@@ -341,7 +341,7 @@ MountResult vfs_mount(const char *filepath) {
   String mount_dir = web_mount_dir();
   defer(free(mount_dir.data));
 
-  if (ends_with(mount_dir, ".zip")) {
+  if (mount_dir.ends_with(".zip")) {
     web_load_zip();
     res.ok = vfs_mount_type<ZipFileSystem>(mount_dir);
   } else {
@@ -361,7 +361,7 @@ MountResult vfs_mount(const char *filepath) {
   } else {
     String mount_dir = filepath;
 
-    if (ends_with(mount_dir, ".zip")) {
+    if (mount_dir.ends_with(".zip")) {
       res.ok = vfs_mount_type<ZipFileSystem>(mount_dir);
     } else {
       res.ok = vfs_mount_type<DirectoryFileSystem>(mount_dir);

@@ -1,12 +1,10 @@
 #include "scanner.h"
 
-Scanner make_scanner(String str) {
-  Scanner s = {};
-  s.data = str.data;
-  s.len = str.len;
-  s.pos = 0;
-  s.end = 0;
-  return s;
+Scanner::Scanner(String str) {
+  data = str.data;
+  len = str.len;
+  pos = 0;
+  end = 0;
 }
 
 static void advance(Scanner *s) { s->end++; }
@@ -26,40 +24,40 @@ static void skip_whitespace(Scanner *s) {
   }
 }
 
-String scan_next_string(Scanner *s) {
-  skip_whitespace(s);
-  s->pos = s->end;
+String Scanner::next_string() {
+  skip_whitespace(this);
+  pos = end;
 
-  if (at_end(s)) {
+  if (at_end(this)) {
     return "";
   }
 
-  while (!is_whitespace(peek(s)) && peek(s) != 0) {
-    advance(s);
+  while (!is_whitespace(peek(this)) && peek(this) != 0) {
+    advance(this);
   }
 
-  return {&s->data[s->pos], s->end - s->pos};
+  return {&data[pos], end - pos};
 }
 
-i32 scan_next_int(Scanner *s) {
-  skip_whitespace(s);
-  s->pos = s->end;
+i32 Scanner::next_int() {
+  skip_whitespace(this);
+  pos = end;
 
-  if (at_end(s)) {
+  if (at_end(this)) {
     return 0;
   }
 
   i32 sign = 1;
-  if (peek(s) == '-') {
+  if (peek(this) == '-') {
     sign = -1;
-    advance(s);
+    advance(this);
   }
 
   i32 num = 0;
-  while (is_digit(peek(s))) {
+  while (is_digit(peek(this))) {
     num *= 10;
-    num += peek(s) - '0';
-    advance(s);
+    num += peek(this) - '0';
+    advance(this);
   }
 
   return num * sign;

@@ -19,28 +19,28 @@ struct Assets {
   Cond notify;
   bool shutdown;
 
-  Thread *reload_thread;
+  Thread reload_thread;
   Array<FileChange> changes;
 };
 
 static Assets g_assets = {};
 
 static void hot_reload_thread(void *) {
-  u32 reload_interval = atomic_int_load(&g_app->reload_interval);
+  u32 reload_interval = g_app->reload_interval.load();
 
   while (true) {
     PROFILE_BLOCK("hot reload");
 
     {
-      mutex_lock(&g_assets.mtx);
-      defer(mutex_unlock(&g_assets.mtx));
+      g_assets.mtx.lock();
+      defer(g_assets.mtx.unlock());
 
       if (g_assets.shutdown) {
         return;
       }
 
       bool signaled =
-          cond_timed_wait(&g_assets.notify, &g_assets.mtx, reload_interval);
+          g_assets.notify.timed_wait(&g_assets.mtx, reload_interval);
       if (signaled) {
         return;
       }
@@ -49,8 +49,8 @@ static void hot_reload_thread(void *) {
     {
       PROFILE_BLOCK("check for updates");
 
-      rw_shared_lock(&g_assets.rw_lock);
-      defer(rw_shared_unlock(&g_assets.rw_lock));
+      g_assets.rw_lock.shared_lock();
+      defer(g_assets.rw_lock.shared_unlock());
 
       g_assets.changes.len = 0;
       for (auto [k, v] : g_assets.table) {
@@ -61,7 +61,7 @@ static void hot_reload_thread(void *) {
           FileChange change = {};
           change.key = v->hash;
           change.modtime = modtime;
-          array_push(&g_assets.changes, change);
+          g_assets.changes.push(change);
         }
       }
     }
@@ -69,8 +69,8 @@ static void hot_reload_thread(void *) {
     if (g_assets.changes.len > 0) {
       PROFILE_BLOCK("perform hot reload");
 
-      mutex_lock(&g_app->frame_mtx);
-      defer(mutex_unlock(&g_app->frame_mtx));
+      g_app->frame_mtx.lock();
+      defer(g_app->frame_mtx.unlock());
 
       for (FileChange change : g_assets.changes) {
         Asset a = {};
@@ -88,18 +88,18 @@ static void hot_reload_thread(void *) {
           break;
         }
         case AssetKind_Image: {
-          image_trash(&a.image);
-          ok = image_load(&a.image, a.name);
+          a.image.trash();
+          ok = a.image.load(a.name);
           break;
         }
         case AssetKind_Sprite: {
-          sprite_data_trash(&a.sprite);
-          ok = sprite_data_load(&a.sprite, a.name);
+          a.sprite.trash();
+          ok = a.sprite.load(a.name);
           break;
         }
         case AssetKind_Tilemap: {
-          tilemap_trash(&a.tilemap);
-          ok = tilemap_load(&a.tilemap, a.name);
+          a.tilemap.trash();
+          ok = a.tilemap.load(a.name);
           break;
         }
         default: continue; break;
@@ -117,43 +117,35 @@ static void hot_reload_thread(void *) {
   }
 }
 
-void assets_setup() {
-  g_assets.rw_lock = rw_make();
-  g_assets.mtx = mutex_make();
-  g_assets.notify = cond_make();
-}
-
 void assets_shutdown() {
-  if (g_assets.reload_thread != nullptr) {
-    mutex_lock(&g_assets.mtx);
-    g_assets.shutdown = true;
-    mutex_unlock(&g_assets.mtx);
-
-    cond_signal(&g_assets.notify);
-    thread_join(g_assets.reload_thread);
+  if (g_app->hot_reload_enabled.load() == 0) {
+    return;
   }
-  array_trash(&g_assets.changes);
 
-  cond_trash(&g_assets.notify);
-  mutex_trash(&g_assets.mtx);
-  rw_trash(&g_assets.rw_lock);
+  g_assets.mtx.lock();
+  g_assets.shutdown = true;
+  g_assets.mtx.unlock();
+
+  g_assets.notify.signal();
+  g_assets.reload_thread.join();
+  g_assets.changes.trash();
 
   for (auto [k, v] : g_assets.table) {
     mem_free(v->name.data);
 
     switch (v->kind) {
-    case AssetKind_Image: image_trash(&v->image); break;
-    case AssetKind_Sprite: sprite_data_trash(&v->sprite); break;
-    case AssetKind_Tilemap: tilemap_trash(&v->tilemap); break;
+    case AssetKind_Image: v->image.trash(); break;
+    case AssetKind_Sprite: v->sprite.trash(); break;
+    case AssetKind_Tilemap: v->tilemap.trash(); break;
     default: break;
     }
   }
-  hashmap_trash(&g_assets.table);
+  g_assets.table.trash();
 }
 
 void assets_start_hot_reload() {
-  if (atomic_int_load(&g_app->hot_reload_enabled) != 0) {
-    g_assets.reload_thread = thread_make(hot_reload_thread, nullptr);
+  if (g_app->hot_reload_enabled.load() != 0) {
+    g_assets.reload_thread.make(hot_reload_thread, nullptr);
   }
 }
 
@@ -194,15 +186,15 @@ bool asset_load(AssetKind kind, String filepath, Asset *out) {
       break;
     }
     case AssetKind_Image: {
-      ok = image_load(&asset.image, filepath);
+      ok = asset.image.load(filepath);
       break;
     }
     case AssetKind_Sprite: {
-      ok = sprite_data_load(&asset.sprite, filepath);
+      ok = asset.sprite.load(filepath);
       break;
     }
     case AssetKind_Tilemap: {
-      ok = tilemap_load(&asset.tilemap, filepath);
+      ok = asset.tilemap.load(filepath);
       break;
     }
     default: break;
@@ -223,10 +215,10 @@ bool asset_load(AssetKind kind, String filepath, Asset *out) {
 }
 
 bool asset_read(u64 key, Asset *out) {
-  rw_shared_lock(&g_assets.rw_lock);
-  defer(rw_shared_unlock(&g_assets.rw_lock));
+  g_assets.rw_lock.shared_lock();
+  defer(g_assets.rw_lock.shared_unlock());
 
-  const Asset *asset = hashmap_get(&g_assets.table, key);
+  const Asset *asset = g_assets.table.get(key);
   if (asset == nullptr) {
     return false;
   }
@@ -236,8 +228,8 @@ bool asset_read(u64 key, Asset *out) {
 }
 
 void asset_write(Asset asset) {
-  rw_unique_lock(&g_assets.rw_lock);
-  defer(rw_unique_unlock(&g_assets.rw_lock));
+  g_assets.rw_lock.unique_lock();
+  defer(g_assets.rw_lock.unique_unlock());
 
   g_assets.table[asset.hash] = asset;
 }

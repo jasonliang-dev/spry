@@ -7,8 +7,8 @@ struct Scanner {
   u64 len;
   u64 pos;
   u64 end;
-};
 
-Scanner make_scanner(String str);
-String scan_next_string(Scanner *s);
-i32 scan_next_int(Scanner *s);
+  Scanner(String str);
+  String next_string();
+  i32 next_int();
+};

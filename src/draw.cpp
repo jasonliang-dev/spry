@@ -224,7 +224,7 @@ void draw_sprite(Sprite *spr, DrawDescription *desc) {
   }
 
   SpriteView view = {};
-  ok = sprite_view(&view, spr);
+  ok = view.make(spr);
   if (!ok) {
     return;
   }
@@ -242,8 +242,7 @@ void draw_sprite(Sprite *spr, DrawDescription *desc) {
   float x1 = (float)view.data.width - desc->ox;
   float y1 = (float)view.data.height - desc->oy;
 
-  i32 frame = sprite_view_frame(&view);
-  SpriteFrame f = view.data.frames[frame];
+  SpriteFrame f = view.data.frames[view.frame()];
 
   renderer_apply_color();
   renderer_push_quad(vec4(x0, y0, x1, y1), vec4(f.u0, f.v0, f.u1, f.v1));
@@ -260,8 +259,7 @@ static void draw_font_line(FontFamily *font, float size, float *start_x,
     u32 atlas = 0;
     float xx = x;
     float yy = y;
-    stbtt_aligned_quad q =
-        font_quad(font, &atlas, &xx, &yy, size, rune_charcode(r));
+    stbtt_aligned_quad q = font->quad(&atlas, &xx, &yy, size, rune_charcode(r));
 
     sgl_texture({atlas}, {g_renderer.sampler});
     sgl_begin_quads();
@@ -299,15 +297,15 @@ float draw_font_wrapped(FontFamily *font, float size, float x, float y,
   renderer_apply_color();
 
   for (String line : SplitLines(text)) {
-    string_builder_clear(&font->sb);
-    Scanner scan = make_scanner(line);
+    font->sb.clear();
+    Scanner scan = line;
 
-    for (String word = scan_next_string(&scan); word != "";
-         word = scan_next_string(&scan)) {
+    for (String word = scan.next_string(); word != "";
+         word = scan.next_string()) {
 
       font->sb << word;
 
-      float width = font_width(font, size, font->sb);
+      float width = font->width(size, font->sb);
       if (width < limit) {
         font->sb << " ";
         continue;
@@ -318,7 +316,7 @@ float draw_font_wrapped(FontFamily *font, float size, float x, float y,
 
       draw_font_line(font, size, &x, &y, font->sb);
 
-      string_builder_clear(&font->sb);
+      font->sb.clear();
       font->sb << word << " ";
     }
 

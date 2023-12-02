@@ -19,32 +19,23 @@ template <typename T> struct Slice {
     assert(i >= 0 && i < len);
     return data[i];
   }
+
+  void resize(u64 n) {
+    T *buf = (T *)mem_alloc(sizeof(T) * n);
+    memcpy(buf, data, sizeof(T) * len);
+    mem_free(data);
+    data = buf;
+    len = n;
+  }
+
+  void resize(Arena *arena, u64 n) {
+    T *buf = (T *)arena->rebump(data, sizeof(T) * len, sizeof(T) * n);
+    data = buf;
+    len = n;
+  }
+
+  T *begin() { return data; }
+  T *end() { return &data[len]; }
+  const T *begin() const { return data; }
+  const T *end() const { return &data[len]; }
 };
-
-template <typename T> void slice_from_len(Slice<T> *s, u64 len) {
-  T *buf = (T *)mem_alloc(sizeof(T) * len);
-  s->data = buf;
-  s->len = len;
-}
-
-template <typename T>
-void slice_from_arena(Slice<T> *s, Arena *arena, u64 len) {
-  T *buf = (T *)arena_bump(arena, sizeof(T) * len);
-  s->data = buf;
-  s->len = len;
-}
-
-template <typename T> u64 slice_resize(Slice<T> *s, Arena *arena, u64 len) {
-  T *buf =
-      (T *)arena_rebump(arena, s->data, sizeof(T) * s->len, sizeof(T) * len);
-
-  s->data = buf;
-  s->len = len;
-
-  return len;
-}
-
-template <typename T> T *begin(Slice<T> &s) { return s.data; }
-template <typename T> T *end(Slice<T> &s) { return &s.data[s.len]; }
-template <typename T> const T *begin(const Slice<T> &s) { return s.data; }
-template <typename T> const T *end(const Slice<T> &s) { return &s.data[s.len]; }

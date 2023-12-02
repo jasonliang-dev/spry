@@ -49,7 +49,7 @@ struct TileNode {
 
   i32 x, y;
   float cost;
-  Slice<TileNode *>neighbors;
+  Slice<TileNode *> neighbors;
 };
 
 struct TileCost {
@@ -60,6 +60,8 @@ struct TileCost {
 struct TilePoint {
   float x, y;
 };
+
+inline u64 tile_key(i32 x, i32 y) { return ((u64)x << 32) | (u64)y; }
 
 class b2Body;
 class b2World;
@@ -72,16 +74,12 @@ struct Tilemap {
   HashMap<TileNode> graph;  // key: x, y
   PriorityQueue<TileNode *> frontier;
   float graph_grid_size;
+
+  bool load(String filepath);
+  void trash();
+  void destroy_bodies(b2World *world);
+  void make_collision(b2World *world, float meter, String layer_name,
+                      Slice<TilemapInt> walls);
+  void make_graph(i32 bloom, String layer_name, Slice<TileCost> costs);
+  TileNode *astar(TilePoint start, TilePoint goal);
 };
-
-inline u64 tile_key(i32 x, i32 y) { return ((u64)x << 32) | (u64)y; }
-
-bool tilemap_load(Tilemap *tm, String filepath);
-void tilemap_trash(Tilemap *tm);
-void tilemap_destroy_bodies(Tilemap *tm, b2World *world);
-
-void tilemap_make_collision(Tilemap *tm, b2World *world, float meter,
-                            String layer_name, Slice<TilemapInt> walls);
-void tilemap_make_graph(Tilemap *tm, i32 bloom, String layer_name,
-                        Slice<TileCost> costs);
-TileNode *tilemap_astar(Tilemap *tm, TilePoint start, TilePoint goal);

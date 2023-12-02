@@ -11,34 +11,32 @@ template <typename T> struct Array {
     assert(i >= 0 && i < len);
     return data[i];
   }
+
+  void trash() { mem_free(data); }
+
+  void reserve(u64 cap) {
+    if (cap > capacity) {
+      T *buf = (T *)mem_alloc(sizeof(T) * cap);
+      memcpy(buf, data, sizeof(T) * len);
+      mem_free(data);
+      data = buf;
+      capacity = cap;
+    }
+  }
+
+  void resize(u64 n) {
+    reserve(n);
+    len = n;
+  }
+
+  void push(T item) {
+    if (len == capacity) {
+      reserve(len > 0 ? len * 2 : 8);
+    }
+    data[len] = item;
+    len++;
+  }
+
+  T *begin() { return data; }
+  T *end() { return &data[len]; }
 };
-
-template <typename T> void array_trash(Array<T> *arr) { mem_free(arr->data); }
-
-template <typename T> void array_reserve(Array<T> *arr, u64 capacity) {
-  if (capacity > arr->capacity) {
-    T *buf = (T *)mem_alloc(sizeof(T) * capacity);
-    memcpy(buf, arr->data, sizeof(T) * arr->len);
-    mem_free(arr->data);
-    arr->data = buf;
-    arr->capacity = capacity;
-  }
-}
-
-template <typename T> void array_resize(Array<T> *arr, u64 len) {
-  array_reserve(arr, len);
-  arr->len = len;
-}
-
-template <typename T> void array_push(Array<T> *arr, T item) {
-  i32 len = arr->len;
-  if (len == arr->capacity) {
-    i32 grow = len > 0 ? len * 2 : 8;
-    array_reserve(arr, grow);
-  }
-  arr->data[len] = item;
-  arr->len++;
-}
-
-template <typename T> T *begin(Array<T> &arr) { return arr.data; }
-template <typename T> T *end(Array<T> &arr) { return &arr.data[arr.len]; }

@@ -25,7 +25,6 @@ struct Asset {
   };
 };
 
-void assets_setup();
 void assets_shutdown();
 void assets_start_hot_reload();
 

@@ -4,7 +4,7 @@
 #include "strings.h"
 #include "vfs.h"
 
-bool atlas_load(Atlas *atlas, String filepath) {
+bool Atlas::load(String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
@@ -20,13 +20,14 @@ bool atlas_load(Atlas *atlas, String filepath) {
   for (String line : SplitLines(contents)) {
     switch (line.data[0]) {
     case 'a': {
-      Scanner scan = make_scanner(line);
-      scan_next_string(&scan); // discard 'a'
-      String filename = scan_next_string(&scan);
+      Scanner scan = line;
+      scan.next_string(); // discard 'a'
+      String filename = scan.next_string();
 
-      BUILD_STRING(sb);
-      string_builder_swap_filename(&sb, filepath, filename);
-      bool ok = image_load(&img, sb);
+      StringBuilder sb = {};
+      defer(sb.trash());
+      sb.swap_filename(filepath, filename);
+      bool ok = img.load(sb);
       if (!ok) {
         return false;
       }
@@ -37,21 +38,21 @@ bool atlas_load(Atlas *atlas, String filepath) {
         return false;
       }
 
-      Scanner scan = make_scanner(line);
-      scan_next_string(&scan); // discard 's'
-      String name = scan_next_string(&scan);
-      scan_next_string(&scan); // discard origin x
-      scan_next_string(&scan); // discard origin y
-      i32 x = scan_next_int(&scan);
-      i32 y = scan_next_int(&scan);
-      i32 width = scan_next_int(&scan);
-      i32 height = scan_next_int(&scan);
-      i32 padding = scan_next_int(&scan);
-      i32 trimmed = scan_next_int(&scan);
-      scan_next_int(&scan); // discard trim x
-      scan_next_int(&scan); // discard trim y
-      i32 trim_width = scan_next_int(&scan);
-      i32 trim_height = scan_next_int(&scan);
+      Scanner scan = line;
+      scan.next_string(); // discard 's'
+      String name = scan.next_string();
+      scan.next_string(); // discard origin x
+      scan.next_string(); // discard origin y
+      i32 x = scan.next_int();
+      i32 y = scan.next_int();
+      i32 width = scan.next_int();
+      i32 height = scan.next_int();
+      i32 padding = scan.next_int();
+      i32 trimmed = scan.next_int();
+      scan.next_int(); // discard trim x
+      scan.next_int(); // discard trim y
+      i32 trim_width = scan.next_int();
+      i32 trim_height = scan.next_int();
 
       AtlasImage atlas_img = {};
       atlas_img.img = img;
@@ -84,17 +85,17 @@ bool atlas_load(Atlas *atlas, String filepath) {
   Atlas a;
   a.by_name = by_name;
   a.img = img;
-  *atlas = a;
+  *this = a;
 
   return true;
 }
 
-void atlas_trash(Atlas *atlas) {
-  hashmap_trash(&atlas->by_name);
-  image_trash(&atlas->img);
+void Atlas::trash() {
+  by_name.trash();
+  img.trash();
 }
 
-AtlasImage *atlas_get(Atlas *atlas, String name) {
+AtlasImage *Atlas::get(String name) {
   u64 key = fnv1a(name);
-  return hashmap_get(&atlas->by_name, key);
+  return by_name.get(key);
 }

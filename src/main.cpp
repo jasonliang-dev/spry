@@ -41,8 +41,8 @@ static void panic(const char *fmt, ...) {
 static void init() {
   PROFILE_FUNC();
 
-  mutex_lock(&g_init_mtx);
-  defer(mutex_unlock(&g_init_mtx));
+  g_init_mtx.lock();
+  defer(g_init_mtx.unlock());
 
   {
     PROFILE_BLOCK("sokol");
@@ -109,8 +109,6 @@ static void init() {
     }
   }
 
-  g_app->frame_mtx = mutex_make();
-
   assets_start_hot_reload();
 
 #ifndef NDEBUG
@@ -145,8 +143,8 @@ static void event(const sapp_event *e) {
 static void frame() {
   PROFILE_FUNC();
 
-  mutex_lock(&g_app->frame_mtx);
-  defer(mutex_unlock(&g_app->frame_mtx));
+  g_app->frame_mtx.lock();
+  defer(g_app->frame_mtx.unlock());
 
   {
     AppTime *time = &g_app->time;
@@ -225,7 +223,7 @@ static void frame() {
   if (g_app->error_mode) {
     if (g_app->default_font == nullptr) {
       g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
-      font_load_default(g_app->default_font);
+      g_app->default_font->load_default();
     }
 
     renderer_reset();
@@ -300,7 +298,7 @@ static void frame() {
 
     if (sound->dead_end) {
       assert(sound->zombie);
-      sound_trash(sound);
+      sound->trash();
 
       sounds[i] = sounds[sounds.len - 1];
       sounds.len--;
@@ -325,17 +323,16 @@ static void actually_cleanup() {
     PROFILE_BLOCK("destroy assets");
 
     if (g_app->default_font != nullptr) {
-      font_trash(g_app->default_font);
+      g_app->default_font->trash();
       mem_free(g_app->default_font);
     }
 
     for (Sound *sound : g_app->garbage_sounds) {
-      sound_trash(sound);
+      sound->trash();
     }
-    array_trash(&g_app->garbage_sounds);
+    g_app->garbage_sounds.trash();
 
     assets_shutdown();
-    mutex_trash(&g_app->frame_mtx);
   }
 
   {
@@ -385,10 +382,7 @@ static void cleanup() {
   }
 #endif
 
-  g_allocator->trash();
   operator delete(g_allocator);
-
-  mutex_trash(&g_init_mtx);
 
 #ifndef NDEBUG
   printf("bye\n");
@@ -434,7 +428,7 @@ static void load_all_lua_scripts(lua_State *L) {
     for (String str : files) {
       mem_free(str.data);
     }
-    array_trash(&files);
+    files.trash();
   });
 
   bool ok = vfs_list_all_files(&files);
@@ -449,7 +443,7 @@ static void load_all_lua_scripts(lua_State *L) {
         });
 
   for (String file : files) {
-    if (file != "main.lua" && ends_with(file, ".lua")) {
+    if (file != "main.lua" && file.ends_with(".lua")) {
       asset_load(AssetKind_LuaRef, file, nullptr);
     }
   }
@@ -459,16 +453,14 @@ static void load_all_lua_scripts(lua_State *L) {
 /* extern(prelude.h) */ Allocator *g_allocator;
 
 sapp_desc sokol_main(int argc, char **argv) {
-  g_init_mtx = mutex_make();
-  mutex_lock(&g_init_mtx);
-  defer(mutex_unlock(&g_init_mtx));
+  g_init_mtx.lock();
+  defer(g_init_mtx.unlock());
 
 #ifndef NDEBUG
   g_allocator = new DebugAllocator();
 #else
   g_allocator = new HeapAllocator();
 #endif
-  g_allocator->make();
 
   os_high_timer_resolution();
   stm_setup();
@@ -488,15 +480,13 @@ sapp_desc sokol_main(int argc, char **argv) {
   g_app = (App *)mem_alloc(sizeof(App));
   memset(g_app, 0, sizeof(App));
 
-  slice_from_len(&g_app->args, argc);
+  g_app->args.resize(argc);
   for (i32 i = 0; i < argc; i++) {
     g_app->args[i] = to_cstr(argv[i]);
   }
 
   setup_lua();
   lua_State *L = g_app->L;
-
-  assets_setup();
 
   MountResult mount = vfs_mount(mount_path);
   bool win_console = false;
@@ -557,9 +547,8 @@ sapp_desc sokol_main(int argc, char **argv) {
     load_all_lua_scripts(L);
   }
 
-  atomic_int_store(&g_app->hot_reload_enabled,
-                   mount.can_hot_reload && hot_reload);
-  atomic_int_store(&g_app->reload_interval, (u32)(reload_interval * 1000));
+  g_app->hot_reload_enabled.store(mount.can_hot_reload && hot_reload);
+  g_app->reload_interval.store((u32)(reload_interval * 1000));
 
   if (target_fps != 0) {
     g_app->time.target_ticks = 1000000000 / target_fps;

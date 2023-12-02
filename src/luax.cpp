@@ -22,7 +22,8 @@ i32 luax_require_script(lua_State *L, String filepath) {
   String contents;
   bool ok = vfs_read_entire_file(&contents, filepath);
   if (!ok) {
-    BUILD_STRING(sb);
+    StringBuilder sb = {};
+    defer(sb.trash());
     fatal_error(sb << "failed to read file: " << filepath);
     return LUA_REFNIL;
   }
@@ -210,7 +211,8 @@ String luax_opt_string(lua_State *L, i32 arg, String def) {
 
 int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
                       String needle) {
-  BUILD_STRING(sb);
+  StringBuilder sb = {};
+  defer(sb.trash());
 
   sb << "expected one of: {";
   for (String s : haystack) {

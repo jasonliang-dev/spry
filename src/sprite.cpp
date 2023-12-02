@@ -8,7 +8,7 @@
 #include "slice.h"
 #include "vfs.h"
 
-bool sprite_data_load(SpriteData *spr, String filepath) {
+bool SpriteData::load(String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
@@ -31,11 +31,11 @@ bool sprite_data_load(SpriteData *spr, String filepath) {
   i32 rect = ase->w * ase->h * 4;
 
   Slice<SpriteFrame> frames = {};
-  slice_from_arena(&frames, &arena, ase->frame_count);
+  frames.resize(&arena, ase->frame_count);
 
   Array<char> pixels = {};
-  array_reserve(&pixels, ase->frame_count * rect);
-  defer(array_trash(&pixels));
+  pixels.reserve(ase->frame_count * rect);
+  defer(pixels.trash());
 
   for (i32 i = 0; i < ase->frame_count; i++) {
     ase_frame_t &frame = ase->frames[i];
@@ -70,7 +70,7 @@ bool sprite_data_load(SpriteData *spr, String filepath) {
   img.height = desc.height;
 
   HashMap<SpriteLoop> by_tag = {};
-  hashmap_reserve(&by_tag, (u64)ase->tag_count);
+  by_tag.reserve(ase->tag_count);
 
   for (i32 i = 0; i < ase->tag_count; i++) {
     ase_tag_t &tag = ase->tags[i];
@@ -79,7 +79,7 @@ bool sprite_data_load(SpriteData *spr, String filepath) {
 
     SpriteLoop loop = {};
 
-    slice_from_arena(&loop.indices, &arena, len);
+    loop.indices.resize(&arena, len);
     for (i32 j = 0; j < len; j++) {
       loop.indices[j] = j + tag.from_frame;
     }
@@ -97,58 +97,58 @@ bool sprite_data_load(SpriteData *spr, String filepath) {
   s.by_tag = by_tag;
   s.width = ase->w;
   s.height = ase->h;
-  *spr = s;
+  *this = s;
   return true;
 }
 
-void sprite_data_trash(SpriteData *spr) {
-  hashmap_trash(&spr->by_tag);
-  arena_trash(&spr->arena);
+void SpriteData::trash() {
+  by_tag.trash();
+  arena.trash();
 }
 
-bool sprite_play(Sprite *spr, String tag) {
+bool Sprite::play(String tag) {
   u64 key = fnv1a(tag);
-  bool same = spr->loop == key;
-  spr->loop = key;
+  bool same = loop == key;
+  loop = key;
   return same;
 }
 
-void sprite_update(Sprite *spr, float dt) {
+void Sprite::update(float dt) {
   SpriteView view = {};
-  bool ok = sprite_view(&view, spr);
+  bool ok = view.make(this);
   if (!ok) {
     return;
   }
 
-  i32 index = sprite_view_frame(&view);
+  i32 index = view.frame();
   SpriteFrame frame = view.data.frames[index];
 
-  spr->elapsed += dt * 1000;
-  if (spr->elapsed > frame.duration) {
-    if (spr->current_frame == sprite_view_len(&view) - 1) {
-      spr->current_frame = 0;
+  elapsed += dt * 1000;
+  if (elapsed > frame.duration) {
+    if (current_frame == view.len() - 1) {
+      current_frame = 0;
     } else {
-      spr->current_frame++;
+      current_frame++;
     }
 
-    spr->elapsed -= frame.duration;
+    elapsed -= frame.duration;
   }
 }
 
-void sprite_set_frame(Sprite *spr, i32 frame) {
+void Sprite::set_frame(i32 frame) {
   SpriteView view = {};
-  bool ok = sprite_view(&view, spr);
+  bool ok = view.make(this);
   if (!ok) {
     return;
   }
 
-  if (0 <= frame && frame < sprite_view_len(&view)) {
-    spr->current_frame = frame;
-    spr->elapsed = 0;
+  if (0 <= frame && frame < view.len()) {
+    current_frame = frame;
+    elapsed = 0;
   }
 }
 
-bool sprite_view(SpriteView *out, Sprite *spr) {
+bool SpriteView::make(Sprite *spr) {
   Asset a = {};
   bool ok = asset_read(spr->sprite, &a);
   if (!ok) {
@@ -156,7 +156,7 @@ bool sprite_view(SpriteView *out, Sprite *spr) {
   }
 
   SpriteData data = a.sprite;
-  const SpriteLoop *res = hashmap_get(&data.by_tag, spr->loop);
+  const SpriteLoop *res = data.by_tag.get(spr->loop);
 
   SpriteView view = {};
   view.sprite = spr;
@@ -166,22 +166,22 @@ bool sprite_view(SpriteView *out, Sprite *spr) {
     view.loop = *res;
   }
 
-  *out = view;
+  *this = view;
   return true;
 }
 
-i32 sprite_view_frame(SpriteView *view) {
-  if (view->loop.indices.data != nullptr) {
-    return view->loop.indices[view->sprite->current_frame];
+i32 SpriteView::frame() {
+  if (loop.indices.data != nullptr) {
+    return loop.indices[sprite->current_frame];
   } else {
-    return view->sprite->current_frame;
+    return sprite->current_frame;
   }
 }
 
-u64 sprite_view_len(SpriteView *view) {
-  if (view->loop.indices.data != nullptr) {
-    return view->loop.indices.len;
+u64 SpriteView::len() {
+  if (loop.indices.data != nullptr) {
+    return loop.indices.len;
   } else {
-    return view->data.frames.len;
+    return data.frames.len;
   }
 }

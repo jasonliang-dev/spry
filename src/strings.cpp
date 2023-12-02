@@ -2,29 +2,29 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-String substr(String str, u64 i, u64 j) {
+String String::substr(u64 i, u64 j) {
   assert(i <= j);
-  assert(j <= (i64)str.len);
-  return {&str.data[i], j - i};
+  assert(j <= (i64)len);
+  return {&data[i], j - i};
 }
 
-bool starts_with(String hay, String match) {
-  if (hay.len < match.len) {
+bool String::starts_with(String match) {
+  if (len < match.len) {
     return false;
   }
-  return substr(hay, 0, match.len) == match;
+  return substr(0, match.len) == match;
 }
 
-bool ends_with(String hay, String match) {
-  if (hay.len < match.len) {
+bool String::ends_with(String match) {
+  if (len < match.len) {
     return false;
   }
-  return substr(hay, hay.len - match.len, hay.len) == match;
+  return substr(len - match.len, len) == match;
 }
 
-u64 first_of(String hay, char c) {
-  for (u64 i = 0; i < hay.len; i++) {
-    if (hay.data[i] == c) {
+u64 String::first_of(char c) {
+  for (u64 i = 0; i < len; i++) {
+    if (data[i] == c) {
       return i;
     }
   }
@@ -32,18 +32,18 @@ u64 first_of(String hay, char c) {
   return (u64)-1;
 }
 
-u64 last_of(String hay, char c) {
-  if (hay.len == 0) {
+u64 String::last_of(char c) {
+  if (len == 0) {
     return (u64)-1;
   }
 
-  for (u64 i = hay.len - 1; i > 1; i--) {
-    if (hay.data[i] == c) {
+  for (u64 i = len - 1; i > 1; i--) {
+    if (data[i] == c) {
       return i;
     }
   }
 
-  if (hay.data[0] == c) {
+  if (data[0] == c) {
     return 0;
   }
 
@@ -177,77 +177,78 @@ UTF8Iterator end(UTF8 utf8) { return {utf8.str, utf8.str.len, {}}; }
 
 static char s_empty[1] = {0};
 
-StringBuilder string_builder_make() {
-  StringBuilder sb = {};
-  sb.data = s_empty;
-  return sb;
+StringBuilder::StringBuilder() {
+  data = s_empty;
+  len = 0;
+  capacity = 0;
 }
 
-void string_builder_trash(StringBuilder *sb) {
-  if (sb->data != s_empty) {
-    mem_free(sb->data);
+void StringBuilder::trash() {
+  if (data != s_empty) {
+    mem_free(data);
   }
 }
 
-void string_builder_reserve(StringBuilder *sb, u64 capacity) {
-  if (capacity > sb->capacity) {
-    char *buf = (char *)mem_alloc(capacity);
-    memset(buf, 0, capacity);
-    memcpy(buf, sb->data, sb->len);
+void StringBuilder::reserve(u64 cap) {
+  if (cap > capacity) {
+    char *buf = (char *)mem_alloc(cap);
+    memset(buf, 0, cap);
+    memcpy(buf, data, len);
 
-    if (sb->data != s_empty) {
-      mem_free(sb->data);
+    if (data != s_empty) {
+      mem_free(data);
     }
 
-    sb->data = buf;
-    sb->capacity = capacity;
+    data = buf;
+    capacity = cap;
   }
 }
 
-void string_builder_concat(StringBuilder *sb, String str, i32 times) {
+void StringBuilder::clear() {
+  len = 0;
+  if (data != s_empty) {
+    data[0] = 0;
+  }
+}
+
+void StringBuilder::swap_filename(String filepath, String file) {
+  clear();
+
+  u64 slash = filepath.last_of('/');
+  if (slash != (u64)-1) {
+    String path = filepath.substr(0, slash + 1);
+    *this << path;
+  }
+
+  *this << file;
+}
+
+void StringBuilder::concat(String str, i32 times) {
   for (i32 i = 0; i < times; i++) {
-    *sb << str;
+    *this << str;
   }
 }
 
-StringBuilder &operator<<(StringBuilder &sb, String str) {
-  u64 desired = sb.len + str.len + 1;
-  u64 capacity = sb.capacity;
+StringBuilder &StringBuilder::operator<<(String str) {
+  u64 desired = len + str.len + 1;
+  u64 cap = capacity;
 
-  if (desired >= capacity) {
-    u64 growth = capacity > 0 ? capacity * 2 : 8;
+  if (desired >= cap) {
+    u64 growth = cap > 0 ? cap * 2 : 8;
     if (growth <= desired) {
       growth = desired;
     }
 
-    string_builder_reserve(&sb, growth);
+    reserve(growth);
   }
 
-  memcpy(&sb.data[sb.len], str.data, str.len);
-  sb.len += str.len;
-  sb.data[sb.len] = 0;
-  return sb;
+  memcpy(&data[len], str.data, str.len);
+  len += str.len;
+  data[len] = 0;
+  return *this;
 }
 
-void string_builder_clear(StringBuilder *sb) {
-  sb->len = 0;
-  if (sb->data != s_empty) {
-    sb->data[0] = 0;
-  }
-}
-
-void string_builder_swap_filename(StringBuilder *sb, String filepath,
-                                  String file) {
-  string_builder_clear(sb);
-
-  u64 slash = last_of(filepath, '/');
-  if (slash != (u64)-1) {
-    String path = substr(filepath, 0, slash + 1);
-    *sb << path;
-  }
-
-  *sb << file;
-}
+StringBuilder::operator String() { return {data, len}; }
 
 String str_fmt(const char *fmt, ...) {
   va_list args;

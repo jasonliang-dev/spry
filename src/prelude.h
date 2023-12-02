@@ -52,15 +52,11 @@ using u32 = uint32_t;
 using u64 = uint64_t;
 
 struct Allocator {
-  virtual void make() = 0;
-  virtual void trash() = 0;
   virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
   virtual void free(void *ptr) = 0;
 };
 
 struct HeapAllocator : Allocator {
-  void make() {}
-  void trash() {}
   void *alloc(size_t bytes, const char *, i32) { return malloc(bytes); }
   void free(void *ptr) { ::free(ptr); }
 };
@@ -78,12 +74,9 @@ struct DebugAllocator : Allocator {
   DebugAllocInfo *head = nullptr;
   Mutex mtx = {};
 
-  void make() { mtx = mutex_make(); }
-  void trash() { mutex_trash(&mtx); }
-
   void *alloc(size_t bytes, const char *file, i32 line) {
-    mutex_lock(&mtx);
-    defer(mutex_unlock(&mtx));
+    mtx.lock();
+    defer(mtx.unlock());
 
     DebugAllocInfo *info =
         (DebugAllocInfo *)malloc(offsetof(DebugAllocInfo, buf[bytes]));
@@ -104,8 +97,8 @@ struct DebugAllocator : Allocator {
       return;
     }
 
-    mutex_lock(&mtx);
-    defer(mutex_unlock(&mtx));
+    mtx.lock();
+    defer(mtx.unlock());
 
     DebugAllocInfo *info =
         (DebugAllocInfo *)((u8 *)ptr - offsetof(DebugAllocInfo, buf));
@@ -145,12 +138,6 @@ inline bool is_alpha(char c) {
 
 inline bool is_digit(char c) { return c >= '0' && c <= '9'; }
 
-struct StringBuilder {
-  char *data;
-  u64 len;      // does not include null term
-  u64 capacity; // includes null term
-};
-
 struct String {
   char *data = nullptr;
   u64 len = 0;
@@ -158,7 +145,16 @@ struct String {
   String() = default;
   String(const char *cstr) : data((char *)cstr), len(strlen(cstr)) {}
   String(const char *cstr, u64 n) : data((char *)cstr), len(n) {}
-  String(StringBuilder sb) : data(sb.data), len(sb.len) {}
+
+  // implementation in strings.cpp
+  String substr(u64 i, u64 j);
+  bool starts_with(String match);
+  bool ends_with(String match);
+  u64 first_of(char c);
+  u64 last_of(char c);
+
+  char *begin() { return data; }
+  char *end() { return &data[len]; }
 };
 
 inline String to_cstr(String str) {
@@ -167,9 +163,6 @@ inline String to_cstr(String str) {
   buf[str.len] = 0;
   return {buf, str.len};
 }
-
-inline char *begin(String str) { return str.data; }
-inline char *end(String str) { return &str.data[str.len]; }
 
 constexpr u64 fnv1a(const char *str, u64 len) {
   u64 hash = 14695981039346656037u;

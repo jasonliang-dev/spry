@@ -13,8 +13,8 @@ struct AtlasImage {
 struct Atlas {
   HashMap<AtlasImage> by_name;
   Image img;
-};
 
-bool atlas_load(Atlas *atlas, String filepath);
-void atlas_trash(Atlas *atlas);
-AtlasImage *atlas_get(Atlas *atlas, String name);
+  bool load(String filepath);
+  void trash();
+  AtlasImage *get(String name);
+};

@@ -104,7 +104,7 @@ static void json_skip_whitespace(JSONScanner *scan) {
 }
 
 static String json_lexeme(JSONScanner *scan) {
-  return substr(scan->contents, scan->begin, scan->end);
+  return scan->contents.substr(scan->begin, scan->end);
 }
 
 static JSONToken json_make_tok(JSONScanner *scan, JSONTok kind) {
@@ -144,9 +144,9 @@ static JSONToken json_scan_ident(Arena *a, JSONScanner *scan) {
   } else if (t.str == "null") {
     t.kind = JSONTok_Null;
   } else {
-    BUILD_STRING(sb);
-    String s =
-        arena_bump_string(a, sb << "unknown identifier: '" << t.str << "'");
+    StringBuilder sb = {};
+    defer(sb.trash());
+    String s = a->bump_string(sb << "unknown identifier: '" << t.str << "'");
     return json_err_tok(scan, s);
   }
 
@@ -221,7 +221,7 @@ static JSONToken json_scan_next(Arena *a, JSONScanner *scan) {
   }
 
   String msg = tmp_fmt("unexpected character: '%c' (%d)", c, (int)c);
-  String s = arena_bump_string(a, msg);
+  String s = a->bump_string(msg);
   return json_err_tok(scan, s);
 }
 
@@ -252,14 +252,14 @@ static String json_parse_object(Arena *a, JSONScanner *scan, JSONObject **out) {
     if (key.kind != JSONKind_String) {
       String msg = tmp_fmt("expected string as object key on line: %d. got: %s",
                            (i32)scan->token.line, json_kind_string(key.kind));
-      return arena_bump_string(a, msg);
+      return a->bump_string(msg);
     }
 
     if (scan->token.kind != JSONTok_Colon) {
       String msg =
           tmp_fmt("expected colon on line: %d. got %s", (i32)scan->token.line,
                   json_tok_string(scan->token.kind));
-      return arena_bump_string(a, msg);
+      return a->bump_string(msg);
     }
 
     json_scan_next(a, scan);
@@ -270,7 +270,7 @@ static String json_parse_object(Arena *a, JSONScanner *scan, JSONObject **out) {
       return err;
     }
 
-    JSONObject *entry = (JSONObject *)arena_bump(a, sizeof(JSONObject));
+    JSONObject *entry = (JSONObject *)a->bump(sizeof(JSONObject));
     entry->next = obj;
     entry->hash = fnv1a(key.string);
     entry->key = key.string;
@@ -304,7 +304,7 @@ static String json_parse_array(Arena *a, JSONScanner *scan, JSONArray **out) {
       return err;
     }
 
-    JSONArray *el = (JSONArray *)arena_bump(a, sizeof(JSONArray));
+    JSONArray *el = (JSONArray *)a->bump(sizeof(JSONArray));
     el->next = arr;
     el->value = value;
     el->index = 0;
@@ -333,7 +333,7 @@ static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
   }
   case JSONTok_String: {
     out->kind = JSONKind_String;
-    out->string = substr(scan->token.str, 1, scan->token.str.len - 1);
+    out->string = scan->token.str.substr(1, scan->token.str.len - 1);
     json_scan_next(a, scan);
     return {};
   }
@@ -361,142 +361,130 @@ static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
     return {};
   }
   case JSONTok_Error: {
-    BUILD_STRING(sb);
+    StringBuilder sb = {};
+    defer(sb.trash());
     sb << scan->token.str
        << tmp_fmt(" on line %d:%d", (i32)scan->token.line,
                   (i32)scan->token.column);
-    return arena_bump_string(a, sb);
+    return a->bump_string(sb);
   }
   default: {
     String msg = tmp_fmt("unknown json token: %s on line %d:%d",
                          json_tok_string(scan->token.kind),
                          (i32)scan->token.line, (i32)scan->token.column);
-    return arena_bump_string(a, msg);
+    return a->bump_string(msg);
   }
   }
 }
 
-void json_parse(JSONDocument *out, String contents) {
+void JSONDocument::parse(String contents) {
   PROFILE_FUNC();
 
-  out->arena = {};
+  arena = {};
 
   JSONScanner scan = {};
   scan.contents = contents;
   scan.line = 1;
 
-  json_scan_next(&out->arena, &scan);
+  json_scan_next(&arena, &scan);
 
-  String err = json_parse_next(&out->arena, &scan, &out->root);
+  String err = json_parse_next(&arena, &scan, &root);
   if (err.data != nullptr) {
-    out->error = err;
+    error = err;
     return;
   }
 
   if (scan.token.kind != JSONTok_EOF) {
-    out->error = "expected EOF";
+    error = "expected EOF";
     return;
   }
 }
 
-void json_trash(JSONDocument *doc) {
+void JSONDocument::trash() {
   PROFILE_FUNC();
-  arena_trash(&doc->arena);
+  arena.trash();
 }
 
-static void json_read_error(JSON *json) {
-  json->had_error = true;
-  if (json->parent) {
-    json_read_error(json->parent);
-  }
-}
-
-static bool json_is_bad(JSON *json) {
-  return json == nullptr || json->had_error;
-}
-
-JSON *json_lookup(JSON *obj, String key) {
-  if (json_is_bad(obj)) {
-    return nullptr;
-  }
-
-  if (obj->kind == JSONKind_Object) {
-    for (JSONObject *o = obj->object; o != nullptr; o = o->next) {
+JSON JSON::lookup(String key, bool *ok) {
+  if (*ok && kind == JSONKind_Object) {
+    for (JSONObject *o = object; o != nullptr; o = o->next) {
       if (o->hash == fnv1a(key)) {
-        return &o->value;
+        return o->value;
       }
     }
   }
 
-  json_read_error(obj);
-  return nullptr;
+  *ok = false;
+  return {};
 }
 
-JSON *json_index(JSON *arr, i32 index) {
-  if (json_is_bad(arr)) {
-    return nullptr;
-  }
-
-  if (arr->kind == JSONKind_Array) {
-    for (JSONArray *a = arr->array; a != nullptr; a = a->next) {
-      if (a->index == index) {
-        return &a->value;
+JSON JSON::index(i32 i, bool *ok) {
+  if (*ok && kind == JSONKind_Array) {
+    for (JSONArray *a = array; a != nullptr; a = a->next) {
+      if (a->index == i) {
+        return a->value;
       }
     }
   }
 
-  json_read_error(arr);
-  return nullptr;
+  *ok = false;
+  return {};
 }
 
-JSONObject *json_object(JSON *json) {
-  if (json_is_bad(json)) {
-    return {};
-  } else if (json->kind != JSONKind_Object) {
-    json_read_error(json);
-    return {};
-  } else {
-    for (JSONObject *o = json->object; o != nullptr; o = o->next) {
-      o->value.parent = json;
-    }
-    return json->object;
+JSONObject *JSON::as_object(bool *ok) {
+  if (*ok && kind == JSONKind_Object) {
+    return object;
   }
+
+  *ok = false;
+  return {};
 }
 
-JSONArray *json_array(JSON *json) {
-  if (json_is_bad(json)) {
-    return {};
-  } else if (json->kind != JSONKind_Array) {
-    json_read_error(json);
-    return {};
-  } else {
-    for (JSONArray *a = json->array; a != nullptr; a = a->next) {
-      a->value.parent = json;
-    }
-    return json->array;
+JSONArray *JSON::as_array(bool *ok) {
+  if (*ok && kind == JSONKind_Array) {
+    return array;
   }
+
+  *ok = false;
+  return {};
 }
 
-String json_string(JSON *json) {
-  if (json_is_bad(json)) {
-    return {};
-  } else if (json->kind != JSONKind_String) {
-    json_read_error(json);
-    return {};
-  } else {
-    return json->string;
+String JSON::as_string(bool *ok) {
+  if (*ok && kind == JSONKind_String) {
+    return string;
   }
+
+  *ok = false;
+  return {};
 }
 
-double json_number(JSON *json) {
-  if (json_is_bad(json)) {
-    return 0;
-  } else if (json->kind != JSONKind_Number) {
-    json_read_error(json);
-    return 0;
-  } else {
-    return json->number;
+double JSON::as_number(bool *ok) {
+  if (*ok && kind == JSONKind_Number) {
+    return number;
   }
+
+  *ok = false;
+  return {};
+}
+
+JSONObject *JSON::lookup_object(String key, bool *ok) {
+  return lookup(key, ok).as_object(ok);
+}
+
+JSONArray *JSON::lookup_array(String key, bool *ok) {
+  return lookup(key, ok).as_array(ok);
+}
+
+String JSON::lookup_string(String key, bool *ok) {
+  return lookup(key, ok).as_string(ok);
+}
+
+double JSON::lookup_number(String key, bool *ok) {
+  return lookup(key, ok).as_number(ok);
+}
+
+double JSON::index_number(i32 i, bool *ok) {
+  return index(i, ok).as_number(ok);
 }
 
 static void json_write_string(StringBuilder &sb, JSON *json, i32 level) {
@@ -504,12 +492,12 @@ static void json_write_string(StringBuilder &sb, JSON *json, i32 level) {
   case JSONKind_Object: {
     sb << "{\n";
     for (JSONObject *o = json->object; o != nullptr; o = o->next) {
-      string_builder_concat(&sb, "  ", level);
+      sb.concat("  ", level);
       sb << o->key;
       json_write_string(sb, &o->value, level + 1);
       sb << ",\n";
     }
-    string_builder_concat(&sb, "  ", level - 1);
+    sb.concat("  ", level - 1);
     for (i32 i = 0; i < level; i++) {
       sb << "  ";
     }
@@ -519,11 +507,11 @@ static void json_write_string(StringBuilder &sb, JSON *json, i32 level) {
   case JSONKind_Array: {
     sb << "[\n";
     for (JSONArray *a = json->array; a != nullptr; a = a->next) {
-      string_builder_concat(&sb, "  ", level);
+      sb.concat("  ", level);
       json_write_string(sb, &a->value, level + 1);
       sb << ",\n";
     }
-    string_builder_concat(&sb, "  ", level - 1);
+    sb.concat("  ", level - 1);
     sb << "]";
     break;
   }
@@ -540,7 +528,8 @@ void json_write_string(StringBuilder *sb, JSON *json) {
 }
 
 void json_print(JSON *json) {
-  BUILD_STRING(sb);
+  StringBuilder sb = {};
+  defer(sb.trash());
   json_write_string(&sb, json);
   printf("%s\n", sb.data);
 }
@@ -584,8 +573,8 @@ void json_to_lua(lua_State *L, JSON *json) {
   }
 }
 
-static void lua_to_json_string(StringBuilder &sb, lua_State *L, HashMap<bool> *visited,
-                               String *err) {
+static void lua_to_json_string(StringBuilder &sb, lua_State *L,
+                               HashMap<bool> *visited, String *err) {
   if (err->len != 0) {
     return;
   }
@@ -596,7 +585,7 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L, HashMap<bool> *v
     uintptr_t ptr = (uintptr_t)lua_topointer(L, top);
 
     bool *visit = nullptr;
-    hashmap_index(visited, ptr, &visit);
+    visited->index(ptr, &visit);
     if (*visit) {
       *err = "table has cycles";
       return;
@@ -666,7 +655,7 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L, HashMap<bool> *v
       return;
     }
 
-    hashmap_unset(visited, ptr);
+    visited->unset(ptr);
     break;
   }
   case LUA_TNIL: sb << "null"; break;
@@ -678,17 +667,18 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L, HashMap<bool> *v
 }
 
 void lua_to_json_string(lua_State *L, i32 arg, String *contents, String *err) {
-  StringBuilder sb = string_builder_make();
+  StringBuilder sb = {};
+  defer(sb.trash());
 
   HashMap<bool> visited = {};
-  defer(hashmap_trash(&visited));
+  defer(visited.trash());
 
   lua_pushvalue(L, arg);
   lua_to_json_string(sb, L, &visited, err);
   lua_pop(L, 1);
 
   if (err->len != 0) {
-    string_builder_trash(&sb);
+    sb.trash();
   }
 
   *contents = sb;

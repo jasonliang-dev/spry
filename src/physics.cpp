@@ -156,17 +156,14 @@ static void drop_physics_udata(lua_State *L, PhysicsUserData *pud) {
 
 void physics_destroy_body(lua_State *L, Physics *physics) {
   Array<PhysicsUserData *> puds = {};
-  defer(array_trash(&puds));
+  defer(puds.trash());
 
   for (b2Fixture *f = physics->body->GetFixtureList(); f != nullptr;
        f = f->GetNext()) {
-    PhysicsUserData *p = (PhysicsUserData *)f->GetUserData().pointer;
-    array_push(&puds, p);
+    puds.push((PhysicsUserData *)f->GetUserData().pointer);
   }
 
-  PhysicsUserData *pud =
-      (PhysicsUserData *)physics->body->GetUserData().pointer;
-  array_push(&puds, pud);
+  puds.push((PhysicsUserData *)physics->body->GetUserData().pointer);
 
   physics->world->DestroyBody(physics->body);
   physics->body = nullptr;

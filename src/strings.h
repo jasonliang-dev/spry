@@ -2,12 +2,6 @@
 
 #include "prelude.h"
 
-String substr(String str, u64 i, u64 j);
-bool starts_with(String hay, String match);
-bool ends_with(String hay, String match);
-u64 first_of(String hay, char c);
-u64 last_of(String hay, char c);
-
 struct SplitLinesIterator {
   String data;
   String view;
@@ -53,19 +47,22 @@ struct UTF8 {
 UTF8Iterator begin(UTF8 utf8);
 UTF8Iterator end(UTF8 utf8);
 
-StringBuilder string_builder_make();
-void string_builder_trash(StringBuilder *sb);
-void string_builder_reserve(StringBuilder *sb, u64 capacity);
-void string_builder_clear(StringBuilder *sb);
-void string_builder_swap_filename(StringBuilder *sb, String filepath,
-                                  String file);
-void string_builder_concat(StringBuilder *sb, String str, i32 times);
+struct StringBuilder {
+  char *data;
+  u64 len;      // does not include null term
+  u64 capacity; // includes null term
 
-StringBuilder &operator<<(StringBuilder &sb, String str);
+  StringBuilder();
 
-#define BUILD_STRING(sbuilder)                                                 \
-  StringBuilder sbuilder = string_builder_make();                              \
-  defer(string_builder_trash(&sbuilder));
+  void trash();
+  void reserve(u64 capacity);
+  void clear();
+  void swap_filename(String filepath, String file);
+  void concat(String str, i32 times);
+
+  StringBuilder &operator<<(String str);
+  operator String();
+};
 
 FORMAT_ARGS(1) String str_fmt(const char *fmt, ...);
 FORMAT_ARGS(1) String tmp_fmt(const char *fmt, ...);

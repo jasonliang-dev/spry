@@ -5,7 +5,7 @@
 #include "vfs.h"
 #include <stdio.h>
 
-bool image_load(Image *image, String filepath) {
+bool Image::load(String filepath) {
   PROFILE_FUNC();
 
   String contents = {};
@@ -57,14 +57,14 @@ bool image_load(Image *image, String filepath) {
     id = sg_make_image(desc).id;
   }
 
-  printf("created image (%dx%d) with id %d\n", width, height, id);
-
   Image img = {};
   img.id = id;
   img.width = width;
   img.height = height;
-  *image = img;
+  *this = img;
+
+  printf("created image (%dx%d) with id %d\n", width, height, id);
   return true;
 }
 
-void image_trash(Image *image) { sg_destroy_image({image->id}); }
+void Image::trash() { sg_destroy_image({id}); }

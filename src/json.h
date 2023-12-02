@@ -21,9 +21,22 @@ struct JSON {
     double number;
     bool boolean;
   };
-  JSON *parent;
   JSONKind kind;
-  bool had_error;
+
+  JSON lookup(String key, bool *ok);
+  JSON index(i32 i, bool *ok);
+
+  JSONObject *as_object(bool *ok);
+  JSONArray *as_array(bool *ok);
+  String as_string(bool *ok);
+  double as_number(bool *ok);
+
+  JSONObject *lookup_object(String key, bool *ok);
+  JSONArray *lookup_array(String key, bool *ok);
+  String lookup_string(String key, bool *ok);
+  double lookup_number(String key, bool *ok);
+
+  double index_number(i32 i, bool *ok);
 };
 
 struct JSONObject {
@@ -43,24 +56,10 @@ struct JSONDocument {
   JSON root;
   String error;
   Arena arena;
+
+  void parse(String contents);
+  void trash();
 };
-
-void json_parse(JSONDocument *out, String contents);
-void json_trash(JSONDocument *doc);
-JSON *json_lookup(JSON *obj, String key);
-JSON *json_index(JSON *arr, i32 index);
-JSONObject *json_object(JSON *json);
-JSONArray *json_array(JSON *json);
-String json_string(JSON *json);
-double json_number(JSON *json);
-
-inline String json_lookup_string(JSON *json, String key) {
-  return json_string(json_lookup(json, key));
-}
-
-inline double json_lookup_number(JSON *json, String key) {
-  return json_number(json_lookup(json, key));
-}
 
 struct StringBuilder;
 void json_write_string(StringBuilder *sb, JSON *json);

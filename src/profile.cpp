@@ -15,47 +15,43 @@ void profile_shutdown() {}
 
 struct Profile {
   Chan<TraceEvent> events;
-  Thread *recv_thread;
+  Thread recv_thread;
 };
 
-static Profile g_profile;
+static Profile g_profile = {};
 
 static void profile_recv_thread(void *) {
-  StringBuilder sb = string_builder_make();
-  string_builder_swap_filename(&sb, os_program_path(), "profile.json");
+  StringBuilder sb = {};
+  sb.swap_filename(os_program_path(), "profile.json");
 
   FILE *f = fopen(sb.data, "w");
-  string_builder_trash(&sb);
+  sb.trash();
 
   defer(fclose(f));
 
   fputs("[", f);
   while (true) {
-    TraceEvent e = chan_recv(&g_profile.events);
+    TraceEvent e = g_profile.events.recv();
     if (e.name == nullptr) {
       return;
     }
 
-    fprintf(
-        f,
-        R"({"name":"%s","cat":"%s","ph":"%c","ts":%.3f,"pid":0,"tid":%hu},)"
-        "\n",
-        e.name, e.cat, e.ph, stm_us(e.ts), e.tid);
+    fprintf(f,
+            R"({"name":"%s","cat":"%s","ph":"%c","ts":%.3f,"pid":0,"tid":%hu},)"
+            "\n",
+            e.name, e.cat, e.ph, stm_us(e.ts), e.tid);
   }
 }
 
 void profile_setup() {
-  g_profile = {};
-
-  chan_make(&g_profile.events, 256);
-  g_profile.recv_thread = thread_make(profile_recv_thread, nullptr);
+  g_profile.events.reserve(256);
+  g_profile.recv_thread.make(profile_recv_thread, nullptr);
 }
 
 void profile_shutdown() {
-  chan_send(&g_profile.events, {});
-  thread_join(g_profile.recv_thread);
-
-  chan_trash(&g_profile.events);
+  g_profile.events.send({});
+  g_profile.recv_thread.join();
+  g_profile.events.trash();
 }
 
 Instrument::Instrument(const char *cat, const char *name)
@@ -67,7 +63,7 @@ Instrument::Instrument(const char *cat, const char *name)
   e.ts = stm_now();
   e.tid = tid;
 
-  chan_send(&g_profile.events, e);
+  g_profile.events.send(e);
 }
 
 Instrument::~Instrument() {
@@ -78,7 +74,7 @@ Instrument::~Instrument() {
   e.ts = stm_now();
   e.tid = tid;
 
-  chan_send(&g_profile.events, e);
+  g_profile.events.send(e);
 }
 
 #endif // USE_PROFILER
