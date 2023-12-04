@@ -79,7 +79,16 @@ static int open_mt_sampler(lua_State *L) {
 
 static int mt_thread_join(lua_State *L) {
   LuaThread *lt = *(LuaThread **)luaL_checkudata(L, 1, "mt_thread");
+  defer(mem_free(lt));
+
   lt->join();
+
+  if (lt->error.data != nullptr) {
+    lua_pushlstring(L, lt->error.data, lt->error.len);
+    mem_free(lt->error.data);
+    return 1;
+  }
+
   return 0;
 }
 
@@ -90,6 +99,43 @@ static int open_mt_thread(lua_State *L) {
   };
 
   luax_new_class(L, "mt_thread", reg);
+  return 0;
+}
+
+// mt_channel
+
+static int mt_channel_send(lua_State *L) {
+  LuaChannel *chan = *(LuaChannel **)luaL_checkudata(L, 1, "mt_channel");
+  LuaThreadValue v = lua_thread_value(L, 2);
+  chan->send(v);
+  return 0;
+}
+
+static int mt_channel_recv(lua_State *L) {
+  LuaChannel *chan = *(LuaChannel **)luaL_checkudata(L, 1, "mt_channel");
+  LuaThreadValue v = chan->recv();
+
+  switch (v.type) {
+  case LUA_TNUMBER: lua_pushnumber(L, v.number); break;
+  case LUA_TSTRING: {
+    lua_pushlstring(L, v.string.data, v.string.len);
+    mem_free(v.string.data);
+    break;
+  }
+  default: return 0;
+  }
+
+  return 1;
+}
+
+static int open_mt_channel(lua_State *L) {
+  luaL_Reg reg[] = {
+      {"send", mt_channel_send},
+      {"recv", mt_channel_recv},
+      {nullptr, nullptr},
+  };
+
+  luax_new_class(L, "mt_channel", reg);
   return 0;
 }
 
@@ -193,17 +239,16 @@ static int open_mt_font(lua_State *L) {
 // mt_sound
 
 static ma_sound *sound_ma(lua_State *L) {
-  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
-  Sound *sound = *udata;
+  Sound *sound = *(Sound **)luaL_checkudata(L, 1, "mt_sound");
   return &sound->ma;
 }
 
 static int mt_sound_gc(lua_State *L) {
-  Sound **udata = (Sound **)luaL_checkudata(L, 1, "mt_sound");
-  Sound *sound = *udata;
+  Sound *sound = *(Sound **)luaL_checkudata(L, 1, "mt_sound");
 
   if (ma_sound_at_end(&sound->ma)) {
     sound->trash();
+    mem_free(sound);
   } else {
     sound->zombie = true;
     g_app->garbage_sounds.push(sound);
@@ -2411,6 +2456,15 @@ static int spry_make_thread(lua_State *L) {
   return 1;
 }
 
+static int spry_get_channel(lua_State *L) {
+  String contents = luax_check_string(L, 1);
+  u64 cap = luaL_optinteger(L, 2, 0);
+
+  LuaChannel *chan = lua_channel_get(contents, cap);
+  luax_ptr_userdata(L, chan, "mt_channel");
+  return 1;
+}
+
 static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
@@ -2560,6 +2614,7 @@ static int open_spry(lua_State *L) {
       // construct types
       {"make_sampler", spry_make_sampler},
       {"make_thread", spry_make_thread},
+      {"get_channel", spry_get_channel},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
       {"sound_load", spry_sound_load},
@@ -2576,11 +2631,12 @@ static int open_spry(lua_State *L) {
 
 void open_spry_api(lua_State *L) {
   lua_CFunction mt_funcs[] = {
-      open_mt_sampler,      open_mt_thread,   open_mt_image,
-      open_mt_font,         open_mt_sound,    open_mt_sprite,
-      open_mt_atlas_image,  open_mt_atlas,    open_mt_tilemap,
-      open_mt_b2_fixture,   open_mt_b2_body,  open_mt_b2_world,
-      open_mt_mu_container, open_mt_mu_style, open_mt_mu_ref,
+      open_mt_sampler,  open_mt_thread,       open_mt_channel,
+      open_mt_image,    open_mt_font,         open_mt_sound,
+      open_mt_sprite,   open_mt_atlas_image,  open_mt_atlas,
+      open_mt_tilemap,  open_mt_b2_fixture,   open_mt_b2_body,
+      open_mt_b2_world, open_mt_mu_container, open_mt_mu_style,
+      open_mt_mu_ref,
   };
 
   for (u32 i = 0; i < array_size(mt_funcs); i++) {

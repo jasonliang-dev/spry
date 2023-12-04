@@ -585,8 +585,8 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L,
     uintptr_t ptr = (uintptr_t)lua_topointer(L, top);
 
     bool *visit = nullptr;
-    visited->index(ptr, &visit);
-    if (*visit) {
+    bool exist = visited->find_or_insert(ptr, &visit);
+    if (exist && *visit) {
       *err = "table has cycles";
       return;
     }

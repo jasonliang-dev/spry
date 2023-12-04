@@ -2,6 +2,7 @@
 #include "app.h"
 #include "array.h"
 #include "assets.h"
+#include "concurrency.h"
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
@@ -294,6 +295,7 @@ static void frame() {
     if (sound->dead_end) {
       assert(sound->zombie);
       sound->trash();
+      mem_free(sound);
 
       sounds[i] = sounds[sounds.len - 1];
       sounds.len--;
@@ -331,6 +333,14 @@ static void actually_cleanup() {
 
   {
     PROFILE_BLOCK("destroy assets");
+
+    for (auto [k, v] : g_app->channels.by_name) {
+      LuaChannel *chan = *v;
+      chan->trash();
+      chan->~LuaChannel();
+      mem_free(chan);
+    }
+    g_app->channels.by_name.trash();
 
     if (g_app->default_font != nullptr) {
       g_app->default_font->trash();

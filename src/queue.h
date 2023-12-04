@@ -2,7 +2,7 @@
 
 #include "prelude.h"
 
-template <typename T> struct Chan {
+template <typename T> struct Queue {
   Mutex mtx = {};
   Cond cv = {};
 
@@ -21,11 +21,15 @@ template <typename T> struct Chan {
 
     T *buf = (T *)mem_alloc(sizeof(T) * cap);
 
-    u64 lhs = back;
-    u64 rhs = (capacity - front);
+    if (front < back) {
+      memcpy(buf, &data[front], sizeof(T) * len);
+    } else {
+      u64 lhs = back;
+      u64 rhs = (capacity - front);
 
-    memcpy(buf, &data[front], sizeof(T) * rhs);
-    memcpy(&buf[rhs], &data[0], sizeof(T) * lhs);
+      memcpy(buf, &data[front], sizeof(T) * rhs);
+      memcpy(&buf[rhs], &data[0], sizeof(T) * lhs);
+    }
 
     mem_free(data);
 
@@ -35,8 +39,8 @@ template <typename T> struct Chan {
     capacity = cap;
   }
 
-  void send(T item) {
-    LockGuard lock(&mtx);
+  void enqueue(T item) {
+    LockGuard lock{&mtx};
 
     if (len == capacity) {
       reserve(len > 0 ? len * 2 : 8);
@@ -49,8 +53,8 @@ template <typename T> struct Chan {
     cv.signal();
   }
 
-  T recv() {
-    LockGuard lock(&mtx);
+  T demand() {
+    LockGuard lock{&mtx};
 
     while (len == 0) {
       cv.wait(&mtx);

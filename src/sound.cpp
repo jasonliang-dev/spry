@@ -39,5 +39,4 @@ Sound *sound_load(String filepath) {
 
 void Sound::trash() {
   ma_sound_uninit(&ma);
-  mem_free(this);
 }

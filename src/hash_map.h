@@ -109,7 +109,7 @@ template <typename T> struct HashMap {
     return kinds[index] == HashMapKind_Some ? &values[index] : nullptr;
   }
 
-  bool index(u64 key, T **value) {
+  bool find_or_insert(u64 key, T **value) {
     if (load >= capacity * HASH_MAP_LOAD_FACTOR) {
       real_reserve(capacity > 0 ? capacity * 2 : 16);
     }
@@ -132,7 +132,7 @@ template <typename T> struct HashMap {
 
   T &operator[](u64 key) {
     T *value;
-    index(key, &value);
+    find_or_insert(key, &value);
     return *value;
   }
 
