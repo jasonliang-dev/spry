@@ -75,19 +75,18 @@ bool operator!=(SplitLinesIterator lhs, SplitLinesIterator rhs) {
          lhs.view.data != rhs.view.data || lhs.view.len != rhs.view.len;
 }
 
-SplitLinesIterator begin(SplitLines sl) {
-  char *data = sl.str.data;
+SplitLinesIterator SplitLines::begin() {
+  char *data = str.data;
   u64 end = 0;
   while (data[end] != '\n' && data[end] != 0) {
     end++;
   }
 
-  String view = {sl.str.data, end};
-  return {sl.str, view};
+  String view = {str.data, end};
+  return {str, view};
 }
 
-SplitLinesIterator end(SplitLines sl) {
-  String str = sl.str;
+SplitLinesIterator SplitLines::end() {
   String view = {str.data + str.len, 0};
   return {str, view};
 }
@@ -108,13 +107,13 @@ i32 utf8_size(u8 c) {
   }
 }
 
-u32 rune_charcode(Rune r) {
+u32 Rune::charcode() {
   u32 charcode = 0;
 
-  u8 c0 = r.value >> 0;
-  u8 c1 = r.value >> 8;
-  u8 c2 = r.value >> 16;
-  u8 c3 = r.value >> 24;
+  u8 c0 = value >> 0;
+  u8 c1 = value >> 8;
+  u8 c2 = value >> 16;
+  u8 c3 = value >> 24;
 
   switch (utf8_size(c0)) {
   case 1: charcode = c0; break;
@@ -166,14 +165,14 @@ bool operator!=(UTF8Iterator lhs, UTF8Iterator rhs) {
          lhs.cursor != rhs.cursor || lhs.rune.value != rhs.rune.value;
 }
 
-UTF8Iterator begin(UTF8 utf8) {
+UTF8Iterator UTF8::begin() {
   UTF8Iterator it = {};
-  it.str = utf8.str;
+  it.str = str;
   next_rune(&it);
   return it;
 }
 
-UTF8Iterator end(UTF8 utf8) { return {utf8.str, utf8.str.len, {}}; }
+UTF8Iterator UTF8::end() { return {str, str.len, {}}; }
 
 static char s_empty[1] = {0};
 

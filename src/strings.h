@@ -15,18 +15,18 @@ bool operator!=(SplitLinesIterator lhs, SplitLinesIterator rhs);
 struct SplitLines {
   String str;
   SplitLines(String s) : str(s) {}
-};
 
-SplitLinesIterator begin(SplitLines sl);
-SplitLinesIterator end(SplitLines sl);
+  SplitLinesIterator begin();
+  SplitLinesIterator end();
+};
 
 i32 utf8_size(u8 c);
 
 struct Rune {
   u32 value;
-};
 
-u32 rune_charcode(Rune r);
+  u32 charcode();
+};
 
 struct UTF8Iterator {
   String str;
@@ -42,10 +42,10 @@ bool operator!=(UTF8Iterator lhs, UTF8Iterator rhs);
 struct UTF8 {
   String str;
   UTF8(String s) : str(s) {}
-};
 
-UTF8Iterator begin(UTF8 utf8);
-UTF8Iterator end(UTF8 utf8);
+  UTF8Iterator begin();
+  UTF8Iterator end();
+};
 
 struct StringBuilder {
   char *data;

@@ -148,7 +148,7 @@ stbtt_aligned_quad FontFamily::quad(u32 *img, float *x, float *y, float size,
 float FontFamily::width(float size, String text) {
   float width = 0;
   for (Rune r : UTF8(text)) {
-    u32 code = rune_charcode(r);
+    u32 code = r.charcode();
     FontRange *range = get_range(this, font_key(size, code));
     assert(range != nullptr);
 

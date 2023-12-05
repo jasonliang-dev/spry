@@ -259,7 +259,7 @@ static void draw_font_line(FontFamily *font, float size, float *start_x,
     u32 atlas = 0;
     float xx = x;
     float yy = y;
-    stbtt_aligned_quad q = font->quad(&atlas, &xx, &yy, size, rune_charcode(r));
+    stbtt_aligned_quad q = font->quad(&atlas, &xx, &yy, size, r.charcode());
 
     sgl_texture({atlas}, {g_renderer.sampler});
     sgl_begin_quads();
