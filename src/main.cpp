@@ -26,18 +26,6 @@ extern "C" {
 static Mutex g_init_mtx;
 static sgl_pipeline g_pipeline;
 
-FORMAT_ARGS(1)
-static void panic(const char *fmt, ...) {
-  va_list args = {};
-  va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
-  va_end(args);
-
-  fprintf(stderr, "\n");
-
-  exit(1);
-}
-
 static void init() {
   PROFILE_FUNC();
   LockGuard lock(&g_init_mtx);
@@ -89,10 +77,8 @@ static void init() {
 
     lua_State *L = g_app->L;
 
-    if (!g_app->error_mode) {
-      lua_getglobal(L, "spry");
-      lua_getfield(L, -1, "start");
-      lua_remove(L, -2);
+    if (!g_app->error_mode.load()) {
+      luax_spry_get(L, "start");
 
       Slice<String> args = g_app->args;
       lua_createtable(L, args.len - 1, 0);
@@ -101,9 +87,7 @@ static void init() {
         lua_rawseti(L, -2, i);
       }
 
-      if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
-        lua_pop(L, 1);
-      }
+      luax_pcall(L, 1, 0);
     }
   }
 
@@ -135,6 +119,96 @@ static void event(const sapp_event *e) {
     g_app->scroll_y = e->scroll_y;
     break;
   default: break;
+  }
+}
+
+static void render() {
+  PROFILE_FUNC();
+
+  {
+    PROFILE_BLOCK("begin render pass");
+
+    sg_pass_action pass = {};
+    pass.colors[0].load_action = SG_LOADACTION_CLEAR;
+    pass.colors[0].store_action = SG_STOREACTION_STORE;
+    if (g_app->error_mode.load()) {
+      pass.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
+    } else {
+      float rgba[4];
+      renderer_get_clear_color(rgba);
+      pass.colors[0].clear_value.r = rgba[0];
+      pass.colors[0].clear_value.g = rgba[1];
+      pass.colors[0].clear_value.b = rgba[2];
+      pass.colors[0].clear_value.a = rgba[3];
+    }
+    sg_begin_default_pass(pass, sapp_width(), sapp_height());
+
+    sgl_defaults();
+    sgl_load_pipeline(g_pipeline);
+
+    sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
+    sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
+  }
+
+  if (g_app->error_mode.load()) {
+    if (g_app->default_font == nullptr) {
+      g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
+      g_app->default_font->load_default();
+    }
+
+    renderer_reset();
+
+    float x = 10;
+    float y = 10;
+    u64 font_size = 16;
+
+    if (LockGuard lock{&g_app->error_mtx}) {
+      y = draw_font(g_app->default_font, font_size, x, y,
+                    "-- ! Spry Error ! --");
+      y += font_size;
+
+      y = draw_font_wrapped(g_app->default_font, font_size, x, y,
+                            g_app->fatal_error, sapp_widthf() - x);
+      y += font_size;
+
+      if (g_app->traceback.data) {
+        draw_font(g_app->default_font, font_size, x, y, g_app->traceback);
+      }
+    }
+  } else {
+    microui_begin();
+
+    lua_State *L = g_app->L;
+
+    luax_spry_get(L, "_timer_update");
+    lua_pushnumber(L, g_app->time.delta);
+    luax_pcall(L, 1, 0);
+
+    {
+      PROFILE_BLOCK("spry.frame");
+
+      luax_spry_get(L, "frame");
+      lua_pushnumber(L, g_app->time.delta);
+      luax_pcall(L, 1, 0);
+    }
+
+    assert(lua_gettop(L) == 1);
+
+    microui_end_and_present();
+  }
+
+  {
+    PROFILE_BLOCK("end render pass");
+
+    sgl_draw();
+
+    sgl_error_t sgl_err = sgl_error();
+    if (sgl_err != SGL_NO_ERROR) {
+      panic("a draw error occurred: %d", sgl_err);
+    }
+
+    sg_end_pass();
+    sg_commit();
   }
 }
 
@@ -191,94 +265,7 @@ static void frame() {
 #endif
   }
 
-  {
-    PROFILE_BLOCK("begin render pass");
-
-    sg_pass_action pass = {};
-    pass.colors[0].load_action = SG_LOADACTION_CLEAR;
-    pass.colors[0].store_action = SG_STOREACTION_STORE;
-    if (g_app->error_mode) {
-      pass.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
-    } else {
-      float rgba[4];
-      renderer_get_clear_color(rgba);
-      pass.colors[0].clear_value.r = rgba[0];
-      pass.colors[0].clear_value.g = rgba[1];
-      pass.colors[0].clear_value.b = rgba[2];
-      pass.colors[0].clear_value.a = rgba[3];
-    }
-    sg_begin_default_pass(pass, sapp_width(), sapp_height());
-
-    sgl_defaults();
-    sgl_load_pipeline(g_pipeline);
-
-    sgl_viewport(0, 0, sapp_width(), sapp_height(), true);
-    sgl_ortho(0, sapp_widthf(), sapp_heightf(), 0, -1, 1);
-  }
-
-  if (g_app->error_mode) {
-    if (g_app->default_font == nullptr) {
-      g_app->default_font = (FontFamily *)mem_alloc(sizeof(FontFamily));
-      g_app->default_font->load_default();
-    }
-
-    renderer_reset();
-
-    float x = 10;
-    float y = 10;
-    u64 font_size = 16;
-
-    y = draw_font(g_app->default_font, font_size, x, y, "-- ! Spry Error ! --");
-    y += font_size;
-
-    y = draw_font_wrapped(g_app->default_font, font_size, x, y,
-                          g_app->fatal_error, sapp_widthf() - x);
-    y += font_size;
-
-    if (g_app->traceback.data) {
-      draw_font(g_app->default_font, font_size, x, y, g_app->traceback);
-    }
-  } else {
-    microui_begin();
-
-    lua_State *L = g_app->L;
-    lua_getglobal(L, "spry");
-
-    lua_getfield(L, -1, "_timer_update");
-    lua_pushnumber(L, g_app->time.delta);
-    if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
-      lua_pop(L, 1);
-    }
-
-    {
-      PROFILE_BLOCK("spry.frame");
-
-      lua_getfield(L, -1, "frame");
-      lua_pushnumber(L, g_app->time.delta);
-      if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
-        lua_pop(L, 1);
-      }
-    }
-
-    lua_pop(L, 1); // global spry
-    assert(lua_gettop(L) == 1);
-
-    microui_end_and_present();
-  }
-
-  {
-    PROFILE_BLOCK("end render pass");
-
-    sgl_draw();
-
-    sgl_error_t sgl_err = sgl_error();
-    if (sgl_err != SGL_NO_ERROR) {
-      panic("a draw error occurred: %d", sgl_err);
-    }
-
-    sg_end_pass();
-    sg_commit();
-  }
+  render();
 
   memcpy(g_app->prev_key_state, g_app->key_state, sizeof(g_app->key_state));
   memcpy(g_app->prev_mouse_state, g_app->mouse_state,
@@ -313,10 +300,7 @@ static void actually_cleanup() {
   {
     PROFILE_BLOCK("before quit");
 
-    lua_getglobal(L, "spry");
-    lua_getfield(L, -1, "before_quit");
-    lua_remove(L, -2);
-
+    luax_spry_get(L, "before_quit");
     if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
       String err = luax_check_string(L, -1);
       panic("%s", err.data);
@@ -385,14 +369,7 @@ static void cleanup() {
 #ifndef NDEBUG
   DebugAllocator *allocator = dynamic_cast<DebugAllocator *>(g_allocator);
   if (allocator != nullptr) {
-    i32 allocs = 0;
-    for (DebugAllocInfo *info = allocator->head; info != nullptr;
-         info = info->next) {
-      printf("  %10llu bytes: %s:%d\n", (unsigned long long)info->size,
-             info->file, info->line);
-      allocs++;
-    }
-    printf("  --- %d allocation(s) ---\n", allocs);
+    allocator->dump_allocs();
   }
 #endif
 
@@ -415,23 +392,13 @@ static void setup_lua() {
   luaL_openlibs(L);
   open_spry_api(L);
   open_luasocket(L);
+  luax_run_bootstrap(L);
 
   // add error message handler. always at the bottom of stack.
   lua_pushcfunction(L, luax_msgh);
 
-  const char *bootstrap =
-#include "bootstrap.lua"
-      ;
-
-  if (luaL_loadbuffer(L, bootstrap, strlen(bootstrap), "bootstrap.lua") !=
-      LUA_OK) {
-    fprintf(stderr, "%s\n", lua_tostring(L, -1));
-    panic("failed to load bootstrap");
-  }
-
-  if (lua_pcall(L, 0, 0, 1) != LUA_OK) {
-    panic("failed to run bootstrap");
-  }
+  luax_spry_get(L, "_define_default_callbacks");
+  luax_pcall(L, 0, 0);
 }
 
 static void load_all_lua_scripts(lua_State *L) {
@@ -504,14 +471,12 @@ sapp_desc sokol_main(int argc, char **argv) {
   MountResult mount = vfs_mount(mount_path);
   bool win_console = false;
 
-  if (!g_app->error_mode && mount.ok) {
+  if (!g_app->error_mode.load() && mount.ok) {
     asset_load(AssetKind_LuaRef, "main.lua", nullptr);
   }
 
-  if (!g_app->error_mode) {
-    lua_getglobal(L, "spry");
-    lua_getfield(L, -1, "arg");
-    lua_remove(L, -2);
+  if (!g_app->error_mode.load()) {
+    luax_spry_get(L, "arg");
 
     lua_createtable(L, argc - 1, 0);
     for (i32 i = 1; i < argc; i++) {
@@ -530,14 +495,10 @@ sapp_desc sokol_main(int argc, char **argv) {
   lua_newtable(L);
   i32 conf_table = lua_gettop(L);
 
-  if (!g_app->error_mode) {
-    lua_getglobal(L, "spry");
-    lua_getfield(L, -1, "conf");
-    lua_remove(L, -2);
+  if (!g_app->error_mode.load()) {
+    luax_spry_get(L, "conf");
     lua_pushvalue(L, conf_table);
-    if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
-      lua_pop(L, 1);
-    }
+    luax_pcall(L, 1, 0);
   }
 
   win_console = win_console || luax_boolean_field(L, -1, "win_console", false);
@@ -556,7 +517,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 
   lua_pop(L, 1); // conf table
 
-  if (!g_app->error_mode && startup_load_scripts && mount.ok) {
+  if (!g_app->error_mode.load() && startup_load_scripts && mount.ok) {
     load_all_lua_scripts(L);
   }
 

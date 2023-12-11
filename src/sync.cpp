@@ -12,26 +12,6 @@
 
 #ifdef IS_WIN32
 
-int AtomicInt::load() { return _InterlockedCompareExchange(&n, 0, 0); }
-void AtomicInt::store(int val) { _InterlockedExchange(&n, val); }
-int AtomicInt::add(int val) { return _InterlockedExchangeAdd(&n, val); }
-
-bool AtomicInt::cas(int *expect, int val) {
-  *expect = _InterlockedCompareExchange(&n, val, *expect);
-  return *expect == val;
-}
-
-void *AtomicPtr::load() {
-  return _InterlockedCompareExchangePointer(&p, nullptr, nullptr);
-}
-
-void AtomicPtr::store(void *val) { _InterlockedExchangePointer(&p, val); }
-
-bool AtomicPtr::cas(void **expect, void *val) {
-  *expect = _InterlockedCompareExchangePointer(&p, val, *expect);
-  return *expect == val;
-}
-
 Mutex::Mutex() : srwlock() {}
 Mutex::~Mutex() {}
 void Mutex::lock() { AcquireSRWLockExclusive(&srwlock); }
@@ -94,30 +74,6 @@ static struct timespec ms_from_now(u32 ms) {
   ts.tv_nsec = (tally % 1000LL) * 1000000LL;
 
   return ts;
-}
-
-int AtomicInt::load() { return __atomic_load_n(&n, __ATOMIC_SEQ_CST); }
-
-void AtomicInt::store(int val) { __atomic_store_n(&n, val, __ATOMIC_SEQ_CST); }
-
-int AtomicInt::add(int val) {
-  return __atomic_fetch_add(&n, val, __ATOMIC_SEQ_CST);
-}
-
-bool AtomicInt::cas(int *expect, int val) {
-  return __atomic_compare_exchange_n(&n, expect, val, true, __ATOMIC_SEQ_CST,
-                                     __ATOMIC_SEQ_CST);
-}
-
-void *AtomicPtr::load() { return __atomic_load_n(&p, __ATOMIC_SEQ_CST); }
-
-void AtomicPtr::store(void *val) {
-  __atomic_store_n(&p, val, __ATOMIC_SEQ_CST);
-}
-
-bool AtomicPtr::cas(void **expect, void *val) {
-  return __atomic_compare_exchange_n(&p, expect, val, true, __ATOMIC_SEQ_CST,
-                                     __ATOMIC_SEQ_CST);
 }
 
 Mutex::Mutex() { pthread_mutex_init(&pt, nullptr); }

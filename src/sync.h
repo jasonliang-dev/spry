@@ -9,33 +9,6 @@
 #include <semaphore.h>
 #endif
 
-struct AtomicInt {
-#ifdef _WIN32
-  alignas(8) long n = 0;
-#else
-  int n = 0;
-#endif
-
-  AtomicInt(AtomicInt &&) = delete;
-  AtomicInt &operator=(AtomicInt &&) = delete;
-
-  int load();
-  void store(int val);
-  int add(int val);
-  bool cas(int *expect, int val);
-};
-
-struct AtomicPtr {
-  void *p = nullptr;
-
-  AtomicPtr(AtomicPtr &&) = delete;
-  AtomicPtr &operator=(AtomicPtr &&) = delete;
-
-  void *load();
-  void store(void *val);
-  bool cas(void **expect, void *val);
-};
-
 struct Mutex {
 #ifdef _WIN32
   SRWLOCK srwlock;

@@ -2,27 +2,39 @@
 
 #include "prelude.h"
 #include "slice.h"
+#include <atomic>
 
 struct LuaThread {
   String contents;
+  String name;
   String error;
-  void *thread;
+  std::atomic<Thread> thread;
 
+  void make(String code, String thread_name);
+  void trash();
   void join();
 };
 
-LuaThread *lua_thread_make(String contents);
-
-struct LuaThreadValue {
-  int type;
+struct lua_State;
+struct LuaTableEntry;
+struct LuaVariant {
+  i32 type;
   union {
+    bool boolean;
     double number;
     String string;
+    Slice<LuaTableEntry> table;
   };
+
+  void make(lua_State *L, i32 arg);
+  void trash();
+  int push(lua_State *L);
 };
 
-struct lua_State;
-LuaThreadValue lua_thread_value(lua_State *L, i32 arg);
+struct LuaTableEntry {
+  LuaVariant key;
+  LuaVariant value;
+};
 
 struct LuaChannel {
   Mutex mtx;
@@ -32,17 +44,16 @@ struct LuaChannel {
   u64 received_total;
   u64 sent_total;
 
-  Slice<LuaThreadValue> items;
+  Slice<LuaVariant> items;
   u64 front;
   u64 back;
   u64 len;
 
   void trash();
-  void send(LuaThreadValue item);
-  LuaThreadValue recv();
+  void send(LuaVariant item);
+  LuaVariant recv();
 };
 
 LuaChannel *lua_channel_make(String name, u64 cap);
 LuaChannel *lua_channel_get(String name);
 void lua_channels_shutdown();
-

@@ -2,62 +2,64 @@ R"lua"--(
 
 -- default callbacks
 
-function spry.arg(arg)
-  local usage = false
-  local version = false
-  local console = false
+function spry._define_default_callbacks()
+  function spry.arg(arg)
+    local usage = false
+    local version = false
+    local console = false
 
-  for _, a in ipairs(arg) do
-    if a == "--help" or a == "-h" then
-      usage = true
-    elseif a == "--version" or a == "-v" then
-      version = true
-    elseif a == "--console" then
-      console = true
+    for _, a in ipairs(arg) do
+      if a == "--help" or a == "-h" then
+        usage = true
+      elseif a == "--version" or a == "-v" then
+        version = true
+      elseif a == "--console" then
+        console = true
+      end
     end
+
+    if usage then
+      local str = ([[usage:
+    %s [command...]
+  commands:
+    --help, -h                  show this usage
+    --version, -v               show spry version
+    --console                   windows only. use console output
+    [directory or zip archive]  run the game using the given directory
+  ]]):format(spry.program_path())
+
+      print(str)
+      os.exit()
+    end
+
+    if version then
+      print(spry.version())
+      os.exit()
+    end
+
+    return {
+      console = console
+    }
   end
 
-  if usage then
-    local str = ([[usage:
-  %s [command...]
-commands:
-  --help, -h                  show this usage
-  --version, -v               show spry version
-  --console                   windows only. use console output
-  [directory or zip archive]  run the game using the given directory
-]]):format(spry.program_path())
+  function spry.conf() end
+  function spry.start() end
+  function spry.before_quit() end
 
-    print(str)
-    os.exit()
+  function spry.frame(dt)
+    if spry.key_down "esc" then spry.quit() end
+
+    if default_font == nil then
+      default_font = spry.default_font()
+    end
+
+    local text = "- no game! -"
+    local text_size = 36
+    local x = (spry.window_width() - default_font:width(text, text_size)) / 2
+    local y = (spry.window_height() - text_size) * 0.45
+
+    default_font:draw(text, x, y, text_size)
   end
-
-  if version then
-    print(spry.version())
-    os.exit()
-  end
-
-  return {
-    console = console
-  }
-end
-
-function spry.conf() end
-function spry.start() end
-function spry.before_quit() end
-
-function spry.frame(dt)
-  if spry.key_down "esc" then spry.quit() end
-
-  if default_font == nil then
-    default_font = spry.default_font()
-  end
-
-  local text = "- no game! -"
-  local text_size = 36
-  local x = (spry.window_width() - default_font:width(text, text_size)) / 2
-  local y = (spry.window_height() - text_size) * 0.45
-
-  default_font:draw(text, x, y, text_size)
 end
 
 -- object oriented

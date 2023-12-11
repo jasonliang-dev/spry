@@ -51,6 +51,18 @@ using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
+FORMAT_ARGS(1)
+inline void panic(const char *fmt, ...) {
+  va_list args = {};
+  va_start(args, fmt);
+  vfprintf(stderr, fmt, args);
+  va_end(args);
+
+  fprintf(stderr, "\n");
+
+  exit(1);
+}
+
 struct Allocator {
   virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
   virtual void free(void *ptr) = 0;
@@ -74,45 +86,9 @@ struct DebugAllocator : Allocator {
   DebugAllocInfo *head = nullptr;
   Mutex mtx = {};
 
-  void *alloc(size_t bytes, const char *file, i32 line) {
-    LockGuard lock(&mtx);
-
-    DebugAllocInfo *info =
-        (DebugAllocInfo *)malloc(offsetof(DebugAllocInfo, buf[bytes]));
-    info->file = file;
-    info->line = line;
-    info->size = bytes;
-    info->prev = nullptr;
-    info->next = head;
-    if (head != nullptr) {
-      head->prev = info;
-    }
-    head = info;
-    return info->buf;
-  }
-
-  void free(void *ptr) {
-    if (ptr == nullptr) {
-      return;
-    }
-
-    LockGuard lock(&mtx);
-
-    DebugAllocInfo *info =
-        (DebugAllocInfo *)((u8 *)ptr - offsetof(DebugAllocInfo, buf));
-
-    if (info->prev == nullptr) {
-      head = info->next;
-    } else {
-      info->prev->next = info->next;
-    }
-
-    if (info->next) {
-      info->next->prev = info->prev;
-    }
-
-    ::free(info);
-  }
+  void *alloc(size_t bytes, const char *file, i32 line);
+  void free(void *ptr);
+  void dump_allocs();
 };
 
 extern Allocator *g_allocator;
@@ -144,7 +120,7 @@ struct String {
   String(const char *cstr) : data((char *)cstr), len(strlen(cstr)) {}
   String(const char *cstr, u64 n) : data((char *)cstr), len(n) {}
 
-  // implementation in strings.cpp
+  bool is_cstr();
   String substr(u64 i, u64 j);
   bool starts_with(String match);
   bool ends_with(String match);

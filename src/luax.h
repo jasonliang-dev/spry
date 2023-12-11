@@ -8,9 +8,16 @@ extern "C" {
 #include "prelude.h"
 #include <initializer_list>
 
+void luax_run_bootstrap(lua_State *L);
+
 i32 luax_require_script(lua_State *L, String filepath);
 
 void luax_stack_dump(lua_State *L);
+
+void luax_pcall(lua_State *L, i32 args, i32 results);
+
+// get field in spry namespace
+void luax_spry_get(lua_State *L, const char *field);
 
 // message handler. prints error and traceback
 int luax_msgh(lua_State *L);

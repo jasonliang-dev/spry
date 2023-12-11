@@ -2,54 +2,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-String String::substr(u64 i, u64 j) {
-  assert(i <= j);
-  assert(j <= (i64)len);
-  return {&data[i], j - i};
-}
-
-bool String::starts_with(String match) {
-  if (len < match.len) {
-    return false;
-  }
-  return substr(0, match.len) == match;
-}
-
-bool String::ends_with(String match) {
-  if (len < match.len) {
-    return false;
-  }
-  return substr(len - match.len, len) == match;
-}
-
-u64 String::first_of(char c) {
-  for (u64 i = 0; i < len; i++) {
-    if (data[i] == c) {
-      return i;
-    }
-  }
-
-  return (u64)-1;
-}
-
-u64 String::last_of(char c) {
-  if (len == 0) {
-    return (u64)-1;
-  }
-
-  for (u64 i = len - 1; i > 1; i--) {
-    if (data[i] == c) {
-      return i;
-    }
-  }
-
-  if (data[0] == c) {
-    return 0;
-  }
-
-  return (u64)-1;
-}
-
 SplitLinesIterator &SplitLinesIterator::operator++() {
   if (&view.data[view.len] == &data.data[data.len]) {
     view = {&data.data[data.len], 0};

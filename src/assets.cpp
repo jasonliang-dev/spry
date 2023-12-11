@@ -113,7 +113,7 @@ static void hot_reload_thread(void *) {
 }
 
 void assets_shutdown() {
-  if (g_app->hot_reload_enabled.load() != 0) {
+  if (g_app->hot_reload_enabled.load()) {
     if (LockGuard lock{&g_assets.mtx}) {
       g_assets.shutdown = true;
     }
@@ -137,7 +137,7 @@ void assets_shutdown() {
 }
 
 void assets_start_hot_reload() {
-  if (g_app->hot_reload_enabled.load() != 0) {
+  if (g_app->hot_reload_enabled.load()) {
     g_assets.reload_thread.make(hot_reload_thread, nullptr);
   }
 }

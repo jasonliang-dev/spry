@@ -7,6 +7,7 @@
 #include "font.h"
 #include "slice.h"
 #include "sound.h"
+#include <atomic>
 
 #define SPRY_VERSION "0.8"
 
@@ -28,13 +29,15 @@ struct App {
 
   Slice<String> args;
 
-  Mutex err_mtx;
-  bool error_mode;
+  std::atomic<u64> main_thread_id;
+  std::atomic<bool> error_mode;
+
+  Mutex error_mtx;
   String fatal_error;
   String traceback;
 
-  AtomicInt hot_reload_enabled;
-  AtomicInt reload_interval;
+  std::atomic<bool> hot_reload_enabled;
+  std::atomic<u32> reload_interval;
 
   bool key_state[349];
   bool prev_key_state[349];
@@ -58,9 +61,11 @@ struct App {
 extern App *g_app;
 
 inline void fatal_error(String str) {
-  if (!g_app->error_mode) {
+  if (!g_app->error_mode.load()) {
+    LockGuard lock{&g_app->error_mtx};
+
     g_app->fatal_error = to_cstr(str);
     fprintf(stderr, "%s\n", g_app->fatal_error.data);
-    g_app->error_mode = true;
+    g_app->error_mode.store(true);
   }
 }

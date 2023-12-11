@@ -22,6 +22,7 @@
 #include "sound.h"
 #include "sprite.h"
 #include "stb_decompress.h"
+#include "sync.h"
 #include "tilemap.h"
 #include <box2d/box2d.h>
 
@@ -106,26 +107,20 @@ static int open_mt_thread(lua_State *L) {
 
 static int mt_channel_send(lua_State *L) {
   LuaChannel *chan = *(LuaChannel **)luaL_checkudata(L, 1, "mt_channel");
-  LuaThreadValue v = lua_thread_value(L, 2);
+
+  LuaVariant v = {};
+  v.make(L, 2);
   chan->send(v);
+
   return 0;
 }
 
 static int mt_channel_recv(lua_State *L) {
   LuaChannel *chan = *(LuaChannel **)luaL_checkudata(L, 1, "mt_channel");
-  LuaThreadValue v = chan->recv();
+  LuaVariant v = chan->recv();
+  defer(v.trash());
 
-  switch (v.type) {
-  case LUA_TNUMBER: lua_pushnumber(L, v.number); break;
-  case LUA_TSTRING: {
-    lua_pushlstring(L, v.string.data, v.string.len);
-    mem_free(v.string.data);
-    break;
-  }
-  default: return 0;
-  }
-
-  return 1;
+  return v.push(L);
 }
 
 static int open_mt_channel(lua_State *L) {
@@ -1969,6 +1964,12 @@ static int spry_quit(lua_State *L) {
   return 0;
 }
 
+static int spry_fatal_error(lua_State *L) {
+  String msg = luax_check_string(L, 1);
+  fatal_error(msg);
+  return 0;
+}
+
 static int spry_platform(lua_State *L) {
 #if defined(IS_HTML5)
   lua_pushliteral(L, "html5");
@@ -2404,6 +2405,29 @@ static int spry_set_master_volume(lua_State *L) {
   return 0;
 }
 
+static int spry_get_channel(lua_State *L) {
+  String contents = luax_check_string(L, 1);
+
+  LuaChannel *chan = lua_channel_get(contents);
+  if (chan == nullptr) {
+    return 0;
+  }
+
+  luax_ptr_userdata(L, chan, "mt_channel");
+  return 1;
+}
+
+static int spry_thread_id(lua_State *L) {
+  lua_pushinteger(L, this_thread_id());
+  return 1;
+}
+
+static int spry_thread_sleep(lua_State *L) {
+  lua_Number secs = luaL_checknumber(L, 1);
+  os_sleep((u32)(secs / 1000));
+  return 0;
+}
+
 static sg_filter str_to_filter_mode(lua_State *L, String s) {
   switch (fnv1a(s)) {
   case "nearest"_hash: return SG_FILTER_NEAREST; break;
@@ -2451,7 +2475,8 @@ static int spry_default_sampler(lua_State *L) {
 
 static int spry_make_thread(lua_State *L) {
   String contents = luax_check_string(L, 1);
-  LuaThread *lt = lua_thread_make(contents);
+  LuaThread *lt = (LuaThread *)mem_alloc(sizeof(LuaThread));
+  lt->make(contents, "thread");
   luax_ptr_userdata(L, lt, "mt_thread");
   return 1;
 }
@@ -2461,18 +2486,6 @@ static int spry_make_channel(lua_State *L) {
   u64 cap = luaL_optinteger(L, 2, 0);
 
   LuaChannel *chan = lua_channel_make(contents, cap);
-  luax_ptr_userdata(L, chan, "mt_channel");
-  return 1;
-}
-
-static int spry_get_channel(lua_State *L) {
-  String contents = luax_check_string(L, 1);
-
-  LuaChannel *chan = lua_channel_get(contents);
-  if (chan == nullptr) {
-    return 0;
-  }
-
   luax_ptr_userdata(L, chan, "mt_channel");
   return 1;
 }
@@ -2579,6 +2592,7 @@ static int open_spry(lua_State *L) {
       // core
       {"version", spry_version},
       {"quit", spry_quit},
+      {"fatal_error", spry_fatal_error},
       {"platform", spry_platform},
       {"program_path", spry_program_path},
       {"dt", spry_dt},
@@ -2623,11 +2637,15 @@ static int open_spry(lua_State *L) {
       // audio
       {"set_master_volume", spry_set_master_volume},
 
+      // concurrency
+      {"get_channel", spry_get_channel},
+      {"thread_id", spry_thread_id},
+      {"thread_sleep", spry_thread_sleep},
+
       // construct types
       {"make_sampler", spry_make_sampler},
       {"make_thread", spry_make_thread},
       {"make_channel", spry_make_channel},
-      {"get_channel", spry_get_channel},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},
       {"sound_load", spry_sound_load},

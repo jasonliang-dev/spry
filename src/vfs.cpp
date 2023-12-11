@@ -6,6 +6,7 @@
 #include "prelude.h"
 #include "profile.h"
 #include "strings.h"
+#include "sync.h"
 #include <new>
 #include <stdio.h>
 
@@ -123,6 +124,7 @@ struct DirectoryFileSystem : FileSystem {
 };
 
 struct ZipFileSystem : FileSystem {
+  Mutex mtx = {};
   mz_zip_archive zip = {};
   String zip_contents = {};
 
@@ -192,6 +194,8 @@ struct ZipFileSystem : FileSystem {
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
 
+    LockGuard lock{&mtx};
+
     i32 i = mz_zip_reader_locate_file(&zip, path.data, nullptr, 0);
     if (i == -1) {
       return false;
@@ -211,6 +215,8 @@ struct ZipFileSystem : FileSystem {
 
     String path = to_cstr(filepath);
     defer(mem_free(path.data));
+
+    LockGuard lock{&mtx};
 
     i32 file_index = mz_zip_reader_locate_file(&zip, path.data, nullptr, 0);
     if (file_index == -1) {
@@ -242,6 +248,8 @@ struct ZipFileSystem : FileSystem {
 
   bool list_all_files(Array<String> *files) {
     PROFILE_FUNC();
+
+    LockGuard lock{&mtx};
 
     for (u32 i = 0; i < mz_zip_reader_get_num_files(&zip); i++) {
       mz_zip_archive_file_stat file_stat;

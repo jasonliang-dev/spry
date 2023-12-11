@@ -9,10 +9,26 @@ extern "C" {
 #include <lua.h>
 }
 
+static const char *g_bootstrap =
+#include "bootstrap.lua"
+    ;
+
+void luax_run_bootstrap(lua_State *L) {
+  if (luaL_loadbuffer(L, g_bootstrap, strlen(g_bootstrap), "bootstrap.lua") !=
+      LUA_OK) {
+    fprintf(stderr, "%s\n", lua_tostring(L, -1));
+    panic("failed to load bootstrap");
+  }
+
+  if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+    panic("failed to run bootstrap");
+  }
+}
+
 i32 luax_require_script(lua_State *L, String filepath) {
   PROFILE_FUNC();
 
-  if (g_app->error_mode) {
+  if (g_app->error_mode.load()) {
     return LUA_REFNIL;
   }
 
@@ -72,13 +88,24 @@ void luax_stack_dump(lua_State *L) {
   }
 }
 
+void luax_pcall(lua_State *L, i32 args, i32 results) {
+  if (lua_pcall(L, args, results, 1) != LUA_OK) {
+    lua_pop(L, 1);
+  }
+}
+
+void luax_spry_get(lua_State *L, const char *field) {
+  lua_getglobal(L, "spry");
+  lua_getfield(L, -1, field);
+  lua_remove(L, -2);
+}
+
 int luax_msgh(lua_State *L) {
-  if (g_app->error_mode) {
+  if (g_app->error_mode.load()) {
     return 0;
   }
 
   String err = luax_check_string(L, -1);
-  g_app->fatal_error = to_cstr(err);
 
   // traceback = debug.traceback(nil, 2)
   lua_getglobal(L, "debug");
@@ -88,17 +115,23 @@ int luax_msgh(lua_State *L) {
   lua_pushinteger(L, 2);
   lua_call(L, 2, 1);
   String traceback = luax_check_string(L, -1);
-  g_app->traceback = to_cstr(traceback);
 
-  for (u64 i = 0; i < g_app->traceback.len; i++) {
-    if (g_app->traceback.data[i] == '\t') {
-      g_app->traceback.data[i] = ' ';
+  if (LockGuard lock{&g_app->error_mtx}) {
+    g_app->fatal_error = to_cstr(err);
+    g_app->traceback = to_cstr(traceback);
+
+    fprintf(stderr, "%s\n", g_app->fatal_error.data);
+    fprintf(stderr, "%s\n", g_app->traceback.data);
+
+    for (u64 i = 0; i < g_app->traceback.len; i++) {
+      if (g_app->traceback.data[i] == '\t') {
+        g_app->traceback.data[i] = ' ';
+      }
     }
+
+    g_app->error_mode.store(true);
   }
 
-  fprintf(stderr, "%s\n%s\n", g_app->fatal_error.data, g_app->traceback.data);
-
-  g_app->error_mode = true;
   lua_pop(L, 2); // traceback and error
   return 0;
 }

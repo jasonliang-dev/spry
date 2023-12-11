@@ -27,56 +27,118 @@ static void lua_thread_proc(void *udata) {
   luaL_openlibs(L);
   open_spry_api(L);
   open_luasocket(L);
+  luax_run_bootstrap(L);
 
   String contents = lt->contents;
-  defer(mem_free(contents.data));
+  defer({
+    mem_free(contents.data);
+    mem_free(lt->name.data);
+  });
 
-  if (luaL_loadbuffer(L, contents.data, contents.len, nullptr) != LUA_OK) {
+  if (luaL_loadbuffer(L, contents.data, contents.len, lt->name.data) !=
+      LUA_OK) {
     lt->error = to_cstr(luax_check_string(L, -1));
+    fprintf(stderr, "%s\n", lt->error.data);
     lua_pop(L, 1);
     return;
   }
 
   if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
     lt->error = to_cstr(luax_check_string(L, -1));
+    fprintf(stderr, "%s\n", lt->error.data);
     lua_pop(L, 1);
   }
 }
 
-LuaThread *lua_thread_make(String contents) {
-  LuaThread *lt = (LuaThread *)mem_alloc(sizeof(LuaThread));
-  *lt = {};
-  lt->contents = to_cstr(contents);
+void LuaThread::make(String code, String thread_name) {
+  contents = to_cstr(code);
+  name = to_cstr(thread_name);
 
   Thread t = {};
-  t.make(lua_thread_proc, lt);
-  lt->thread = t.ptr;
+  t.make(lua_thread_proc, this);
+  thread.store(t);
+}
 
-  return lt;
+void LuaThread::trash() {
+  if (error.data != nullptr) {
+    mem_free(error.data);
+  }
 }
 
 void LuaThread::join() {
-  Thread system_thread = {thread};
-  system_thread.join();
+  Thread t = thread.load();
+  t.join();
 }
 
 //
 
-LuaThreadValue lua_thread_value(lua_State *L, i32 arg) {
-  LuaThreadValue v = {};
-  v.type = lua_type(L, arg);
+void LuaVariant::make(lua_State *L, i32 arg) {
+  type = lua_type(L, arg);
 
-  switch (v.type) {
-  case LUA_TNUMBER: v.number = luaL_checknumber(L, arg); break;
+  switch (type) {
+  case LUA_TBOOLEAN: boolean = lua_toboolean(L, arg); break;
+  case LUA_TNUMBER: number = luaL_checknumber(L, arg); break;
   case LUA_TSTRING: {
     String s = luax_check_string(L, arg);
-    v.string = to_cstr(s);
+    string = to_cstr(s);
     break;
   }
-  default: v = {}; break;
-  }
+  case LUA_TTABLE: {
+    Array<LuaTableEntry> entries = {};
+    entries.resize(luax_len(L, arg));
 
-  return v;
+    lua_pushvalue(L, arg);
+    for (lua_pushnil(L); lua_next(L, -2); lua_pop(L, 1)) {
+      LuaVariant key = {};
+      key.make(L, -2);
+
+      LuaVariant value = {};
+      value.make(L, -1);
+
+      entries.push({key, value});
+    }
+    lua_pop(L, 1);
+
+    table = Slice(entries);
+    break;
+  }
+  default: break;
+  }
+}
+
+void LuaVariant::trash() {
+  switch (type) {
+  case LUA_TSTRING: {
+    mem_free(string.data);
+    break;
+  }
+  case LUA_TTABLE: {
+    for (LuaTableEntry e : table) {
+      e.key.trash();
+      e.value.trash();
+    }
+    mem_free(table.data);
+  }
+  default: break;
+  }
+}
+
+int LuaVariant::push(lua_State *L) {
+  switch (type) {
+  case LUA_TBOOLEAN: lua_pushboolean(L, boolean); return 1;
+  case LUA_TNUMBER: lua_pushnumber(L, number); return 1;
+  case LUA_TSTRING: lua_pushlstring(L, string.data, string.len); return 1;
+  case LUA_TTABLE: {
+    lua_newtable(L);
+    for (LuaTableEntry e : table) {
+      e.key.push(L);
+      e.value.push(L);
+      lua_rawset(L, -3);
+    }
+    return 1;
+  }
+  default: return 0;
+  }
 }
 
 //
@@ -90,7 +152,7 @@ static LuaChannels g_channels = {};
 
 void LuaChannel::trash() {
   for (i32 i = 0; i < len; i++) {
-    LuaThreadValue v = items[front];
+    LuaVariant v = items[front];
     if (v.type == LUA_TSTRING) {
       mem_free(v.string.data);
     }
@@ -103,7 +165,7 @@ void LuaChannel::trash() {
   mem_free(this);
 }
 
-void LuaChannel::send(LuaThreadValue item) {
+void LuaChannel::send(LuaVariant item) {
   LockGuard lock{&mtx};
 
   while (len == items.len) {
@@ -122,14 +184,14 @@ void LuaChannel::send(LuaThreadValue item) {
   }
 }
 
-LuaThreadValue LuaChannel::recv() {
+LuaVariant LuaChannel::recv() {
   LockGuard lock{&mtx};
 
   while (len == 0) {
     sent.wait(&mtx);
   }
 
-  LuaThreadValue item = items[front];
+  LuaVariant item = items[front];
   front = (front + 1) % items.len;
   len--;
 
@@ -143,8 +205,7 @@ LuaChannel *lua_channel_make(String name, u64 cap) {
   LuaChannel *chan = (LuaChannel *)mem_alloc(sizeof(LuaChannel));
   new (chan) LuaChannel();
 
-  chan->items.data =
-      (LuaThreadValue *)mem_alloc(sizeof(LuaThreadValue) * (cap + 1));
+  chan->items.data = (LuaVariant *)mem_alloc(sizeof(LuaVariant) * (cap + 1));
   chan->items.len = (cap + 1);
   chan->front = 0;
   chan->back = 0;
