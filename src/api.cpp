@@ -2456,11 +2456,23 @@ static int spry_make_thread(lua_State *L) {
   return 1;
 }
 
-static int spry_get_channel(lua_State *L) {
+static int spry_make_channel(lua_State *L) {
   String contents = luax_check_string(L, 1);
   u64 cap = luaL_optinteger(L, 2, 0);
 
-  LuaChannel *chan = lua_channel_get(contents, cap);
+  LuaChannel *chan = lua_channel_make(contents, cap);
+  luax_ptr_userdata(L, chan, "mt_channel");
+  return 1;
+}
+
+static int spry_get_channel(lua_State *L) {
+  String contents = luax_check_string(L, 1);
+
+  LuaChannel *chan = lua_channel_get(contents);
+  if (chan == nullptr) {
+    return 0;
+  }
+
   luax_ptr_userdata(L, chan, "mt_channel");
   return 1;
 }
@@ -2614,6 +2626,7 @@ static int open_spry(lua_State *L) {
       // construct types
       {"make_sampler", spry_make_sampler},
       {"make_thread", spry_make_thread},
+      {"make_channel", spry_make_channel},
       {"get_channel", spry_get_channel},
       {"image_load", spry_image_load},
       {"font_load", spry_font_load},

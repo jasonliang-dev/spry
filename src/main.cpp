@@ -334,13 +334,7 @@ static void actually_cleanup() {
   {
     PROFILE_BLOCK("destroy assets");
 
-    for (auto [k, v] : g_app->channels.by_name) {
-      LuaChannel *chan = *v;
-      chan->trash();
-      chan->~LuaChannel();
-      mem_free(chan);
-    }
-    g_app->channels.by_name.trash();
+    lua_channels_shutdown();
 
     if (g_app->default_font != nullptr) {
       g_app->default_font->trash();

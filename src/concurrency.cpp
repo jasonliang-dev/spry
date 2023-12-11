@@ -1,6 +1,5 @@
 #include "concurrency.h"
 #include "api.h"
-#include "app.h"
 #include "deps/luaalloc.h"
 #include "hash_map.h"
 #include "luax.h"
@@ -82,19 +81,12 @@ LuaThreadValue lua_thread_value(lua_State *L, i32 arg) {
 
 //
 
-LuaChannel *lua_channel_make(u64 cap) {
-  LuaChannel *chan = (LuaChannel *)mem_alloc(sizeof(LuaChannel));
-  new (chan) LuaChannel();
+struct LuaChannels {
+  Mutex mtx;
+  HashMap<LuaChannel *> by_name;
+};
 
-  chan->items.data =
-      (LuaThreadValue *)mem_alloc(sizeof(LuaThreadValue) * cap);
-  chan->items.len = cap;
-  chan->front = 0;
-  chan->back = 0;
-  chan->len = 0;
-
-  return chan;
-}
+static LuaChannels g_channels = {};
 
 void LuaChannel::trash() {
   for (i32 i = 0; i < len; i++) {
@@ -107,6 +99,8 @@ void LuaChannel::trash() {
   }
 
   mem_free(items.data);
+  this->~LuaChannel();
+  mem_free(this);
 }
 
 void LuaChannel::send(LuaThreadValue item) {
@@ -121,6 +115,11 @@ void LuaChannel::send(LuaThreadValue item) {
   len++;
 
   sent.signal();
+  sent_total++;
+
+  while (sent_total >= received_total + items.len) {
+    received.wait(&mtx);
+  }
 }
 
 LuaThreadValue LuaChannel::recv() {
@@ -134,18 +133,44 @@ LuaThreadValue LuaChannel::recv() {
   front = (front + 1) % items.len;
   len--;
 
-  received.signal();
+  received.broadcast();
+  received_total++;
+
   return item;
 }
 
-LuaChannel *lua_channel_get(String name, u64 cap) {
-  LockGuard lock{&g_app->channels.mtx};
+LuaChannel *lua_channel_make(String name, u64 cap) {
+  LuaChannel *chan = (LuaChannel *)mem_alloc(sizeof(LuaChannel));
+  new (chan) LuaChannel();
 
-  LuaChannel **chan = nullptr;
-  bool exist = g_app->channels.by_name.find_or_insert(fnv1a(name), &chan);
-  if (!exist) {
-    *chan = lua_channel_make(cap);
+  chan->items.data =
+      (LuaThreadValue *)mem_alloc(sizeof(LuaThreadValue) * (cap + 1));
+  chan->items.len = (cap + 1);
+  chan->front = 0;
+  chan->back = 0;
+  chan->len = 0;
+
+  LockGuard lock{&g_channels.mtx};
+  g_channels.by_name[fnv1a(name)] = chan;
+
+  return chan;
+}
+
+LuaChannel *lua_channel_get(String name) {
+  LockGuard lock{&g_channels.mtx};
+
+  LuaChannel **chan = g_channels.by_name.get(fnv1a(name));
+  if (chan == nullptr) {
+    return nullptr;
   }
 
   return *chan;
+}
+
+void lua_channels_shutdown() {
+  for (auto [k, v] : g_channels.by_name) {
+    LuaChannel *chan = *v;
+    chan->trash();
+  }
+  g_channels.by_name.trash();
 }

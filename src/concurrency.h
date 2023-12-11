@@ -1,6 +1,5 @@
 #pragma once
 
-#include "hash_map.h"
 #include "prelude.h"
 #include "slice.h"
 
@@ -30,6 +29,9 @@ struct LuaChannel {
   Cond received;
   Cond sent;
 
+  u64 received_total;
+  u64 sent_total;
+
   Slice<LuaThreadValue> items;
   u64 front;
   u64 back;
@@ -40,10 +42,7 @@ struct LuaChannel {
   LuaThreadValue recv();
 };
 
-LuaChannel *lua_channel_make(u64 cap);
-LuaChannel *lua_channel_get(String name, u64 cap);
+LuaChannel *lua_channel_make(String name, u64 cap);
+LuaChannel *lua_channel_get(String name);
+void lua_channels_shutdown();
 
-struct LuaChannels {
-  Mutex mtx;
-  HashMap<LuaChannel *> by_name;
-};

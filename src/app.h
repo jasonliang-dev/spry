@@ -1,7 +1,6 @@
 #pragma once
 
 #include "array.h"
-#include "concurrency.h"
 #include "deps/luaalloc.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_gl.h"
@@ -54,8 +53,6 @@ struct App {
   void *miniaudio_vfs;
   ma_engine audio_engine;
   Array<Sound *> garbage_sounds;
-
-  LuaChannels channels;
 };
 
 extern App *g_app;
