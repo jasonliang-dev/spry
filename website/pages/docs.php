@@ -2886,52 +2886,17 @@ $api_reference = [
       ],
       "return" => "iterator",
     ],
-    "create_thread" => [
-      "desc" => "Creates a coroutine.",
-      "example" => "local update_thread = create_thread(co_update)",
-      "args" => [
-        "fn" => ["function", "The function to create the coroutine with."],
-      ],
-      "return" => "thread",
-    ],
-    "resume" => [
+    "co_resume" => [
       "desc" => "Runs a coroutine, raising an error if the coroutine ran with an error.",
-      "example" => "resume(thread, self, dt)",
+      "example" => "co_resume(thread, self, dt)",
       "args" => [
         "co" => ["thread", "The coroutine to resume."],
         "..." => [false, "Arguments to pass to the coroutine."],
       ],
       "return" => false,
     ],
-    "yield" => [
-      "desc" => "
-        Suspend a coroutine. Similar to `coroutine.yield(...)` but it ignores the
-        first return value. This is useful when the first argument passed to
-        the coroutine doesn't change (for example, when passing `self`).
-      ",
-      "example" => "
-        function Enemy:new()
-          self.thread = create_thread(self.wander)
-        end
-
-        function Enemy:wander(dt)
-          while true do
-            -- stuff
-            dt = yield()
-          end
-        end
-
-        function Enemy:update(dt)
-          resume(self.thread, self, dt)
-        end
-      ",
-      "args" => [
-        "..." => [false, "Arguments to pass to whoever resumed the coroutine."],
-      ],
-      "return" => "any",
-    ],
     "sleep" => [
-      "desc" => "Pause a coroutine for given number of seconds. Returns the next delta time.",
+      "desc" => "Yields a coroutine for given number of seconds. Returns the next delta time.",
       "example" => "
         function Camera:begin_cutscene()
           -- call cutscene_thread

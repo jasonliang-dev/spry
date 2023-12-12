@@ -34,9 +34,8 @@ static void lua_thread_proc(void *udata) {
 
   if (luaL_loadbuffer(L, contents.data, contents.len, lt->name.data) !=
       LUA_OK) {
-    lt->error = to_cstr(luax_check_string(L, -1));
-    fprintf(stderr, "%s\n", lt->error.data);
-    lua_pop(L, 1);
+    String err = luax_check_string(L, -1);
+    fprintf(stderr, "%s\n", err.data);
 
     mem_free(contents.data);
     mem_free(lt->name.data);
@@ -47,26 +46,18 @@ static void lua_thread_proc(void *udata) {
   mem_free(lt->name.data);
 
   if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
-    lt->error = to_cstr(luax_check_string(L, -1));
-    fprintf(stderr, "%s\n", lt->error.data);
-    lua_pop(L, 1);
+    String err = luax_check_string(L, -1);
+    fprintf(stderr, "%s\n", err.data);
   }
 }
 
 void LuaThread::make(String code, String thread_name) {
   contents = to_cstr(code);
   name = to_cstr(thread_name);
-  error = {};
 
   Thread t = {};
   t.make(lua_thread_proc, this);
   thread.store(t);
-}
-
-void LuaThread::trash() {
-  if (error.data != nullptr) {
-    mem_free(error.data);
-  }
 }
 
 void LuaThread::join() {
@@ -250,8 +241,6 @@ LuaChannel *lua_channel_get(String name) {
 
   return *chan;
 }
-
-void lua_channels_wait_select(Mutex *mtx) { g_channels.select.wait(mtx); }
 
 LuaChannel *lua_channels_select(lua_State *L, LuaVariant *v) {
   i32 len = lua_gettop(L);

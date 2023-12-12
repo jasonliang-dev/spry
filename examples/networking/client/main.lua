@@ -22,7 +22,7 @@ function spry.start(arg)
   font = spry.default_font()
 end
 
-send_update = create_thread(function()
+send_update = coroutine.create(function()
   while true do
     sendf("entity %d %d", entity.x, entity.y)
     sendf "ping me"
@@ -30,7 +30,7 @@ send_update = create_thread(function()
   end
 end)
 
-recv_update = create_thread(function()
+recv_update = coroutine.create(function()
   while true do
     local data = udp:receive()
     if data ~= nil then
@@ -44,7 +44,7 @@ recv_update = create_thread(function()
         end
       end
     else
-      yield()
+      coroutine.yield()
     end
   end
 end)
@@ -56,8 +56,8 @@ function spry.frame(dt)
 
   entity.x, entity.y = spry.mouse_pos()
 
-  resume(send_update)
-  resume(recv_update)
+  co_resume(send_update)
+  co_resume(recv_update)
 
   font:draw(stringify(state), 40, 40, 18)
   font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))

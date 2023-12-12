@@ -7,11 +7,9 @@
 struct LuaThread {
   String contents;
   String name;
-  String error;
   std::atomic<Thread> thread;
 
   void make(String code, String thread_name);
-  void trash();
   void join();
 };
 

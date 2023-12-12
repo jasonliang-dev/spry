@@ -5,7 +5,7 @@ function Player:new(x, y)
 
   self.sprite = spry.sprite_load "elf.ase"
 
-  self.update_thread = create_thread(self.co_update)
+  self.update_thread = coroutine.create(self.co_update)
 
   self.facing_left = false
 
@@ -43,7 +43,7 @@ function Player:idle(dt)
       self.sprite:play "m_idle"
     end
 
-    dt = yield()
+    self, dt = coroutine.yield()
   end
 end
 
@@ -70,7 +70,7 @@ function Player:run(dt)
     local mag = 100
     self.body:set_velocity(vx * mag, vy * mag)
 
-    dt = yield()
+    self, dt = coroutine.yield()
   end
 end
 
@@ -81,7 +81,7 @@ end
 function Player:update(dt)
   self.sprite:update(dt)
   self.x, self.y = self.body:position()
-  resume(self.update_thread, self, dt)
+  co_resume(self.update_thread, self, dt)
 
   self.shoot_cooldown = self.shoot_cooldown - dt
   if spry.mouse_down(1) and self.shoot_cooldown <= 0 then

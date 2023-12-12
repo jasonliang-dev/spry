@@ -635,25 +635,17 @@ function sortpairs(t)
   end
 end
 
-function create_thread(fn)
-  return coroutine.create(fn)
-end
-
-function resume(co, ...)
+function co_resume(co, ...)
   local ok, err = coroutine.resume(co, ...)
   if not ok then
     error(err, 2)
   end
 end
 
-function yield(...)
-  return select(2, coroutine.yield(...))
-end
-
 function sleep(secs)
   while secs > 0 do
     secs = secs - spry.dt()
-    yield()
+    coroutine.yield()
   end
 
   return spry.dt()

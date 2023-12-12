@@ -83,12 +83,6 @@ static int mt_thread_join(lua_State *L) {
   defer(mem_free(lt));
 
   lt->join();
-
-  if (lt->error.data != nullptr) {
-    lua_pushlstring(L, lt->error.data, lt->error.len);
-    return 1;
-  }
-
   return 0;
 }
 
@@ -2518,10 +2512,10 @@ static int spry_make_thread(lua_State *L) {
 }
 
 static int spry_make_channel(lua_State *L) {
-  String contents = luax_check_string(L, 1);
-  u64 buf = luaL_optinteger(L, 2, 0);
+  String name = luax_check_string(L, 1);
+  u64 len = luaL_optinteger(L, 2, 0);
 
-  LuaChannel *chan = lua_channel_make(contents, buf);
+  LuaChannel *chan = lua_channel_make(name, len);
   luax_ptr_userdata(L, chan, "mt_channel");
   return 1;
 }

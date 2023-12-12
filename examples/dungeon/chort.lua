@@ -7,7 +7,7 @@ function Chort:new(x, y)
   self.hit_cooldown = 0
   self.hp = 3
   self.spring = Spring()
-  self.update_thread = create_thread(self.co_update)
+  self.update_thread = coroutine.create(self.co_update)
 end
 
 function Chort:on_create()
@@ -66,7 +66,7 @@ function Chort:co_update(dt)
       break
     end
 
-    dt = yield()
+    self, dt = coroutine.yield()
   end
 
   self.sprite:play "chort_run"
@@ -81,7 +81,7 @@ function Chort:co_update(dt)
       self.body:set_velocity(dx * mag, dy * mag)
     end
 
-    dt = yield()
+    self, dt = coroutine.yield()
   end
 end
 
@@ -90,7 +90,7 @@ function Chort:update(dt)
   self.x, self.y = self.body:position()
   self.sprite:update(dt)
   self.spring:update(dt)
-  resume(self.update_thread, self, dt)
+  co_resume(self.update_thread, self, dt)
 end
 
 function Chort:draw()

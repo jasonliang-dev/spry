@@ -7,7 +7,7 @@ function Coin:new(x, y)
   self.vx, self.vy = heading(random(0, math.pi * 2), 20)
   self.vz = random(-120, -330)
   self.spring = Spring()
-  self.update_thread = create_thread(self.co_update)
+  self.update_thread = coroutine.create(self.co_update)
 
   self.sprite = spry.sprite_load "coin.ase"
   self.sprite:set_frame(math.random(0, self.sprite:total_frames() - 1))
@@ -25,7 +25,7 @@ function Coin:co_update(dt)
       break
     end
 
-    dt = yield()
+    self, dt = coroutine.yield()
   end
 
   self.z = 0
@@ -34,7 +34,7 @@ function Coin:co_update(dt)
 
   repeat
     local dist = distance(self.x, self.y, player.x, player.y)
-    dt = yield()
+    self, dt = coroutine.yield()
   until dist < 128
 
   repeat
@@ -43,7 +43,7 @@ function Coin:co_update(dt)
     self.y = lerp(self.y, player.y, blend)
 
     local dist = distance(self.x, self.y, player.x, player.y)
-    dt = yield()
+    self, dt = coroutine.yield()
   until dist < 8
 
   world:kill(self)
@@ -52,7 +52,7 @@ end
 function Coin:update(dt)
   self.sprite:update(dt)
   self.spring:update(dt)
-  resume(self.update_thread, self, dt)
+  co_resume(self.update_thread, self, dt)
 end
 
 function Coin:draw()
