@@ -85,7 +85,7 @@ u64 String::first_of(char c) {
 u64 String::last_of(char c) {
   for (u64 i = len; i > 0; i--) {
     if (data[i - 1] == c) {
-      return i;
+      return i - 1;
     }
   }
 

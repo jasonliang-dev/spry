@@ -2453,6 +2453,8 @@ static int spry_thread_id(lua_State *L) {
 }
 
 static int spry_thread_sleep(lua_State *L) {
+  PROFILE_FUNC();
+
   lua_Number secs = luaL_checknumber(L, 1);
   os_sleep((u32)(secs * 1000));
   return 0;
@@ -2513,7 +2515,10 @@ static int spry_make_thread(lua_State *L) {
 
 static int spry_make_channel(lua_State *L) {
   String name = luax_check_string(L, 1);
-  u64 len = luaL_optinteger(L, 2, 0);
+  lua_Integer len = luaL_optinteger(L, 2, 0);
+  if (len < 0) {
+    len = 0;
+  }
 
   LuaChannel *chan = lua_channel_make(name, len);
   luax_ptr_userdata(L, chan, "mt_channel");
