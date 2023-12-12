@@ -3151,17 +3151,17 @@ $api_reference = [
         />
       </form>
     </div>
-    <ul id="function-list" class="list pl1" style="margin-top: -1rem">
+    <ul id="function-list" class="list pl0 pt3" style="margin-top: -1rem">
       <?php foreach ($api_reference as $header => $section): ?>
-        <li class="mt3">
+        <li>
           <details>
-            <summary class="fw6 pointer"><?= $header ?></summary>
-            <ul class="list pl0 mt2">
+            <summary class="fw6 pointer hover-bg-light-moon-gray pl2 br2 pv2"><?= $header ?></summary>
+            <ul class="list pl0">
               <?php foreach ($section as $name => $func): ?>
-                <li class="pv1" data-key="<?= strtolower($name) ?>">
+                <li data-key="<?= strtolower($name) ?>">
                   <a
                     href="#<?= strtolower($name) ?>"
-                    class="function-link dark-gray dm-silver link lh-solid dib"
+                    class="function-link hover-bg-lightest-blue hover-dark-blue dark-gray dm-silver link lh-title db pv1 ph2 br2 fw5 truncate"
                     @click="
                       open = false
                       $el.closest('details').dataset.open = 'true'
@@ -3180,18 +3180,11 @@ $api_reference = [
   <div x-ignore class="pl3-l pt3 ml-300px-l">
     <?php foreach ($api_reference as $header => $section): ?>
       <?php foreach ($section as $name => $func): ?>
-        <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
+        <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 pt2 mb3 shadow-sm">
           <span id="<?= strtolower($name) ?>" style="position: relative; top: -5rem"></span>
-          <div class="flex">
-            <p class="mv0 f6 fw6 gray mr-auto">
-              <?= $header ?>
-            </p>
-            <?php if (isset($func["tags"])): ?>
-              <?php foreach ($func["tags"] as $tag): ?>
-                <p class="mv0 f7 fw6 bg-lightest-blue blue br-pill ph2 ml3"><?= $tag ?></p>
-              <?php endforeach ?>
-            <?php endif ?>
-          </div>
+          <p class="mb0 mt2 f7 fw6 bg-light-gray gray dm-bg-dark-gray dm-silver br-pill ph2 nl1 mr-auto dib">
+            <?= $header ?>
+          </p>
           <h2 class="mb2 f4">
             <a href="#<?= strtolower($name) ?>" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>

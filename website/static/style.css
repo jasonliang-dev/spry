@@ -57,6 +57,10 @@ summary::marker {
   background-color: #fafafa;
 }
 
+.hover-bg-light-moon-gray:hover {
+  background-color: #dddddd;
+}
+
 .dark-mode .dm-dn {
   display: none;
 }
@@ -70,7 +74,7 @@ summary::marker {
 }
 
 .dark-mode .prose {
-  color: #AAAAAA;
+  color: #aaaaaa;
 }
 
 .prose h1,
