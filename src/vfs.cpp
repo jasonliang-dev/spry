@@ -371,6 +371,7 @@ MountResult vfs_mount(const char *filepath) {
 
     if (mount_dir.ends_with(".zip")) {
       res.ok = vfs_mount_type<ZipFileSystem>(mount_dir);
+      res.is_fused = true;
     } else {
       res.ok = vfs_mount_type<DirectoryFileSystem>(mount_dir);
       res.can_hot_reload = res.ok;

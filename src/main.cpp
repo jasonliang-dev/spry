@@ -471,6 +471,8 @@ sapp_desc sokol_main(int argc, char **argv) {
   MountResult mount = vfs_mount(mount_path);
   bool win_console = false;
 
+  g_app->is_fused.store(mount.is_fused);
+
   if (!g_app->error_mode.load() && mount.ok) {
     asset_load(AssetKind_LuaRef, "main.lua", nullptr);
   }

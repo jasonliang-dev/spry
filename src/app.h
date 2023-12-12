@@ -31,6 +31,7 @@ struct App {
 
   std::atomic<u64> main_thread_id;
   std::atomic<bool> error_mode;
+  std::atomic<bool> is_fused;
 
   Mutex error_mtx;
   String fatal_error;

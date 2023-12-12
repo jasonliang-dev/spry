@@ -24,6 +24,7 @@
 #include "stb_decompress.h"
 #include "sync.h"
 #include "tilemap.h"
+#include "vfs.h"
 #include <box2d/box2d.h>
 
 #ifndef IS_HTML5
@@ -1997,12 +1998,6 @@ static int spry_platform(lua_State *L) {
   return 1;
 }
 
-static int spry_program_path(lua_State *L) {
-  String path = os_program_path();
-  lua_pushlstring(L, path.data, path.len);
-  return 1;
-}
-
 static int spry_dt(lua_State *L) {
   lua_pushnumber(L, g_app->time.delta);
   return 1;
@@ -2459,6 +2454,41 @@ static int spry_thread_sleep(lua_State *L) {
   return 0;
 }
 
+static int spry_program_path(lua_State *L) {
+  String path = os_program_path();
+  lua_pushlstring(L, path.data, path.len);
+  return 1;
+}
+
+static int spry_file_exists(lua_State *L) {
+  String path = luax_check_string(L, 1);
+  lua_pushboolean(L, vfs_file_exists(path));
+  return 1;
+}
+
+static int spry_read_file(lua_State *L) {
+  PROFILE_FUNC();
+
+  String path = luax_check_string(L, 1);
+
+  String contents = {};
+  bool ok = vfs_read_entire_file(&contents, path);
+  if (!ok) {
+    lua_pushnil(L);
+    lua_pushboolean(L, false);
+    return 2;
+  }
+
+  lua_pushlstring(L, contents.data, contents.len);
+  lua_pushboolean(L, true);
+  return 2;
+}
+
+static int spry_is_fused(lua_State *L) {
+  lua_pushboolean(L, g_app->is_fused.load());
+  return 1;
+}
+
 static sg_filter str_to_filter_mode(lua_State *L, String s) {
   switch (fnv1a(s)) {
   case "nearest"_hash: return SG_FILTER_NEAREST; break;
@@ -2628,7 +2658,6 @@ static int open_spry(lua_State *L) {
       {"quit", spry_quit},
       {"fatal_error", spry_fatal_error},
       {"platform", spry_platform},
-      {"program_path", spry_program_path},
       {"dt", spry_dt},
       {"fullscreen", spry_fullscreen},
       {"toggle_fullscreen", spry_toggle_fullscreen},
@@ -2676,6 +2705,12 @@ static int open_spry(lua_State *L) {
       {"select", spry_select},
       {"thread_id", spry_thread_id},
       {"thread_sleep", spry_thread_sleep},
+
+      // filesystem
+      {"program_path", spry_program_path},
+      {"file_exists", spry_file_exists},
+      {"read_file", spry_read_file},
+      {"is_fused", spry_is_fused},
 
       // construct types
       {"make_sampler", spry_make_sampler},

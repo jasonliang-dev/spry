@@ -6,6 +6,7 @@
 struct MountResult {
   bool ok;
   bool can_hot_reload;
+  bool is_fused;
 };
 
 MountResult vfs_mount(const char *filepath);
