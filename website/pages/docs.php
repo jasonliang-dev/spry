@@ -66,6 +66,8 @@ $mu_ref_desc = [
   </a>",
 ];
 
+$thread_safe = "Thread safe";
+
 $api_reference = [
   "Callback Functions" => [
     "spry.arg" => [
@@ -194,6 +196,19 @@ $api_reference = [
       "args" => [],
       "return" => false,
     ],
+    "spry.fatal_error" => [
+      "desc" => "Create an unrecoverable error.",
+      "example" => "
+        local data = chan:recv()
+        if data.kind == 'error' then
+          spry.fatal_error(data.msg)
+        end
+      ",
+      "args" => [
+        "msg" => ["string", "The error message."],
+      ],
+      "return" => false,
+    ],
     "spry.platform" => [
       "desc" => "Returns the platform as a string. One of `html5`, `windows`, or `linux`.",
       "example" => "
@@ -273,7 +288,10 @@ $api_reference = [
       "return" => "number",
     ],
     "spry.json_read" => [
-      "desc" => "Deserialize a JSON string into a Lua value.",
+      "desc" => "
+        Deserialize a JSON string into a Lua value. Returns `nil` and an error
+        message if reading fails.
+      ",
       "example" => "local data, err = spry.json_read [[{
         'x':10,
         'y':20,
@@ -283,12 +301,15 @@ $api_reference = [
         "str" => ["string", "The JSON string."],
       ],
       "return" => [
-        "on success" => "any",
+        "on success" => "mixed",
         "on failure" => "nil, string",
       ],
     ],
     "spry.json_write" => [
-      "desc" => "Serialize a Lua value into a JSON string.",
+      "desc" => "
+        Serialize a Lua value into a JSON string. Returns `nil` and an error
+        message if the value can't be serialized.
+      ",
       "example" => "local data, err = spry.json_read [[{
         'x':10,
         'y':20,
@@ -1162,6 +1183,172 @@ $api_reference = [
       "return" => "table",
     ],
   ],
+  "Multithreading" => [
+    "spry.make_thread" => [
+      "desc" => "Create a new system thread. Execution starts immediately.",
+      "example" => "
+        t = spry.make_thread [[
+          spry.thread_sleep(1)
+          print 'Hello from another thread'
+        ]]
+      ",
+      "args" => [
+        "code" => ["string", "Lua code to run in a new thread."],
+      ],
+      "return" => "Thread",
+    ],
+    "spry.thread_sleep" => [
+      "desc" => "Sleep the current thread for given number of seconds.",
+      "example" => "
+        for i = 1, 5 do
+          print(i)
+          spry.thread_sleep(1)
+        end
+      ",
+      "args" => [
+        "secs" => ["number", "Number of seconds to sleep."],
+      ],
+      "return" => false,
+    ],
+    "spry.thread_id" => [
+      "desc" => "Get the current thread id.",
+      "example" => "local id = spry.thread_id()",
+      "args" => [],
+      "return" => "number",
+    ],
+    "Thread:join" => [
+      "desc" => "Join a system thread.",
+      "example" => "
+        function spry.start()
+          t = spry.make_thread(code)
+        end
+
+        function spry.before_quit()
+          t:join()
+        end
+      ",
+      "args" => [],
+      "return" => false,
+    ],
+    "spry.make_channel" => [
+      "desc" => "Create a channel. A structure used to communicate between threads.",
+      "example" => "
+        ch = spry.make_channel 'msgs'
+
+        t1 = spry.make_thread [[
+          ch = spry.get_channel 'msgs'
+
+          spry.thread_sleep(1)
+          ch:send 'Hello from t1'
+        ]]
+
+        print(ch:recv())
+      ",
+      "args" => [
+        "name" => ["string", "The name of the channel."],
+        "len" => ["number", "Creates a buffered channel with the given length if greater than 0.", 0],
+      ],
+      "return" => "Channel",
+    ],
+    "spry.get_channel" => [
+      "desc" => "Get a channel by name, or `nil` if the channel doesn't exist.",
+      "example" => "local ch = spry.get_channel 'ch'",
+      "args" => [
+        "name" => ["string", "The name of the channel."],
+      ],
+      "return" => [
+        "on success" => "Channel",
+        "if channel was not found" => "nil",
+      ],
+    ],
+    "spry.select" => [
+      "desc" => "
+        Wait on multiple channels. Returns a received value from a channel and
+        the channel's name where the value originated from.
+      ",
+      "example" => "
+        c1 = spry.make_channel 'c1'
+        c2 = spry.make_channel 'c2'
+
+        t1 = spry.make_thread [[
+          c1 = spry.get_channel 'c1'
+          spry.thread_sleep(1)
+          c1:send 'one'
+        ]]
+
+        t2 = spry.make_thread [[
+          c2 = spry.get_channel 'c2'
+          spry.thread_sleep(2)
+          c2:send 'two'
+        ]]
+
+        for i = 1, 2 do
+          local msg, ch = spry.select(c1, c2)
+          print(msg, ch)
+        end
+
+        -- prints:
+        -- one  c1
+        -- two  c2
+      ",
+      "args" => [
+        "..." => [false, "The channels to wait on."],
+      ],
+      "return" => "mixed, string",
+    ],
+    "Channel:send" => [
+      "desc" => "Send data into a channel. Blocks if buffer is full.",
+      "example" => "
+        ch = spry.make_channel('ch', 2)
+
+        ch:send(1)
+        ch:send(2)
+        -- ch:send(3) -- uncomment to deadlock
+
+        print(ch:recv())
+        print(ch:recv())
+      ",
+      "args" => [
+        "data" => ["mixed", "The data to send."],
+      ],
+      "return" => false,
+    ],
+    "Channel:recv" => [
+      "desc" => "Receive data out of a channel.",
+      "example" => "
+        t1 = spry.make_thread [[
+          ch = spry.get_channel 'ch'
+          ch:send(1)
+          ch:send 'hello'
+          ch:send { x = 1, y = 2 }
+        ]]
+
+        assert(ch:recv() == 1)
+        assert(ch:recv() == 'hello')
+
+        local t = ch:recv()
+        assert(t.x == 1 && t.y == 2)
+      ",
+      "args" => [],
+      "return" => "mixed",
+    ],
+    "Channel:try_recv" => [
+      "desc" => "Attempt to get data out of a channel.",
+      "example" => "
+        ch:send(1)
+        ch:send(2)
+
+        print(ch:try_recv()) -- 1  true
+        print(ch:try_recv()) -- 2  true
+        print(ch:try_recv()) -- nil  false
+      ",
+      "args" => [],
+      "return" => [
+        "on success" => "mixed, true",
+        "if channel is empty" => "nil, false",
+      ],
+    ],
+  ],
   "Box2D World" => [
     "spry.b2_world" => [
       "desc" => "Create a new Box2D World.",
@@ -2023,7 +2210,7 @@ $api_reference = [
         end
       ",
       "args" => [
-        "value" => ["any", "A boolean, number, or string value."],
+        "value" => ["mixed", "A boolean, number, or string value."],
       ],
       "return" => "mu_Ref",
     ],
@@ -2040,7 +2227,7 @@ $api_reference = [
         end
       ",
       "args" => [],
-      "return" => "any",
+      "return" => "mixed",
     ],
     "mu_Ref:set" => [
       "desc" => "Set the internal value of this object.",
@@ -2051,7 +2238,7 @@ $api_reference = [
         end
       ",
       "args" => [
-        "value" => ["any", "A boolean, number, or string value."],
+        "value" => ["mixed", "A boolean, number, or string value."],
       ],
       "return" => false,
     ],
@@ -2611,7 +2798,7 @@ $api_reference = [
       "args" => [
         "name" => ["string", "The module to load."],
       ],
-      "return" => "any",
+      "return" => "mixed",
     ],
     "unsafe_require" => [
       "desc" => "
@@ -2628,13 +2815,13 @@ $api_reference = [
       "args" => [
         "name" => ["string", "The module to load."],
       ],
-      "return" => "any",
+      "return" => "mixed",
     ],
     "stringify" => [
       "desc" => "Get a string representation of a value, table fields included (unlike `tostring`).",
       "example" => "print(stringify(value))",
       "args" => [
-        "value" => ["any", "A value to convert to a string."],
+        "value" => ["mixed", "A value to convert to a string."],
       ],
       "return" => "string",
     ],
@@ -2795,7 +2982,7 @@ $api_reference = [
       "example" => "push(bullets, bullet)",
       "args" => [
         "arr" => ["table", "The table to push a value to."],
-        "x" => ["any", "The value to push."],
+        "x" => ["mixed", "The value to push."],
       ],
       "return" => false,
     ],
@@ -2807,7 +2994,7 @@ $api_reference = [
       ",
       "args" => [
         "arr" => ["table", "The array to apply a callback function to."],
-        "fn" => ["any", "The callback function."],
+        "fn" => ["mixed", "The callback function."],
       ],
       "return" => "table",
     ],
@@ -2819,7 +3006,7 @@ $api_reference = [
       ",
       "args" => [
         "arr" => ["table", "The array to filter items with."],
-        "fn" => ["any", "The predicate function."],
+        "fn" => ["mixed", "The predicate function."],
       ],
       "return" => "table",
     ],
@@ -2845,7 +3032,7 @@ $api_reference = [
       "args" => [
         "arr" => ["table", "The array to pick from."],
       ],
-      "return" => "any",
+      "return" => "mixed",
     ],
     "find" => [
       "desc" => "
@@ -2860,9 +3047,9 @@ $api_reference = [
       ",
       "args" => [
         "arr" => ["table", "The array to search."],
-        "x" => ["any", "The value to search for."],
+        "x" => ["mixed", "The value to search for."],
       ],
-      "return" => "any",
+      "return" => "mixed",
     ],
     "sortpairs" => [
       "desc" => "Returns an iterator over a table sorted by key.",
@@ -2974,7 +3161,7 @@ $api_reference = [
                 <li class="pv1" data-key="<?= strtolower($name) ?>">
                   <a
                     href="#<?= strtolower($name) ?>"
-                    class="function-link dark-gray dm-silver link underline-hover lh-solid dib"
+                    class="function-link dark-gray dm-silver link lh-solid dib"
                     @click="
                       open = false
                       $el.closest('details').dataset.open = 'true'
@@ -2995,9 +3182,16 @@ $api_reference = [
       <?php foreach ($section as $name => $func): ?>
         <div class="br3 ba bg-white dm-bg-black-20 b--black-10 dm-b--white-10 pa3 mb3 shadow-sm">
           <span id="<?= strtolower($name) ?>" style="position: relative; top: -5rem"></span>
-          <p class="mv0 f6 fw6 gray">
-            <?= $header ?>
-          </p>
+          <div class="flex">
+            <p class="mv0 f6 fw6 gray mr-auto">
+              <?= $header ?>
+            </p>
+            <?php if (isset($func["tags"])): ?>
+              <?php foreach ($func["tags"] as $tag): ?>
+                <p class="mv0 f7 fw6 bg-lightest-blue blue br-pill ph2 ml3"><?= $tag ?></p>
+              <?php endforeach ?>
+            <?php endif ?>
+          </div>
           <h2 class="mb2 f4">
             <a href="#<?= strtolower($name) ?>" class="black dm-white link underline-hover break-words" style="letter-spacing: -1px">
               <code>
