@@ -75,6 +75,7 @@ RAII.
 - Open addressing hash map
 - Min heap priority queue
 - Thread-safe unbounded queue
+- Go style channel
 
 STL exists, yes, but I would like to compile my program in a reasonable time
 please. Also, the STL containers hits debug performance pretty hard.
