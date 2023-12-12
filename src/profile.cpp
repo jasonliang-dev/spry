@@ -22,9 +22,7 @@ static Profile g_profile = {};
 
 static void profile_recv_thread(void *) {
   StringBuilder sb = {};
-  printf("path: %s\n", os_program_path().data);
   sb.swap_filename(os_program_path(), "profile.json");
-  printf("profiling: %s\n", sb.data);
 
   FILE *f = fopen(sb.data, "w");
   sb.trash();

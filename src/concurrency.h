@@ -5,9 +5,10 @@
 #include <atomic>
 
 struct LuaThread {
+  Mutex mtx;
   String contents;
   String name;
-  std::atomic<Thread> thread;
+  Thread thread;
 
   void make(String code, String thread_name);
   void join();

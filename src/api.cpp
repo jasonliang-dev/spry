@@ -80,9 +80,8 @@ static int open_mt_sampler(lua_State *L) {
 
 static int mt_thread_join(lua_State *L) {
   LuaThread *lt = *(LuaThread **)luaL_checkudata(L, 1, "mt_thread");
-  defer(mem_free(lt));
-
   lt->join();
+  mem_free(lt);
   return 0;
 }
 
