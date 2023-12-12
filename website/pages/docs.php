@@ -292,11 +292,15 @@ $api_reference = [
         Deserialize a JSON string into a Lua value. Returns `nil` and an error
         message if reading fails.
       ",
-      "example" => "local data, err = spry.json_read [[{
-        'x':10,
-        'y':20,
-        'fruits': ['apple','banana','orange']
-      }]]",
+      "example" => "
+        local data, err = spry.json_read [[
+          {
+            \"x\": 10,
+            \"y\": 20,
+            \"fruits\": [\"apple\", \"banana\", \"orange\"]
+          }
+        ]]
+      ",
       "args" => [
         "str" => ["string", "The JSON string."],
       ],
@@ -310,13 +314,15 @@ $api_reference = [
         Serialize a Lua value into a JSON string. Returns `nil` and an error
         message if the value can't be serialized.
       ",
-      "example" => "local data, err = spry.json_read [[{
-        'x':10,
-        'y':20,
-        'fruits': ['apple','banana','orange']
-      }]]",
+      "example" => "
+        local data, err = spry.json_write {
+          x = 10,
+          y = 20,
+          fruits = {'apple', 'banana', 'orange'},
+        }
+      ",
       "args" => [
-        "str" => ["string", "The JSON string."],
+        "value" => ["mixed", "The value to convert."],
       ],
       "return" => [
         "on success" => "string",
