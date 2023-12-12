@@ -146,8 +146,9 @@ static JSONToken json_scan_ident(Arena *a, JSONScanner *scan) {
   } else {
     StringBuilder sb = {};
     defer(sb.trash());
-    String s = a->bump_string(sb << "unknown identifier: '" << t.str << "'");
-    return json_err_tok(scan, s);
+
+    String s = String(sb << "unknown identifier: '" << t.str << "'");
+    return json_err_tok(scan, a->bump_string(s));
   }
 
   scan->token = t;
@@ -363,10 +364,12 @@ static String json_parse_next(Arena *a, JSONScanner *scan, JSON *out) {
   case JSONTok_Error: {
     StringBuilder sb = {};
     defer(sb.trash());
+
     sb << scan->token.str
        << tmp_fmt(" on line %d:%d", (i32)scan->token.line,
                   (i32)scan->token.column);
-    return a->bump_string(sb);
+
+    return a->bump_string(String(sb));
   }
   default: {
     String msg = tmp_fmt("unknown json token: %s on line %d:%d",
@@ -681,5 +684,5 @@ void lua_to_json_string(lua_State *L, i32 arg, String *contents, String *err) {
     sb.trash();
   }
 
-  *contents = sb;
+  *contents = String(sb);
 }

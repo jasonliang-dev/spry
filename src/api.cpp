@@ -86,7 +86,6 @@ static int mt_thread_join(lua_State *L) {
 
   if (lt->error.data != nullptr) {
     lua_pushlstring(L, lt->error.data, lt->error.len);
-    mem_free(lt->error.data);
     return 1;
   }
 
@@ -105,8 +104,13 @@ static int open_mt_thread(lua_State *L) {
 
 // mt_channel
 
+static LuaChannel *check_channel_udata(lua_State *L, i32 arg) {
+  LuaChannel *chan = *(LuaChannel **)luaL_checkudata(L, arg, "mt_channel");
+  return chan;
+}
+
 static int mt_channel_send(lua_State *L) {
-  LuaChannel *chan = *(LuaChannel **)luaL_checkudata(L, 1, "mt_channel");
+  LuaChannel *chan = check_channel_udata(L, 1);
 
   LuaVariant v = {};
   v.make(L, 2);
@@ -116,17 +120,35 @@ static int mt_channel_send(lua_State *L) {
 }
 
 static int mt_channel_recv(lua_State *L) {
-  LuaChannel *chan = *(LuaChannel **)luaL_checkudata(L, 1, "mt_channel");
+  LuaChannel *chan = check_channel_udata(L, 1);
   LuaVariant v = chan->recv();
-  defer(v.trash());
 
-  return v.push(L);
+  v.push(L);
+  v.trash();
+  return 1;
+}
+
+static int mt_channel_try_recv(lua_State *L) {
+  LuaChannel *chan = check_channel_udata(L, 1);
+  LuaVariant v = {};
+  bool ok = chan->try_recv(&v);
+  if (!ok) {
+    lua_pushnil(L);
+    lua_pushboolean(L, false);
+    return 2;
+  }
+
+  v.push(L);
+  v.trash();
+  lua_pushboolean(L, true);
+  return 2;
 }
 
 static int open_mt_channel(lua_State *L) {
   luaL_Reg reg[] = {
       {"send", mt_channel_send},
       {"recv", mt_channel_recv},
+      {"try_recv", mt_channel_try_recv},
       {nullptr, nullptr},
   };
 
@@ -628,7 +650,8 @@ static int mt_tilemap_make_collision(lua_State *L) {
     walls.push((TilemapInt)tile);
   }
 
-  asset.tilemap.make_collision(physics->world, physics->meter, name, walls);
+  asset.tilemap.make_collision(physics->world, physics->meter, name,
+                               Slice(walls));
   asset_write(asset);
   return 0;
 }
@@ -669,7 +692,7 @@ static int mt_tilemap_make_graph(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  asset.tilemap.make_graph(bloom, name, costs);
+  asset.tilemap.make_graph(bloom, name, Slice(costs));
   asset_write(asset);
   return 0;
 }
@@ -2417,6 +2440,19 @@ static int spry_get_channel(lua_State *L) {
   return 1;
 }
 
+static int spry_select(lua_State *L) {
+  LuaVariant v = {};
+  LuaChannel *chan = lua_channels_select(L, &v);
+  if (chan == nullptr) {
+    return 0;
+  }
+
+  v.push(L);
+  v.trash();
+  lua_pushstring(L, chan->name.load());
+  return 2;
+}
+
 static int spry_thread_id(lua_State *L) {
   lua_pushinteger(L, this_thread_id());
   return 1;
@@ -2424,7 +2460,7 @@ static int spry_thread_id(lua_State *L) {
 
 static int spry_thread_sleep(lua_State *L) {
   lua_Number secs = luaL_checknumber(L, 1);
-  os_sleep((u32)(secs / 1000));
+  os_sleep((u32)(secs * 1000));
   return 0;
 }
 
@@ -2483,9 +2519,9 @@ static int spry_make_thread(lua_State *L) {
 
 static int spry_make_channel(lua_State *L) {
   String contents = luax_check_string(L, 1);
-  u64 cap = luaL_optinteger(L, 2, 0);
+  u64 buf = luaL_optinteger(L, 2, 0);
 
-  LuaChannel *chan = lua_channel_make(contents, cap);
+  LuaChannel *chan = lua_channel_make(contents, buf);
   luax_ptr_userdata(L, chan, "mt_channel");
   return 1;
 }
@@ -2639,6 +2675,7 @@ static int open_spry(lua_State *L) {
 
       // concurrency
       {"get_channel", spry_get_channel},
+      {"select", spry_select},
       {"thread_id", spry_thread_id},
       {"thread_sleep", spry_thread_sleep},
 

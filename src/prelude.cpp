@@ -83,18 +83,10 @@ u64 String::first_of(char c) {
 }
 
 u64 String::last_of(char c) {
-  if (len == 0) {
-    return (u64)-1;
-  }
-
-  for (u64 i = len - 1; i > 1; i--) {
-    if (data[i] == c) {
+  for (u64 i = len; i > 0; i--) {
+    if (data[i - 1] == c) {
       return i;
     }
-  }
-
-  if (data[0] == c) {
-    return 0;
   }
 
   return (u64)-1;

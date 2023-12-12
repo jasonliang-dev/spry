@@ -42,14 +42,14 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, bool *ok,
     defer(sb.trash());
     sb.swap_filename(filepath, tileset_rel_path.as_string(ok));
 
-    u64 key = fnv1a(sb);
+    u64 key = fnv1a(String(sb));
 
     Image *img = images->get(key);
     if (img != nullptr) {
       layer->image = *img;
     } else {
       Image create_img = {};
-      bool success = create_img.load(sb);
+      bool success = create_img.load(String(sb));
       if (!success) {
         return false;
       }

@@ -40,7 +40,7 @@ i32 luax_require_script(lua_State *L, String filepath) {
   if (!ok) {
     StringBuilder sb = {};
     defer(sb.trash());
-    fatal_error(sb << "failed to read file: " << filepath);
+    fatal_error(String(sb << "failed to read file: " << filepath));
     return LUA_REFNIL;
   }
   defer(mem_free(contents.data));

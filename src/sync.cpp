@@ -10,6 +10,9 @@
 #include <unistd.h>
 #endif
 
+LockGuard::LockGuard(Mutex *mtx) : mtx(mtx) { mtx->lock(); }
+LockGuard::~LockGuard() { mtx->unlock(); }
+
 #ifdef IS_WIN32
 
 Mutex::Mutex() : srwlock() {}

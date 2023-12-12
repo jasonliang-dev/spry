@@ -9,6 +9,18 @@
 #include <semaphore.h>
 #endif
 
+struct Mutex;
+struct LockGuard {
+  Mutex *mtx;
+
+  LockGuard(Mutex *mtx);
+  ~LockGuard();
+  LockGuard(LockGuard &&) = delete;
+  LockGuard &operator=(LockGuard &&) = delete;
+
+  operator bool() { return true; }
+};
+
 struct Mutex {
 #ifdef _WIN32
   SRWLOCK srwlock;
@@ -88,14 +100,3 @@ struct Thread {
 };
 
 uint64_t this_thread_id();
-
-struct LockGuard {
-  Mutex *mtx;
-
-  LockGuard(Mutex *mtx) : mtx(mtx) { mtx->lock(); }
-  ~LockGuard() { mtx->unlock(); }
-  LockGuard(LockGuard &&) = delete;
-  LockGuard &operator=(LockGuard &&) = delete;
-
-  operator bool() { return true; }
-};

@@ -27,7 +27,7 @@ bool Atlas::load(String filepath) {
       StringBuilder sb = {};
       defer(sb.trash());
       sb.swap_filename(filepath, filename);
-      bool ok = img.load(sb);
+      bool ok = img.load(String(sb));
       if (!ok) {
         return false;
       }

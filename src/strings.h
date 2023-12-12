@@ -61,7 +61,7 @@ struct StringBuilder {
   void concat(String str, i32 times);
 
   StringBuilder &operator<<(String str);
-  operator String();
+  explicit operator String();
 };
 
 FORMAT_ARGS(1) String str_fmt(const char *fmt, ...);

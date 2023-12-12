@@ -8,7 +8,7 @@ template <typename T> struct Slice {
   u64 len = 0;
 
   Slice() = default;
-  Slice(Array<T> arr) : data(arr.data), len(arr.len) {}
+  explicit Slice(Array<T> arr) : data(arr.data), len(arr.len) {}
 
   T &operator[](size_t i) {
     assert(i >= 0 && i < len);

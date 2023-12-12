@@ -305,7 +305,7 @@ float draw_font_wrapped(FontFamily *font, float size, float x, float y,
 
       font->sb << word;
 
-      float width = font->width(size, font->sb);
+      float width = font->width(size, String(font->sb));
       if (width < limit) {
         font->sb << " ";
         continue;
@@ -314,13 +314,13 @@ float draw_font_wrapped(FontFamily *font, float size, float x, float y,
       font->sb.len -= word.len;
       font->sb.data[font->sb.len] = '\0';
 
-      draw_font_line(font, size, &x, &y, font->sb);
+      draw_font_line(font, size, &x, &y, String(font->sb));
 
       font->sb.clear();
       font->sb << word << " ";
     }
 
-    draw_font_line(font, size, &x, &y, font->sb);
+    draw_font_line(font, size, &x, &y, String(font->sb));
   }
 
   return y - size;

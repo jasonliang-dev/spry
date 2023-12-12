@@ -28,7 +28,7 @@ struct LuaVariant {
 
   void make(lua_State *L, i32 arg);
   void trash();
-  int push(lua_State *L);
+  void push(lua_State *L);
 };
 
 struct LuaTableEntry {
@@ -37,6 +37,8 @@ struct LuaTableEntry {
 };
 
 struct LuaChannel {
+  std::atomic<char *> name;
+
   Mutex mtx;
   Cond received;
   Cond sent;
@@ -49,11 +51,14 @@ struct LuaChannel {
   u64 back;
   u64 len;
 
+  void make(String n, u64 buf);
   void trash();
   void send(LuaVariant item);
   LuaVariant recv();
+  bool try_recv(LuaVariant *v);
 };
 
-LuaChannel *lua_channel_make(String name, u64 cap);
+LuaChannel *lua_channel_make(String name, u64 buf);
 LuaChannel *lua_channel_get(String name);
+LuaChannel *lua_channels_select(lua_State *L, LuaVariant *v);
 void lua_channels_shutdown();
