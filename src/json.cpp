@@ -501,9 +501,6 @@ static void json_write_string(StringBuilder &sb, JSON *json, i32 level) {
       sb << ",\n";
     }
     sb.concat("  ", level - 1);
-    for (i32 i = 0; i < level; i++) {
-      sb << "  ";
-    }
     sb << "}";
     break;
   }
@@ -577,7 +574,15 @@ void json_to_lua(lua_State *L, JSON *json) {
 }
 
 static void lua_to_json_string(StringBuilder &sb, lua_State *L,
-                               HashMap<bool> *visited, String *err) {
+                               HashMap<bool> *visited, String *err, i32 width,
+                               i32 level) {
+  auto indent = [&](i32 offset) {
+    if (width > 0) {
+      sb << "\n";
+      sb.concat(" ", width * (level + offset));
+    }
+  };
+
   if (err->len != 0) {
     return;
   }
@@ -606,7 +611,9 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L,
 
     if (key_type == LUA_TNUMBER) {
       sb << "[";
-      lua_to_json_string(sb, L, visited, err);
+
+      indent(0);
+      lua_to_json_string(sb, L, visited, err, width, level + 1);
 
       i32 len = luax_len(L, top);
       assert(len > 0);
@@ -619,9 +626,11 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L,
         }
 
         sb << ",";
-        lua_to_json_string(sb, L, visited, err);
+        indent(0);
+        lua_to_json_string(sb, L, visited, err, width, level + 1);
         i++;
       }
+      indent(-1);
       sb << "]";
 
       if (i != len) {
@@ -630,27 +639,37 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L,
       }
     } else if (key_type == LUA_TSTRING) {
       sb << "{";
+      indent(0);
 
       lua_pushvalue(L, -2);
-      lua_to_json_string(sb, L, visited, err);
+      lua_to_json_string(sb, L, visited, err, width, level + 1);
       lua_pop(L, 1);
       sb << ":";
-      lua_to_json_string(sb, L, visited, err);
+      if (width > 0) {
+        sb << " ";
+      }
+      lua_to_json_string(sb, L, visited, err, width, level + 1);
 
       for (lua_pop(L, 1); lua_next(L, -2); lua_pop(L, 1)) {
-        sb << ",";
         if (lua_type(L, -2) != LUA_TSTRING) {
           lua_pop(L, -2);
           *err = "expected all keys to be strings";
           return;
         }
 
+        sb << ",";
+        indent(0);
+
         lua_pushvalue(L, -2);
-        lua_to_json_string(sb, L, visited, err);
+        lua_to_json_string(sb, L, visited, err, width, level + 1);
         lua_pop(L, 1);
         sb << ":";
-        lua_to_json_string(sb, L, visited, err);
+        if (width > 0) {
+          sb << " ";
+        }
+        lua_to_json_string(sb, L, visited, err, width, level + 1);
       }
+      indent(-1);
       sb << "}";
     } else {
       lua_pop(L, 2); // key, value
@@ -669,20 +688,21 @@ static void lua_to_json_string(StringBuilder &sb, lua_State *L,
   }
 }
 
-void lua_to_json_string(lua_State *L, i32 arg, String *contents, String *err) {
+String lua_to_json_string(lua_State *L, i32 arg, String *contents, i32 width) {
   StringBuilder sb = {};
-  defer(sb.trash());
 
   HashMap<bool> visited = {};
   defer(visited.trash());
 
+  String err = {};
   lua_pushvalue(L, arg);
-  lua_to_json_string(sb, L, &visited, err);
+  lua_to_json_string(sb, L, &visited, &err, width, 1);
   lua_pop(L, 1);
 
-  if (err->len != 0) {
+  if (err.len != 0) {
     sb.trash();
   }
 
   *contents = String(sb);
+  return err;
 }

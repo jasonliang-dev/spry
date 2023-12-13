@@ -14,5 +14,7 @@ void vfs_trash();
 
 bool vfs_file_exists(String filepath);
 bool vfs_read_entire_file(String *out, String filepath);
+bool vfs_write_entire_file(String filepath, String contents);
 bool vfs_list_all_files(Array<String> *files);
+
 void *vfs_for_miniaudio();
