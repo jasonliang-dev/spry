@@ -23,6 +23,10 @@ struct LuaVariant {
     double number;
     String string;
     Slice<LuaTableEntry> table;
+    struct {
+      void *ptr;
+      String tname;
+    } udata;
   };
 
   void make(lua_State *L, i32 arg);

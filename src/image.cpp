@@ -1,4 +1,5 @@
 #include "image.h"
+#include "app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/stb_image.h"
 #include "profile.h"
@@ -54,7 +55,9 @@ bool Image::load(String filepath) {
     desc.height = height;
     desc.data.subimage[0][0].ptr = data;
     desc.data.subimage[0][0].size = width * height * 4;
-    id = sg_make_image(desc).id;
+    if (gpu_guard()) {
+      id = sg_make_image(desc).id;
+    }
   }
 
   Image img = {};
@@ -67,4 +70,8 @@ bool Image::load(String filepath) {
   return true;
 }
 
-void Image::trash() { sg_destroy_image({id}); }
+void Image::trash() {
+  if (gpu_guard()) {
+    sg_destroy_image({id});
+  }
+}

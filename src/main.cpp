@@ -141,7 +141,10 @@ static void render() {
       pass.colors[0].clear_value.b = rgba[2];
       pass.colors[0].clear_value.a = rgba[3];
     }
-    sg_begin_default_pass(pass, sapp_width(), sapp_height());
+
+    if (gpu_guard()) {
+      sg_begin_default_pass(pass, sapp_width(), sapp_height());
+    }
 
     sgl_defaults();
     sgl_load_pipeline(g_pipeline);
@@ -197,7 +200,7 @@ static void render() {
     microui_end_and_present();
   }
 
-  {
+  if (gpu_guard()) {
     PROFILE_BLOCK("end render pass");
 
     sgl_draw();

@@ -1,4 +1,5 @@
 #include "font.h"
+#include "app.h"
 #include "deps/sokol_gfx.h"
 #include "embed/cousine_compressed.h"
 #include "prelude.h"
@@ -105,7 +106,9 @@ static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
     sg_image.data.subimage[0][0].ptr = image;
     sg_image.data.subimage[0][0].size = width * height * 4;
 
-    id = sg_make_image(sg_image).id;
+    if (gpu_guard()) {
+      id = sg_make_image(sg_image).id;
+    }
   }
 
   out->image.id = id;

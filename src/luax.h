@@ -53,16 +53,23 @@ int luax_string_oneof(lua_State *L, std::initializer_list<String> haystack,
                       String needle);
 void luax_new_class(lua_State *L, const char *mt_name, const luaL_Reg *l);
 
-#define luax_new_userdata(L, data, tname)                                      \
-  do {                                                                         \
-    void *udata = lua_newuserdatauv(L, sizeof(data), 0);                       \
-    memcpy(udata, &data, sizeof(data));                                        \
-    luaL_setmetatable(L, tname);                                               \
-  } while (0)
+enum {
+  LUAX_UD_TNAME = 1,
+  LUAX_UD_PTR_SIZE = 2,
+};
 
-#define luax_ptr_userdata(L, data, tname)                                      \
-  do {                                                                         \
-    void *udata = lua_newuserdatauv(L, sizeof(void *), 0);                     \
-    memcpy(udata, &data, sizeof(void *));                                      \
-    luaL_setmetatable(L, tname);                                               \
-  } while (0)
+template <typename T>
+void luax_new_userdata(lua_State *L, T data, const char *tname) {
+  void *new_udata = lua_newuserdatauv(L, sizeof(T), 2);
+
+  lua_pushstring(L, tname);
+  lua_setiuservalue(L, -2, LUAX_UD_TNAME);
+
+  lua_pushnumber(L, sizeof(T));
+  lua_setiuservalue(L, -2, LUAX_UD_PTR_SIZE);
+
+  memcpy(new_udata, &data, sizeof(T));
+  luaL_setmetatable(L, tname);
+}
+
+#define luax_ptr_userdata luax_new_userdata

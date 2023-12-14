@@ -2,6 +2,7 @@
 #include "api.h"
 #include "deps/luaalloc.h"
 #include "hash_map.h"
+#include "luaconf.h"
 #include "luax.h"
 #include "prelude.h"
 #include "profile.h"
@@ -25,29 +26,50 @@ static void lua_thread_proc(void *udata) {
   lua_State *L = lua_newstate(luaalloc, LA);
   defer(lua_close(L));
 
-  luaL_openlibs(L);
-  open_spry_api(L);
-  open_luasocket(L);
-  luax_run_bootstrap(L);
+  {
+    PROFILE_BLOCK("open libs");
+    luaL_openlibs(L);
+  }
+
+  {
+    PROFILE_BLOCK("open api");
+    open_spry_api(L);
+  }
+
+  {
+    PROFILE_BLOCK("open luasocket");
+    open_luasocket(L);
+  }
+
+  {
+    PROFILE_BLOCK("run bootstrap");
+    luax_run_bootstrap(L);
+  }
 
   String contents = lt->contents;
 
-  if (luaL_loadbuffer(L, contents.data, contents.len, lt->name.data) !=
-      LUA_OK) {
-    String err = luax_check_string(L, -1);
-    fprintf(stderr, "%s\n", err.data);
+  {
+    PROFILE_BLOCK("load chunk");
+    if (luaL_loadbuffer(L, contents.data, contents.len, lt->name.data) !=
+        LUA_OK) {
+      String err = luax_check_string(L, -1);
+      fprintf(stderr, "%s\n", err.data);
 
-    mem_free(contents.data);
-    mem_free(lt->name.data);
-    return;
+      mem_free(contents.data);
+      mem_free(lt->name.data);
+      return;
+    }
   }
 
   mem_free(contents.data);
   mem_free(lt->name.data);
 
-  if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
-    String err = luax_check_string(L, -1);
-    fprintf(stderr, "%s\n", err.data);
+  {
+    PROFILE_BLOCK("run chunk");
+    if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
+      String err = luax_check_string(L, -1);
+      fprintf(stderr, "%s\n", err.data);
+    }
   }
 }
 
@@ -102,6 +124,31 @@ void LuaVariant::make(lua_State *L, i32 arg) {
     table = Slice(entries);
     break;
   }
+  case LUA_TUSERDATA: {
+    i32 kind = lua_getiuservalue(L, arg, LUAX_UD_TNAME);
+    defer(lua_pop(L, 1));
+    if (kind != LUA_TSTRING) {
+      return;
+    }
+
+    kind = lua_getiuservalue(L, arg, LUAX_UD_PTR_SIZE);
+    defer(lua_pop(L, 1));
+    if (kind != LUA_TNUMBER) {
+      return;
+    }
+
+    String tname = luax_check_string(L, -2);
+    u64 size = luaL_checkinteger(L, -1);
+
+    if (size != sizeof(void *)) {
+      return;
+    }
+
+    udata.ptr = *(void **)lua_touserdata(L, arg);
+    udata.tname = to_cstr(tname);
+
+    break;
+  }
   default: break;
   }
 }
@@ -119,6 +166,9 @@ void LuaVariant::trash() {
     }
     mem_free(table.data);
   }
+  case LUA_TUSERDATA: {
+    mem_free(udata.tname.data);
+  }
   default: break;
   }
 }
@@ -135,6 +185,10 @@ void LuaVariant::push(lua_State *L) {
       e.value.push(L);
       lua_rawset(L, -3);
     }
+    break;
+  }
+  case LUA_TUSERDATA: {
+    luax_ptr_userdata(L, udata.ptr, udata.tname.data);
     break;
   }
   default: break;
