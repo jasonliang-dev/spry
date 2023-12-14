@@ -2063,9 +2063,10 @@ static int spry_json_read(lua_State *L) {
 static int spry_json_write(lua_State *L) {
   PROFILE_FUNC();
 
+  lua_Integer width = luaL_optinteger(L, 2, 0);
+
   String contents = {};
-  String err = {};
-  lua_to_json_string(L, 1, &contents, &err);
+  String err = lua_to_json_string(L, 1, &contents, width);
   if (err.len != 0) {
     lua_pushnil(L);
     lua_pushlstring(L, err.data, err.len);
@@ -2460,13 +2461,18 @@ static int spry_program_path(lua_State *L) {
   return 1;
 }
 
+static int spry_is_fused(lua_State *L) {
+  lua_pushboolean(L, g_app->is_fused.load());
+  return 1;
+}
+
 static int spry_file_exists(lua_State *L) {
   String path = luax_check_string(L, 1);
   lua_pushboolean(L, vfs_file_exists(path));
   return 1;
 }
 
-static int spry_read_file(lua_State *L) {
+static int spry_file_read(lua_State *L) {
   PROFILE_FUNC();
 
   String path = luax_check_string(L, 1);
@@ -2484,8 +2490,17 @@ static int spry_read_file(lua_State *L) {
   return 2;
 }
 
-static int spry_is_fused(lua_State *L) {
-  lua_pushboolean(L, g_app->is_fused.load());
+static int spry_file_write(lua_State *L) {
+  String path = luax_check_string(L, 1);
+  String contents = luax_check_string(L, 2);
+
+  FILE *f = fopen(path.data, "w");
+  defer(fclose(f));
+
+  size_t written = fwrite(contents.data, 1, contents.len, f);
+  bool ok = written < contents.len;
+
+  lua_pushboolean(L, ok);
   return 1;
 }
 
@@ -2708,9 +2723,10 @@ static int open_spry(lua_State *L) {
 
       // filesystem
       {"program_path", spry_program_path},
-      {"file_exists", spry_file_exists},
-      {"read_file", spry_read_file},
       {"is_fused", spry_is_fused},
+      {"file_exists", spry_file_exists},
+      {"file_read", spry_file_read},
+      {"file_write", spry_file_write},
 
       // construct types
       {"make_sampler", spry_make_sampler},

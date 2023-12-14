@@ -21,6 +21,7 @@
 
 extern "C" {
 #include <lualib.h>
+#include <lua.h>
 }
 
 static Mutex g_init_mtx;
@@ -491,7 +492,7 @@ sapp_desc sokol_main(int argc, char **argv) {
 
     if (lua_pcall(L, 1, 1, 1) != LUA_OK) {
       lua_pop(L, 1);
-    } else {
+    } else if (lua_type(L, -1) == LUA_TTABLE) {
       win_console = luax_boolean_field(L, -1, "console", false);
       lua_pop(L, 1); // returned table
     }
