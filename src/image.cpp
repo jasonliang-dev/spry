@@ -29,28 +29,11 @@ bool Image::load(String filepath, bool generate_mips) {
   }
   defer(stbi_image_free(data));
 
-  u8 *img_data = data;
-  if (channels == 3) {
-    u8 *data4 = (u8 *)mem_alloc(width * height * 4);
-    for (i32 i = 0; i < width * height; i++) {
-      data4[i * 4 + 0] = data[i * 3 + 0];
-      data4[i * 4 + 1] = data[i * 3 + 1];
-      data4[i * 4 + 2] = data[i * 3 + 2];
-      data4[i * 4 + 3] = 255;
-    }
-    img_data = data4;
-  }
-  defer({
-    if (channels == 3) {
-      mem_free(img_data);
-    }
-  });
-
   sg_image_desc desc = {};
   desc.pixel_format = SG_PIXELFORMAT_RGBA8;
   desc.width = width;
   desc.height = height;
-  desc.data.subimage[0][0].ptr = img_data;
+  desc.data.subimage[0][0].ptr = data;
   desc.data.subimage[0][0].size = width * height * 4;
 
   Array<u8 *> mips = {};
@@ -64,7 +47,7 @@ bool Image::load(String filepath, bool generate_mips) {
   if (generate_mips) {
     mips.reserve(SG_MAX_MIPMAPS);
 
-    u8 *prev = img_data;
+    u8 *prev = data;
     i32 w0 = width;
     i32 h0 = height;
     i32 w1 = w0 / 2;
@@ -102,7 +85,8 @@ bool Image::load(String filepath, bool generate_mips) {
   img.height = height;
   *this = img;
 
-  printf("created image (%dx%d) with id %d\n", width, height, id);
+  printf("created image (%dx%d, %d channels, mipmaps: %s) with id %d\n", width,
+         height, channels, generate_mips ? "true" : "false", id);
   return true;
 }
 
