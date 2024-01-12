@@ -89,22 +89,43 @@ u32 Rune::charcode() {
   return charcode;
 }
 
+bool Rune::is_whitespace() {
+  switch (value) {
+  case '\n':
+  case '\r':
+  case '\t':
+  case ' ': return true;
+  }
+  return false;
+}
+
+bool Rune::is_digit() {
+  return value >= '0' && value <= '9';
+}
+
+Rune rune_from_string(const char *data) {
+  u32 rune = 0;
+  i32 len = utf8_size(data[0]);
+  for (i32 i = len - 1; i >= 0; i--) {
+    rune <<= 8;
+    rune |= (u8)(data[i]);
+  }
+
+  return {rune};
+}
+
 static void next_rune(UTF8Iterator *it) {
   if (it->cursor == it->str.len) {
     it->rune.value = 0;
     return;
   }
 
-  u32 rune = 0;
-  char *data = it->str.data;
-  i32 len = utf8_size(data[it->cursor]);
-  for (i32 i = len - 1; i >= 0; i--) {
-    rune <<= 8;
-    rune |= (u8)(data[it->cursor + i]);
-  }
+  char *data = &it->str.data[it->cursor];
+  i32 len = utf8_size(data[0]);
+  Rune rune = rune_from_string(data);
 
   it->cursor += len;
-  it->rune.value = rune;
+  it->rune = rune;
 }
 
 UTF8Iterator &UTF8Iterator::operator++() {

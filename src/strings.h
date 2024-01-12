@@ -26,7 +26,11 @@ struct Rune {
   u32 value;
 
   u32 charcode();
+  bool is_whitespace();
+  bool is_digit();
 };
+
+Rune rune_from_string(const char *buf);
 
 struct UTF8Iterator {
   String str;

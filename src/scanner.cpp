@@ -1,4 +1,5 @@
 #include "scanner.h"
+#include "strings.h"
 
 Scanner::Scanner(String str) {
   data = str.data;
@@ -7,19 +8,19 @@ Scanner::Scanner(String str) {
   end = 0;
 }
 
-static void advance(Scanner *s) { s->end++; }
-static bool at_end(Scanner *s) { return s->end == s->len; }
+static void advance(Scanner *s) { s->end += utf8_size(s->data[s->end]); }
+static bool at_end(Scanner *s) { return s->end >= s->len; }
 
-static char peek(Scanner *s) {
+static Rune peek(Scanner *s) {
   if (at_end(s)) {
-    return 0;
+    return {0};
   } else {
-    return s->data[s->end];
+    return rune_from_string(&s->data[s->end]);
   }
 }
 
 static void skip_whitespace(Scanner *s) {
-  while (is_whitespace(peek(s)) && peek(s) != 0) {
+  while (peek(s).is_whitespace() && !at_end(s)) {
     advance(s);
   }
 }
@@ -32,7 +33,7 @@ String Scanner::next_string() {
     return "";
   }
 
-  while (!is_whitespace(peek(this)) && peek(this) != 0) {
+  while (!peek(this).is_whitespace() && !at_end(this)) {
     advance(this);
   }
 
@@ -48,15 +49,15 @@ i32 Scanner::next_int() {
   }
 
   i32 sign = 1;
-  if (peek(this) == '-') {
+  if (peek(this).value == '-') {
     sign = -1;
     advance(this);
   }
 
   i32 num = 0;
-  while (is_digit(peek(this))) {
+  while (peek(this).is_digit()) {
     num *= 10;
-    num += peek(this) - '0';
+    num += peek(this).value - '0';
     advance(this);
   }
 
