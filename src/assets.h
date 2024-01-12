@@ -12,6 +12,11 @@ enum AssetKind : i32 {
   AssetKind_Tilemap,
 };
 
+struct AssetLoadData {
+  AssetKind kind;
+  bool generate_mips;
+};
+
 struct Asset {
   String name;
   u64 hash;
@@ -28,7 +33,8 @@ struct Asset {
 void assets_shutdown();
 void assets_start_hot_reload();
 
-bool asset_load(AssetKind kind, String filepath, Asset *out);
+bool asset_load_kind(AssetKind kind, String filepath, Asset *out);
+bool asset_load(AssetLoadData desc, String filepath, Asset *out);
 
 bool asset_read(u64 key, Asset *out);
 void asset_write(Asset asset);

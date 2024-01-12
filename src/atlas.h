@@ -14,7 +14,7 @@ struct Atlas {
   HashMap<AtlasImage> by_name;
   Image img;
 
-  bool load(String filepath);
+  bool load(String filepath, bool generate_mips);
   void trash();
   AtlasImage *get(String name);
 };

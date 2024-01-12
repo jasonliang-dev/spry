@@ -16,12 +16,13 @@
 #include "os.h"
 #include "prelude.h"
 #include "profile.h"
+#include "scanner.h"
 #include "sync.h"
 #include "vfs.h"
 
 extern "C" {
-#include <lualib.h>
 #include <lua.h>
+#include <lualib.h>
 }
 
 static Mutex g_init_mtx;
@@ -429,7 +430,7 @@ static void load_all_lua_scripts(lua_State *L) {
 
   for (String file : files) {
     if (file != "main.lua" && file.ends_with(".lua")) {
-      asset_load(AssetKind_LuaRef, file, nullptr);
+      asset_load_kind(AssetKind_LuaRef, file, nullptr);
     }
   }
 }
@@ -478,7 +479,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   g_app->is_fused.store(mount.is_fused);
 
   if (!g_app->error_mode.load() && mount.ok) {
-    asset_load(AssetKind_LuaRef, "main.lua", nullptr);
+    asset_load_kind(AssetKind_LuaRef, "main.lua", nullptr);
   }
 
   if (!g_app->error_mode.load()) {

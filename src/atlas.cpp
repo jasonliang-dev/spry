@@ -4,7 +4,7 @@
 #include "strings.h"
 #include "vfs.h"
 
-bool Atlas::load(String filepath) {
+bool Atlas::load(String filepath, bool generate_mips) {
   PROFILE_FUNC();
 
   String contents = {};
@@ -27,7 +27,7 @@ bool Atlas::load(String filepath) {
       StringBuilder sb = {};
       defer(sb.trash());
       sb.swap_filename(filepath, filename);
-      bool ok = img.load(String(sb));
+      bool ok = img.load(String(sb), generate_mips);
       if (!ok) {
         return false;
       }

@@ -49,7 +49,7 @@ static bool layer_from_json(TilemapLayer *layer, JSON *json, bool *ok,
       layer->image = *img;
     } else {
       Image create_img = {};
-      bool success = create_img.load(String(sb));
+      bool success = create_img.load(String(sb), false);
       if (!success) {
         return false;
       }

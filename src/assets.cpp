@@ -83,8 +83,9 @@ static void hot_reload_thread(void *) {
           break;
         }
         case AssetKind_Image: {
+          bool generate_mips = a.image.has_mips;
           a.image.trash();
-          ok = a.image.load(a.name);
+          ok = a.image.load(a.name, generate_mips);
           break;
         }
         case AssetKind_Sprite: {
@@ -142,7 +143,14 @@ void assets_start_hot_reload() {
   }
 }
 
-bool asset_load(AssetKind kind, String filepath, Asset *out) {
+bool asset_load_kind(AssetKind kind, String filepath, Asset *out) {
+  AssetLoadData data = {};
+  data.kind = kind;
+
+  return asset_load(data, filepath, out);
+}
+
+bool asset_load(AssetLoadData desc, String filepath, Asset *out) {
   PROFILE_FUNC();
 
   u64 key = fnv1a(filepath);
@@ -167,10 +175,10 @@ bool asset_load(AssetKind kind, String filepath, Asset *out) {
       PROFILE_BLOCK("asset modtime")
       asset.modtime = os_file_modtime(asset.name.data);
     }
-    asset.kind = kind;
+    asset.kind = desc.kind;
 
     bool ok = false;
-    switch (kind) {
+    switch (desc.kind) {
     case AssetKind_LuaRef: {
       asset.lua_ref = LUA_REFNIL;
       asset_write(asset);
@@ -178,7 +186,7 @@ bool asset_load(AssetKind kind, String filepath, Asset *out) {
       ok = true;
       break;
     }
-    case AssetKind_Image: ok = asset.image.load(filepath); break;
+    case AssetKind_Image: ok = asset.image.load(filepath, desc.generate_mips); break;
     case AssetKind_Sprite: ok = asset.sprite.load(filepath); break;
     case AssetKind_Tilemap: ok = asset.tilemap.load(filepath); break;
     default: break;

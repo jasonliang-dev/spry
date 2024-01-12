@@ -1961,7 +1961,7 @@ static int spry_require_lua_script(lua_State *L) {
   String path = luax_check_string(L, 1);
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_LuaRef, path, &asset);
+  bool ok = asset_load_kind(AssetKind_LuaRef, path, &asset);
   if (!ok) {
     return 0;
   }
@@ -2484,6 +2484,7 @@ static int spry_file_read(lua_State *L) {
     lua_pushboolean(L, false);
     return 2;
   }
+  defer(mem_free(contents.data));
 
   lua_pushlstring(L, contents.data, contents.len);
   lua_pushboolean(L, true);
@@ -2506,10 +2507,11 @@ static int spry_file_write(lua_State *L) {
 
 static sg_filter str_to_filter_mode(lua_State *L, String s) {
   switch (fnv1a(s)) {
+  case "none"_hash: return SG_FILTER_NONE; break;
   case "nearest"_hash: return SG_FILTER_NEAREST; break;
   case "linear"_hash: return SG_FILTER_LINEAR; break;
   default:
-    luax_string_oneof(L, {"nearest", "linear"}, s);
+    luax_string_oneof(L, {"none", "nearest", "linear"}, s);
     return _SG_FILTER_DEFAULT;
   }
 }
@@ -2528,12 +2530,14 @@ static sg_wrap str_to_wrap_mode(lua_State *L, String s) {
 static int spry_make_sampler(lua_State *L) {
   String min_filter = luax_opt_string_field(L, 1, "min_filter", "nearest");
   String mag_filter = luax_opt_string_field(L, 1, "mag_filter", "nearest");
+  String mipmap_filter = luax_opt_string_field(L, 1, "mipmap_filter", "none");
   String wrap_u = luax_opt_string_field(L, 1, "wrap_u", "repeat");
   String wrap_v = luax_opt_string_field(L, 1, "wrap_v", "repeat");
 
   sg_sampler_desc desc = {};
   desc.min_filter = str_to_filter_mode(L, min_filter);
   desc.mag_filter = str_to_filter_mode(L, mag_filter);
+  desc.mipmap_filter = str_to_filter_mode(L, mipmap_filter);
   desc.wrap_u = str_to_wrap_mode(L, wrap_u);
   desc.wrap_v = str_to_wrap_mode(L, wrap_v);
 
@@ -2571,9 +2575,14 @@ static int spry_make_channel(lua_State *L) {
 
 static int spry_image_load(lua_State *L) {
   String str = luax_check_string(L, 1);
+  bool generate_mips = lua_toboolean(L, 2);
+
+  AssetLoadData desc = {};
+  desc.kind = AssetKind_Image;
+  desc.generate_mips = generate_mips;
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_Image, str, &asset);
+  bool ok = asset_load(desc, str, &asset);
   if (!ok) {
     return 0;
   }
@@ -2612,7 +2621,7 @@ static int spry_sprite_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_Sprite, str, &asset);
+  bool ok = asset_load_kind(AssetKind_Sprite, str, &asset);
   if (!ok) {
     return 0;
   }
@@ -2626,9 +2635,10 @@ static int spry_sprite_load(lua_State *L) {
 
 static int spry_atlas_load(lua_State *L) {
   String str = luax_check_string(L, 1);
+  bool generate_mips = lua_toboolean(L, 2);
 
   Atlas atlas = {};
-  bool ok = atlas.load(str);
+  bool ok = atlas.load(str, generate_mips);
   if (!ok) {
     return 0;
   }
@@ -2641,7 +2651,7 @@ static int spry_tilemap_load(lua_State *L) {
   String str = luax_check_string(L, 1);
 
   Asset asset = {};
-  bool ok = asset_load(AssetKind_Tilemap, str, &asset);
+  bool ok = asset_load_kind(AssetKind_Tilemap, str, &asset);
   if (!ok) {
     return 0;
   }
@@ -2674,6 +2684,7 @@ static int open_spry(lua_State *L) {
       {"fatal_error", spry_fatal_error},
       {"platform", spry_platform},
       {"dt", spry_dt},
+      {"elapsed", spry_elapsed},
       {"fullscreen", spry_fullscreen},
       {"toggle_fullscreen", spry_toggle_fullscreen},
       {"window_width", spry_window_width},

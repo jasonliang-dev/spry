@@ -647,8 +647,9 @@ $api_reference = [
       ",
       "args" => [
         "t" => ["table", "Sampler options."],
-        " .min_filter" => ["string", "Filter mode when scaling down."],
-        " .mag_filter" => ["string", "Filter mode when scaling up."],
+        " .min_filter" => ["string", "Filter mode when scaling down.", "nearest"],
+        " .mag_filter" => ["string", "Filter mode when scaling up.", "nearest"],
+        " .mipmap_filter" => ["string", "Filter mode for mipmaps.", "none"],
         " .wrap_u" => ["string", "Wrap mode for the horizontal direction."],
         " .wrap_v" => ["string", "Wrap mode for the vertical direction."],
       ],
@@ -682,6 +683,7 @@ $api_reference = [
       "example" => "local tree_img = spry.image_load 'tree.png'",
       "args" => [
         "file" => ["string", "The image file to open."],
+        "generate_mips" => ["bool", "If true, also generate mipmaps.", "true"],
       ],
       "return" => [
         "on success" => "Image",
@@ -1032,6 +1034,7 @@ $api_reference = [
       "example" => "local atlas = spry.atlas_load 'atlas.rtpa'",
       "args" => [
         "file" => ["string", "The .rtpa file to open."],
+        "generate_mips" => ["bool", "If true, also generate mipmaps.", "false"],
       ],
       "return" => [
         "on success" => "Atlas",
