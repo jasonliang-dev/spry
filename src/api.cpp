@@ -2038,6 +2038,11 @@ static int spry_difftime(lua_State *L) {
   return 1;
 }
 
+static int spry_elapsed(lua_State *L) {
+  lua_pushnumber(L, stm_sec(stm_now() - g_app->time.startup));
+  return 1;
+}
+
 static int spry_json_read(lua_State *L) {
   PROFILE_FUNC();
 
@@ -2684,13 +2689,13 @@ static int open_spry(lua_State *L) {
       {"fatal_error", spry_fatal_error},
       {"platform", spry_platform},
       {"dt", spry_dt},
-      {"elapsed", spry_elapsed},
       {"fullscreen", spry_fullscreen},
       {"toggle_fullscreen", spry_toggle_fullscreen},
       {"window_width", spry_window_width},
       {"window_height", spry_window_height},
       {"time", spry_time},
       {"difftime", spry_difftime},
+      {"elapsed", spry_elapsed},
       {"json_read", spry_json_read},
       {"json_write", spry_json_write},
 

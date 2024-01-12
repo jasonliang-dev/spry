@@ -72,6 +72,7 @@ static void init() {
 
   renderer_reset();
 
+  g_app->time.startup = stm_now();
   g_app->time.last = stm_now();
 
   {

@@ -12,6 +12,7 @@
 #define SPRY_VERSION "0.8"
 
 struct AppTime {
+  u64 startup;
   u64 last;
   u64 accumulator;
   u64 target_ticks;
