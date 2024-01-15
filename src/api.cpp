@@ -2501,6 +2501,10 @@ static int spry_file_write(lua_State *L) {
   String contents = luax_check_string(L, 2);
 
   FILE *f = fopen(path.data, "w");
+  if (f == nullptr) {
+    lua_pushboolean(L, false);
+    return 1;
+  }
   defer(fclose(f));
 
   size_t written = fwrite(contents.data, 1, contents.len, f);
