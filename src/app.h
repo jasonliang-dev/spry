@@ -21,7 +21,6 @@ struct AppTime {
 
 struct lua_State;
 struct App {
-  Mutex frame_mtx;
   Mutex gpu_mtx;
 
   LuaAlloc *LA;
@@ -62,8 +61,6 @@ struct App {
 };
 
 extern App *g_app;
-
-inline bool gpu_guard() { return LockGuard{&g_app->gpu_mtx}; }
 
 inline void fatal_error(String str) {
   if (!g_app->error_mode.load()) {

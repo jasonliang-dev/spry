@@ -74,8 +74,9 @@ bool Image::load(String filepath, bool generate_mips) {
   desc.num_mipmaps = mips.len + 1;
 
   u32 id = 0;
-  if (gpu_guard()) {
+  {
     PROFILE_BLOCK("make image");
+    LockGuard lock{&g_app->gpu_mtx};
     id = sg_make_image(desc).id;
   }
 
@@ -83,6 +84,7 @@ bool Image::load(String filepath, bool generate_mips) {
   img.id = id;
   img.width = width;
   img.height = height;
+  img.has_mips = generate_mips;
   *this = img;
 
   printf("created image (%dx%d, %d channels, mipmaps: %s) with id %d\n", width,
@@ -91,7 +93,6 @@ bool Image::load(String filepath, bool generate_mips) {
 }
 
 void Image::trash() {
-  if (gpu_guard()) {
-    sg_destroy_image({id});
-  }
+  LockGuard lock{&g_app->gpu_mtx};
+  sg_destroy_image({id});
 }

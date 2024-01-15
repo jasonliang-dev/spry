@@ -106,7 +106,8 @@ static void make_font_range(FontRange *out, FontFamily *font, FontKey key) {
     sg_image.data.subimage[0][0].ptr = image;
     sg_image.data.subimage[0][0].size = width * height * 4;
 
-    if (gpu_guard()) {
+    {
+      LockGuard lock{&g_app->gpu_mtx};
       id = sg_make_image(sg_image).id;
     }
   }

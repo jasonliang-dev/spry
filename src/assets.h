@@ -32,6 +32,7 @@ struct Asset {
 
 void assets_shutdown();
 void assets_start_hot_reload();
+void assets_perform_hot_reload_changes();
 
 bool asset_load_kind(AssetKind kind, String filepath, Asset *out);
 bool asset_load(AssetLoadData desc, String filepath, Asset *out);

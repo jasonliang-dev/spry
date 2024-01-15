@@ -16,7 +16,6 @@
 #include "os.h"
 #include "prelude.h"
 #include "profile.h"
-#include "scanner.h"
 #include "sync.h"
 #include "vfs.h"
 
@@ -94,6 +93,8 @@ static void init() {
     }
   }
 
+  g_app->gpu_mtx.lock();
+
   assets_start_hot_reload();
 
 #ifndef NDEBUG
@@ -145,7 +146,8 @@ static void render() {
       pass.colors[0].clear_value.a = rgba[3];
     }
 
-    if (gpu_guard()) {
+    {
+      LockGuard lock{&g_app->gpu_mtx};
       sg_begin_default_pass(pass, sapp_width(), sapp_height());
     }
 
@@ -203,8 +205,9 @@ static void render() {
     microui_end_and_present();
   }
 
-  if (gpu_guard()) {
+  {
     PROFILE_BLOCK("end render pass");
+    LockGuard lock{&g_app->gpu_mtx};
 
     sgl_draw();
 
@@ -220,7 +223,6 @@ static void render() {
 
 static void frame() {
   PROFILE_FUNC();
-  LockGuard lock(&g_app->frame_mtx);
 
   {
     AppTime *time = &g_app->time;
@@ -271,7 +273,10 @@ static void frame() {
 #endif
   }
 
+  g_app->gpu_mtx.unlock();
   render();
+  assets_perform_hot_reload_changes();
+  g_app->gpu_mtx.lock();
 
   memcpy(g_app->prev_key_state, g_app->key_state, sizeof(g_app->key_state));
   memcpy(g_app->prev_mouse_state, g_app->mouse_state,
@@ -300,6 +305,8 @@ static void frame() {
 
 static void actually_cleanup() {
   PROFILE_FUNC();
+
+  g_app->gpu_mtx.unlock();
 
   lua_State *L = g_app->L;
 

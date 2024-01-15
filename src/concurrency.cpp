@@ -2,7 +2,6 @@
 #include "api.h"
 #include "deps/luaalloc.h"
 #include "hash_map.h"
-#include "luaconf.h"
 #include "luax.h"
 #include "prelude.h"
 #include "profile.h"

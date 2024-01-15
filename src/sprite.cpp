@@ -59,8 +59,9 @@ bool SpriteData::load(String filepath) {
   desc.data.subimage[0][0].size = ase->frame_count * rect;
 
   u32 id = 0;
-  if (gpu_guard()) {
+  {
     PROFILE_BLOCK("make image");
+    LockGuard lock{&g_app->gpu_mtx};
     id = sg_make_image(desc).id;
   }
 
