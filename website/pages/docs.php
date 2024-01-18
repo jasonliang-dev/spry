@@ -330,6 +330,55 @@ $api_reference = [
       ],
     ],
   ],
+  "Filesystem" => [
+    "spry.program_path" => [
+      "desc" => "Get the program's absolute file path.",
+      "example" => "local path = spry.program_path()",
+      "args" => [],
+      "return" => "string",
+    ],
+    "spry.is_fused" => [
+      "desc" => "Check if the executable is fused with game data.",
+      "example" => "local fused = spry.is_fused()",
+      "args" => [],
+      "return" => "boolean",
+    ],
+    "spry.file_exists" => [
+      "desc" => "Check if the given file exists in the virtual file system.",
+      "example" => "local exists = spry.file_exists(datafile)",
+      "args" => [
+        "path" => ["string", "The file path."],
+      ],
+      "return" => "boolean",
+    ],
+    "spry.file_read" => [
+      "desc" => "Read a file into a string.",
+      "example" => "
+        if spry.file_exists(savedata) then
+          game_state:load(spry.file_read(savedata))
+        end
+      ",
+      "args" => [
+        "path" => ["string", "The file path."],
+      ],
+      "return" => [
+        "on success" => "string, true",
+        "on failure" => "nil, false",
+      ],
+    ],
+    "spry.file_write" => [
+      "desc" => "Write string contents to a file.",
+      "example" => "spry.file_write('checkpoints.data' serialize(player_checkpoints))",
+      "args" => [
+        "path" => ["string", "The file path."],
+        "contents" => ["string", "The text content to write."],
+      ],
+      "return" => [
+        "on success" => "true",
+        "on failure" => "false",
+      ],
+    ],
+  ],
   "Input" => [
     "spry.key_down" => [
       "desc" => "
@@ -650,8 +699,8 @@ $api_reference = [
         " .min_filter" => ["string", "Filter mode when scaling down.", "nearest"],
         " .mag_filter" => ["string", "Filter mode when scaling up.", "nearest"],
         " .mipmap_filter" => ["string", "Filter mode for mipmaps.", "none"],
-        " .wrap_u" => ["string", "Wrap mode for the horizontal direction."],
-        " .wrap_v" => ["string", "Wrap mode for the vertical direction."],
+        " .wrap_u" => ["string", "Wrap mode for the horizontal direction.", "repeat"],
+        " .wrap_v" => ["string", "Wrap mode for the vertical direction.", "repeat"],
       ],
       "return" => "Sampler",
     ],
