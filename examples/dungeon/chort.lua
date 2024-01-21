@@ -90,7 +90,7 @@ function Chort:update(dt)
   self.x, self.y = self.body:position()
   self.sprite:update(dt)
   self.spring:update(dt)
-  co_resume(self.update_thread, self, dt)
+  resume(self.update_thread, self, dt)
 end
 
 function Chort:draw()

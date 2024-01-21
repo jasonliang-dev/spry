@@ -56,8 +56,8 @@ function spry.frame(dt)
 
   entity.x, entity.y = spry.mouse_pos()
 
-  co_resume(send_update)
-  co_resume(recv_update)
+  resume(send_update)
+  resume(recv_update)
 
   font:draw(stringify(state), 40, 40, 18)
   font:draw(("fps: %.2f (%.4f)"):format(1 / dt, dt * 1000))

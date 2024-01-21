@@ -635,7 +635,7 @@ function sortpairs(t)
   end
 end
 
-function co_resume(co, ...)
+function resume(co, ...)
   local ok, err = coroutine.resume(co, ...)
   if not ok then
     error(err, 2)

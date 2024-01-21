@@ -3132,9 +3132,9 @@ $api_reference = [
       ],
       "return" => "iterator",
     ],
-    "co_resume" => [
+    "resume" => [
       "desc" => "Runs a coroutine, raising an error if the coroutine ran with an error.",
-      "example" => "co_resume(thread, self, dt)",
+      "example" => "resume(thread, self, dt)",
       "args" => [
         "co" => ["thread", "The coroutine to resume."],
         "..." => [false, "Arguments to pass to the coroutine."],

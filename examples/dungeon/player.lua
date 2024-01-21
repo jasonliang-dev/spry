@@ -81,7 +81,7 @@ end
 function Player:update(dt)
   self.sprite:update(dt)
   self.x, self.y = self.body:position()
-  co_resume(self.update_thread, self, dt)
+  resume(self.update_thread, self, dt)
 
   self.shoot_cooldown = self.shoot_cooldown - dt
   if spry.mouse_down(1) and self.shoot_cooldown <= 0 then
