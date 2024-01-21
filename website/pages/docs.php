@@ -690,17 +690,18 @@ $api_reference = [
         my_sampler = spry.make_sampler {
           min_filter = 'linear',
           mag_filter = 'linear',
+          mipmap_filter = 'linear',
           wrap_u = 'clamp',
           wrap_v = 'clamp',
         }
       ",
       "args" => [
         "t" => ["table", "Sampler options."],
-        " .min_filter" => ["string", "Filter mode when scaling down.", "nearest"],
-        " .mag_filter" => ["string", "Filter mode when scaling up.", "nearest"],
-        " .mipmap_filter" => ["string", "Filter mode for mipmaps.", "none"],
-        " .wrap_u" => ["string", "Wrap mode for the horizontal direction.", "repeat"],
-        " .wrap_v" => ["string", "Wrap mode for the vertical direction.", "repeat"],
+        " .min_filter" => ["string", "Filter mode when scaling down.", "'nearest'"],
+        " .mag_filter" => ["string", "Filter mode when scaling up.", "'nearest'"],
+        " .mipmap_filter" => ["string", "Filter mode for mipmaps.", "'none'"],
+        " .wrap_u" => ["string", "Wrap mode for the horizontal direction.", "'repeat'"],
+        " .wrap_v" => ["string", "Wrap mode for the vertical direction.", "'repeat'"],
       ],
       "return" => "Sampler",
     ],

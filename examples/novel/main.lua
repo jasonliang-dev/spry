@@ -1,5 +1,4 @@
 function spry.conf(t)
-  t.swap_interval = 1
   t.window_width = 960
   t.window_height = 540
 end
@@ -22,19 +21,20 @@ function spry.start()
   }
 
   preload = {}
+  preload.good_enough = false
   preload.ch = spry.make_channel "preload"
   preload.thread = spry.make_thread [[
-    spry.image_load("bg/Train_Day.png", true)
-    spry.image_load("bg/Street_Spring_Day.png", true)
-    spry.image_load("bg/School_Hallway_Day.png", true)
+    local ch = spry.get_channel "preload"
 
+    spry.image_load("bg/Train_Day.png", true)
+    ch:send "enough"
+
+    spry.image_load("bg/School_Hallway_Day.png", true)
     spry.image_load("char/Alice_Blush.png", true)
     spry.image_load("char/Alice_Default.png", true)
     spry.image_load("char/Alice_Happy.png", true)
     spry.image_load("char/Alice_Worried.png", true)
     spry.image_load("char/Alice_Embarrassed.png", true)
-
-    local ch = spry.get_channel "preload"
     ch:send "done"
   ]]
 end
@@ -163,16 +163,21 @@ local function frame(dt)
 end
 
 function spry.frame(dt)
-  if preload.thread ~= nil then
+  local msg = preload.ch:try_recv()
+
+  if not preload.good_enough then
     font:draw("Loading...", (spry.elapsed() * 100) % spry.window_width(), spry.window_height() - 40, 28)
 
-    if preload.ch:try_recv() == "done" then
-      preload.thread:join()
-      preload.thread = nil
-
+    if msg == "enough" then
+      preload.good_enough = true
       progress(script)
     end
   else
     frame(dt)
+  end
+
+  if preload.thread ~= nil and msg == "done" then
+    preload.thread:join()
+    preload.thread = nil
   end
 end

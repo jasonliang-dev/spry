@@ -75,11 +75,10 @@ static void lua_thread_proc(void *udata) {
 void LuaThread::make(String code, String thread_name) {
   new (this) LuaThread();
 
-  LockGuard lock{&mtx};
-
   contents = to_cstr(code);
   name = to_cstr(thread_name);
 
+  LockGuard lock{&mtx};
   thread.make(lua_thread_proc, this);
 }
 

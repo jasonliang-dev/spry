@@ -1,6 +1,6 @@
 local function bg(name)
   if name then
-    stat.bg = spry.image_load("bg/" .. name .. ".png")
+    stat.bg = spry.image_load("bg/" .. name .. ".png", true)
   else
     stat.bg = nil
   end
@@ -8,7 +8,7 @@ end
 
 local function ch(name)
   if name then
-    stat.char = spry.image_load("char/" .. name .. ".png")
+    stat.char = spry.image_load("char/" .. name .. ".png", true)
   else
     stat.char = nil
   end
@@ -60,7 +60,7 @@ end
 
 script = coroutine.create(function()
   bg "Train_Day"
-  _ "You're on the train, on the way to school."
+  _ "You're on the train on the way to school."
   _ "The announcer goes off."
   _ "\"Aoyama-itchōme. Aoyama-itchōme.\""
   _ "This is your stop. You leave the train."
