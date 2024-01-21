@@ -72,13 +72,7 @@ $api_reference = [
   "Callback Functions" => [
     "spry.arg" => [
       "desc" => "
-        Define this callback function to read command line arguments before
-        anything else runs.
-
-        You should return a table with `console` as the key, and a boolean
-        result as the value. This enables/disables the console output on
-        Windows. If the value of `console` is false, The value of
-        `win_console` in `spry.conf` is used instead.
+        Define this callback function to read command line arguments.
       ",
       "example" => "
         function spry.arg(arg)
@@ -98,14 +92,14 @@ $api_reference = [
           %s [command...]
         commands:
           --help, -h  show help
-          --console   use console output
+          --console   use console window
         ]]):format(spry.program_path())
 
             print(str)
             os.exit()
           end
 
-          return { console = console }
+          spry.set_console_window(console)
         end
       ",
       "args" => [
@@ -123,7 +117,7 @@ $api_reference = [
       ",
       "args" => [
         "t" => ["table", "The table to edit options with."],
-        " .win_console" => ["boolean", "Windows only. Use console output.", "false"],
+        " .win_console" => ["boolean", "Windows only. If true, use the console window.", "false"],
         " .hot_reload" => ["boolean", "Enable/disable hot reloading of scripts and assets.", "true"],
         " .startup_load_scripts" => ["boolean", "Enable/disable loading all lua scripts in the project.", "true"],
         " .fullscreen" => ["boolean", "If true, start the program in fullscreen mode.", "false"],
@@ -185,6 +179,30 @@ $api_reference = [
       "example" => "print(spry.version())",
       "args" => [],
       "return" => "string",
+    ],
+    "spry.set_console_window" => [
+      "desc" => "
+        Windows only. Enable/disable the console window. If false, the value
+        of `win_console` in [`spry.conf`](#spry.conf) is used instead. This
+        function should be called inside [`spry.arg`](#spry.arg).
+      ",
+      "example" => "
+        function spry.arg(arg)
+          local console = false
+
+          for _, a in ipairs(arg) do
+            if a == '--console' then
+              console = true
+            end
+          end
+
+          spry.set_console_window(console)
+        end
+      ",
+      "args" => [
+        "console" => ["boolean", "If true, enable the console window."],
+      ],
+      "return" => false,
     ],
     "spry.quit" => [
       "desc" => "Exit the program.",
@@ -677,11 +695,14 @@ $api_reference = [
   "Sampler" => [
     "spry.make_sampler" => [
       "desc" => "
-        Create a sampler used with images and fonts.
+        Create a sampler, which describes texture filtering operations on
+        images and fonts.
 
         `min_filter` and `mag_filter` can be set to:
-        - `linear`, good for pixel art
-        - `nearest`, suitable for larger/smoother images
+        - `linear`, suitable for larger/smoother images
+        - `nearest`, good for pixel art
+
+        `mipmap_filter` can be set to `linear`, `nearest`, or `none`.
 
         `wrap_u` and `wrap_v` can be set to `repeat`, `mirroredrepeat`, or
         `clamp`.
@@ -721,7 +742,7 @@ $api_reference = [
       "desc" => "Use this sampler for future image/font drawing.",
       "example" => "
         wrap_sampler:use()
-        background:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)
+        tiled_background:draw(x, y, r, sx, sy, ox, oy, u0, v0, u1, v1)
       ",
       "args" => [],
       "return" => false,

@@ -37,9 +37,7 @@ function spry._define_default_callbacks()
       os.exit()
     end
 
-    return {
-      console = console
-    }
+    spry.set_console_window(console)
   end
 
   function spry.conf() end

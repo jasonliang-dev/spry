@@ -482,7 +482,6 @@ sapp_desc sokol_main(int argc, char **argv) {
   lua_State *L = g_app->L;
 
   MountResult mount = vfs_mount(mount_path);
-  bool win_console = false;
 
   g_app->is_fused.store(mount.is_fused);
 
@@ -499,11 +498,8 @@ sapp_desc sokol_main(int argc, char **argv) {
       lua_rawseti(L, -2, i);
     }
 
-    if (lua_pcall(L, 1, 1, 1) != LUA_OK) {
+    if (lua_pcall(L, 1, 0, 1) != LUA_OK) {
       lua_pop(L, 1);
-    } else if (lua_type(L, -1) == LUA_TTABLE) {
-      win_console = luax_boolean_field(L, -1, "console", false);
-      lua_pop(L, 1); // returned table
     }
   }
 
@@ -516,7 +512,7 @@ sapp_desc sokol_main(int argc, char **argv) {
     luax_pcall(L, 1, 0);
   }
 
-  win_console = win_console || luax_boolean_field(L, -1, "win_console", false);
+  g_app->win_console = g_app->win_console || luax_boolean_field(L, -1, "win_console", false);
 
   bool hot_reload = luax_boolean_field(L, -1, "hot_reload", true);
   bool startup_load_scripts =
@@ -544,7 +540,7 @@ sapp_desc sokol_main(int argc, char **argv) {
   }
 
 #ifdef IS_WIN32
-  if (!win_console) {
+  if (!g_app->win_console) {
     FreeConsole();
   }
 #endif

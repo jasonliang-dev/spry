@@ -28,6 +28,7 @@ struct App {
 
   AppTime time;
 
+  bool win_console;
   Slice<String> args;
 
   std::atomic<u64> main_thread_id;

@@ -1975,6 +1975,11 @@ static int spry_version(lua_State *L) {
   return 1;
 }
 
+static int spry_set_console_window(lua_State *L) {
+  g_app->win_console = lua_toboolean(L, 1);
+  return 0;
+}
+
 static int spry_quit(lua_State *L) {
   (void)L;
   sapp_request_quit();
@@ -2689,6 +2694,7 @@ static int open_spry(lua_State *L) {
 
       // core
       {"version", spry_version},
+      {"set_console_window", spry_set_console_window},
       {"quit", spry_quit},
       {"fatal_error", spry_fatal_error},
       {"platform", spry_platform},
