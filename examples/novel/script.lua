@@ -61,12 +61,12 @@ end
 script = coroutine.create(function()
   bg "Train_Day"
   _ "You're on the train on the way to school."
-  _ "The announcer goes off."
-  _ "\"Aoyama-itchōme. Aoyama-itchōme.\""
+  _ "You hear the announcer through the train speakers."
+  _ "\"The next station is, Aoyama-itchōme. Aoyama-itchōme.\""
   _ "This is your stop. You leave the train."
 
   bg "School_Hallway_Day"
-  _ "You arrived to school on time. You see a one of your classmates walk towards you."
+  _ "You arrived to school on time. You see one of your classmates walk towards you."
 
   ch "Alice_Blush"
   a "Hey! How was your weekend?"
@@ -78,25 +78,25 @@ script = coroutine.create(function()
   ch "Alice_Default"
 
   if i == 1 then
-    p "My weekend was great. I had lot of fun."
+    p "My weekend was great. I had a lot of fun."
 
     ch "Alice_Happy"
     a "I'm glad to hear it."
 
   elseif i == 2 then
-    p "The weekend was dull, uneventful."
+    p "The weekend was pretty dull."
 
     ch "Alice_Worried"
-    a "Aww. well, maybe the next weekend will be better."
+    a "Aww. Well, maybe next week will be better."
   end
 
   _ "The school bell rings."
 
   ch "Alice_Default"
-  a "Ah, I guess we'll talk about our weekends later."
+  a "Ah, I guess we'll talk later."
 
   ch "Alice_Embarrassed"
-  a "See you after school!"
+  a "See you!"
 
   ch()
   _ "Alice leaves."

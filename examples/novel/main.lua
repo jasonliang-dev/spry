@@ -22,7 +22,7 @@ function spry.start()
 
   preload = {}
   preload.good_enough = false
-  preload.ch = spry.make_channel "preload"
+  preload.ch = spry.make_channel("preload", 1)
   preload.thread = spry.make_thread [[
     local ch = spry.get_channel "preload"
 
@@ -37,6 +37,12 @@ function spry.start()
     spry.image_load("char/Alice_Embarrassed.png", true)
     ch:send "done"
   ]]
+end
+
+function spry.before_quit()
+  if preload.thread ~= nil then
+    preload.thread:join()
+  end
 end
 
 local function menu_rect(right, top, i)
