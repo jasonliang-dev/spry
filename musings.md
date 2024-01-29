@@ -50,11 +50,6 @@ types are used through macros:
 - The macros `PROFILE_FUNC` and `PROFILE_BLOCK` uses `Instrument`
   (`profile.h`), which produces trace events in its constructor and destructor.
 
-The sync primitives (mutex, condition variables, etc), also uses RAII. It's a
-good fit for these types since copies and moves are not allowed.
-Non-copyable/moveable types removes a lot of the complexity that comes with
-RAII.
-
 ## Memory
 
 - General allocation with malloc/free
@@ -83,16 +78,6 @@ please. Also, the STL containers hits debug performance pretty hard.
 ## Algorithms
 
 - `profile.cpp` - Producer/consumer
-
-  The queue lives in `chan.h` and uses a mutex + condition variable. I
-  replaced it with semaphores, but it was slower? This change was reverted.
-
-  `json_parse` timings (dungeon example project) on a decade old ThinkPad:
-
-  - mutex + condition variable: ~40ms debug, ~7ms release (woah one order of magnitude)
-  - semaphores + atomics: ~70ms debug, ~70ms release
-  - semaphores + mutex: ~80ms debug, ~80ms release
-
 - `json.cpp` -  recursive descent parsing
 - `tilemap.cpp` - A\* pathfinding
 
