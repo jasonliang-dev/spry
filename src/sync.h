@@ -9,18 +9,6 @@
 #include <semaphore.h>
 #endif
 
-struct Mutex;
-struct LockGuard {
-  Mutex *mtx;
-
-  LockGuard(Mutex *mtx);
-  ~LockGuard();
-  LockGuard(LockGuard &&) = delete;
-  LockGuard &operator=(LockGuard &&) = delete;
-
-  operator bool() { return true; }
-};
-
 struct Mutex {
 #ifdef _WIN32
   SRWLOCK srwlock;
@@ -28,11 +16,8 @@ struct Mutex {
   pthread_mutex_t pt;
 #endif
 
-  Mutex();
-  ~Mutex();
-  Mutex(Mutex &&) = delete;
-  Mutex &operator=(Mutex &&) = delete;
-
+  void make();
+  void trash();
   void lock();
   void unlock();
   bool try_lock();
@@ -45,11 +30,8 @@ struct Cond {
   pthread_cond_t pt;
 #endif
 
-  Cond();
-  ~Cond();
-  Cond(Cond &&) = delete;
-  Cond &operator=(Cond &&) = delete;
-
+  void make();
+  void trash();
   void signal();
   void broadcast();
   void wait(Mutex *mtx);
@@ -63,11 +45,8 @@ struct RWLock {
   pthread_rwlock_t pt;
 #endif
 
-  RWLock();
-  ~RWLock();
-  RWLock(RWLock &&) = delete;
-  RWLock &operator=(RWLock &&) = delete;
-
+  void make();
+  void trash();
   void shared_lock();
   void shared_unlock();
   void unique_lock();
@@ -81,11 +60,8 @@ struct Sema {
   sem_t *sem;
 #endif
 
-  Sema(int n = 0);
-  ~Sema();
-  Sema(Sema &&) = delete;
-  Sema &operator=(Sema &&) = delete;
-
+  void make(int n = 0);
+  void trash();
   void post(int n = 1);
   void wait();
 };
@@ -97,6 +73,17 @@ struct Thread {
 
   void make(ThreadProc fn, void *udata);
   void join();
+};
+
+struct LockGuard {
+  Mutex *mtx;
+
+  LockGuard(Mutex *mtx) : mtx(mtx) { mtx->lock(); };
+  ~LockGuard() { mtx->unlock(); };
+  LockGuard(LockGuard &&) = delete;
+  LockGuard &operator=(LockGuard &&) = delete;
+
+  operator bool() { return true; }
 };
 
 uint64_t this_thread_id();

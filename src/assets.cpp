@@ -3,7 +3,6 @@
 #include "luax.h"
 #include "os.h"
 #include "profile.h"
-#include "strings.h"
 #include "sync.h"
 
 struct FileChange {
@@ -157,9 +156,19 @@ void assets_shutdown() {
     }
   }
   g_assets.table.trash();
+
+  g_assets.shutdown_notify.trash();
+  g_assets.changes_mtx.trash();
+  g_assets.shutdown_mtx.trash();
+  g_assets.rw_lock.trash();
 }
 
 void assets_start_hot_reload() {
+  g_assets.shutdown_notify.make();
+  g_assets.changes_mtx.make();
+  g_assets.shutdown_mtx.make();
+  g_assets.rw_lock.make();
+
   if (g_app->hot_reload_enabled.load()) {
     g_assets.reload_thread.make(hot_reload_thread, nullptr);
   }

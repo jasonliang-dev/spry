@@ -10,13 +10,10 @@
 #include <unistd.h>
 #endif
 
-LockGuard::LockGuard(Mutex *mtx) : mtx(mtx) { mtx->lock(); }
-LockGuard::~LockGuard() { mtx->unlock(); }
-
 #ifdef IS_WIN32
 
-Mutex::Mutex() : srwlock() {}
-Mutex::~Mutex() {}
+void Mutex::make() { srwlock = {}; }
+void Mutex::trash() {}
 void Mutex::lock() { AcquireSRWLockExclusive(&srwlock); }
 void Mutex::unlock() { ReleaseSRWLockExclusive(&srwlock); }
 
@@ -25,8 +22,8 @@ bool Mutex::try_lock() {
   return ok != 0;
 }
 
-Cond::Cond() { InitializeConditionVariable(&cv); }
-Cond::~Cond() {}
+void Cond::make() { InitializeConditionVariable(&cv); }
+void Cond::trash() {}
 void Cond::signal() { WakeConditionVariable(&cv); }
 void Cond::broadcast() { WakeAllConditionVariable(&cv); }
 
@@ -38,15 +35,17 @@ bool Cond::timed_wait(Mutex *mtx, uint32_t ms) {
   return SleepConditionVariableSRW(&cv, &mtx->srwlock, ms, 0);
 }
 
-RWLock::RWLock() : srwlock() {}
-RWLock::~RWLock() {}
+void RWLock::make() { srwlock = {}; }
+void RWLock::trash() {}
 void RWLock::shared_lock() { AcquireSRWLockShared(&srwlock); }
 void RWLock::shared_unlock() { ReleaseSRWLockShared(&srwlock); }
 void RWLock::unique_lock() { AcquireSRWLockExclusive(&srwlock); }
 void RWLock::unique_unlock() { ReleaseSRWLockExclusive(&srwlock); }
 
-Sema::Sema(int n) { handle = CreateSemaphoreA(nullptr, n, LONG_MAX, nullptr); }
-Sema::~Sema() { CloseHandle(handle); }
+void Sema::make(int n) {
+  handle = CreateSemaphoreA(nullptr, n, LONG_MAX, nullptr);
+}
+void Sema::trash() { CloseHandle(handle); }
 void Sema::post(int n) { ReleaseSemaphore(handle, n, nullptr); }
 void Sema::wait() { WaitForSingleObjectEx(handle, INFINITE, false); }
 
@@ -79,8 +78,8 @@ static struct timespec ms_from_now(u32 ms) {
   return ts;
 }
 
-Mutex::Mutex() { pthread_mutex_init(&pt, nullptr); }
-Mutex::~Mutex() { pthread_mutex_destroy(&pt); }
+void Mutex::make() { pthread_mutex_init(&pt, nullptr); }
+void Mutex::trash() { pthread_mutex_destroy(&pt); }
 void Mutex::lock() { pthread_mutex_lock(&pt); }
 void Mutex::unlock() { pthread_mutex_unlock(&pt); }
 
@@ -89,8 +88,8 @@ bool Mutex::try_lock() {
   return res == 0;
 }
 
-Cond::Cond() { pthread_cond_init(&pt, nullptr); }
-Cond::~Cond() { pthread_cond_destroy(&pt); }
+void Cond::make() { pthread_cond_init(&pt, nullptr); }
+void Cond::trash() { pthread_cond_destroy(&pt); }
 void Cond::signal() { pthread_cond_signal(&pt); }
 void Cond::broadcast() { pthread_cond_broadcast(&pt); }
 void Cond::wait(Mutex *mtx) { pthread_cond_wait(&pt, &mtx->pt); }
@@ -101,24 +100,24 @@ bool Cond::timed_wait(Mutex *mtx, uint32_t ms) {
   return res == 0;
 }
 
-RWLock::RWLock() { pthread_rwlock_init(&pt, nullptr); }
-RWLock::~RWLock() { pthread_rwlock_destroy(&pt); }
+void RWLock::make() { pthread_rwlock_init(&pt, nullptr); }
+void RWLock::trash() { pthread_rwlock_destroy(&pt); }
 void RWLock::shared_lock() { pthread_rwlock_rdlock(&pt); }
 void RWLock::shared_unlock() { pthread_rwlock_unlock(&pt); }
 void RWLock::unique_lock() { pthread_rwlock_wrlock(&pt); }
 void RWLock::unique_unlock() { pthread_rwlock_unlock(&pt); }
 
-Sema::Sema(int n) {
+void Sema::make(int n) {
   sem = (sem_t *)mem_alloc(sizeof(sem_t));
   sem_init(sem, 0, n);
 }
 
-Sema::~Sema() {
+void Sema::trash() {
   sem_destroy(sem);
   mem_free(sem);
 }
 
-void Sema::post(, int n) {
+void Sema::post(int n) {
   for (int i = 0; i < n; i++) {
     sem_post(sem);
   }

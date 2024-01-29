@@ -64,11 +64,15 @@ inline void panic(const char *fmt, ...) {
 }
 
 struct Allocator {
+  virtual void make() = 0;
+  virtual void trash() = 0;
   virtual void *alloc(size_t bytes, const char *file, i32 line) = 0;
   virtual void free(void *ptr) = 0;
 };
 
 struct HeapAllocator : Allocator {
+  void make() {}
+  void trash() {}
   void *alloc(size_t bytes, const char *, i32) { return malloc(bytes); }
   void free(void *ptr) { ::free(ptr); }
 };
@@ -86,6 +90,8 @@ struct DebugAllocator : Allocator {
   DebugAllocInfo *head = nullptr;
   Mutex mtx = {};
 
+  void make() { mtx.make(); }
+  void trash() { mtx.trash(); }
   void *alloc(size_t bytes, const char *file, i32 line);
   void free(void *ptr);
   void dump_allocs();

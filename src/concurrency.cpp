@@ -73,8 +73,7 @@ static void lua_thread_proc(void *udata) {
 }
 
 void LuaThread::make(String code, String thread_name) {
-  new (this) LuaThread();
-
+  mtx.make();
   contents = to_cstr(code);
   name = to_cstr(thread_name);
 
@@ -87,7 +86,7 @@ void LuaThread::join() {
     thread.join();
   }
 
-  this->~LuaThread();
+  mtx.trash();
 }
 
 //
@@ -204,7 +203,9 @@ struct LuaChannels {
 static LuaChannels g_channels = {};
 
 void LuaChannel::make(String n, u64 buf) {
-  new (this) LuaChannel();
+  mtx.make();
+  sent.make();
+  received.make();
   items.data = (LuaVariant *)mem_alloc(sizeof(LuaVariant) * (buf + 1));
   items.len = (buf + 1);
   front = 0;
@@ -222,8 +223,9 @@ void LuaChannel::trash() {
 
   mem_free(items.data);
   mem_free(name.exchange(nullptr));
-  this->~LuaChannel();
-  mem_free(this);
+  mtx.trash();
+  sent.trash();
+  received.trash();
 }
 
 void LuaChannel::send(LuaVariant item) {
@@ -280,6 +282,7 @@ bool LuaChannel::try_recv(LuaVariant *v) {
 
 LuaChannel *lua_channel_make(String name, u64 buf) {
   LuaChannel *chan = (LuaChannel *)mem_alloc(sizeof(LuaChannel));
+  new (&chan->name) std::atomic<char *>();
   chan->make(name, buf);
 
   LockGuard lock{&g_channels.mtx};
@@ -311,6 +314,7 @@ LuaChannel *lua_channels_select(lua_State *L, LuaVariant *v) {
   }
 
   Mutex mtx = {};
+  mtx.make();
   LockGuard lock{&mtx};
 
   while (true) {
@@ -326,10 +330,18 @@ LuaChannel *lua_channels_select(lua_State *L, LuaVariant *v) {
   }
 }
 
+void lua_channels_setup() {
+  g_channels.select.make();
+  g_channels.mtx.make();
+}
+
 void lua_channels_shutdown() {
   for (auto [k, v] : g_channels.by_name) {
     LuaChannel *chan = *v;
     chan->trash();
+    mem_free(chan);
   }
   g_channels.by_name.trash();
+  g_channels.select.trash();
+  g_channels.mtx.trash();
 }

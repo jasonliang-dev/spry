@@ -44,6 +44,7 @@ static void profile_recv_thread(void *) {
 }
 
 void profile_setup() {
+  g_profile.events.make();
   g_profile.events.reserve(256);
   g_profile.recv_thread.make(profile_recv_thread, nullptr);
 }

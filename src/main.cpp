@@ -95,6 +95,7 @@ static void init() {
 
   g_app->gpu_mtx.lock();
 
+  lua_channels_setup();
   assets_start_hot_reload();
 
 #ifndef NDEBUG
@@ -370,6 +371,8 @@ static void actually_cleanup() {
   mem_free(g_app->args.data);
 
   mem_free(g_app);
+
+  g_init_mtx.trash();
 }
 
 static void cleanup() {
@@ -386,6 +389,7 @@ static void cleanup() {
   }
 #endif
 
+  allocator->trash();
   operator delete(g_allocator);
 
 #ifndef NDEBUG
@@ -447,6 +451,7 @@ static void load_all_lua_scripts(lua_State *L) {
 /* extern(prelude.h) */ Allocator *g_allocator;
 
 sapp_desc sokol_main(int argc, char **argv) {
+  g_init_mtx.make();
   LockGuard lock(&g_init_mtx);
 
 #ifndef NDEBUG
@@ -454,6 +459,8 @@ sapp_desc sokol_main(int argc, char **argv) {
 #else
   g_allocator = new HeapAllocator();
 #endif
+
+  g_allocator->make();
 
   os_high_timer_resolution();
   stm_setup();

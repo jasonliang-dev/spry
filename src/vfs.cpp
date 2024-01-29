@@ -81,6 +81,7 @@ static bool list_all_files_help(Array<String> *files, String path) {
 }
 
 struct FileSystem {
+  virtual void make() = 0;
   virtual void trash() = 0;
   virtual bool mount(String filepath) = 0;
   virtual bool file_exists(String filepath) = 0;
@@ -91,6 +92,7 @@ struct FileSystem {
 static FileSystem *g_filesystem;
 
 struct DirectoryFileSystem : FileSystem {
+  void make() {}
   void trash() {}
 
   bool mount(String filepath) {
@@ -128,11 +130,17 @@ struct ZipFileSystem : FileSystem {
   mz_zip_archive zip = {};
   String zip_contents = {};
 
+  void make() {
+    mtx.make();
+  }
+
   void trash() {
     if (zip_contents.data != nullptr) {
       mz_zip_reader_end(&zip);
       mem_free(zip_contents.data);
     }
+
+    mtx.trash();
   }
 
   bool mount(String filepath) {
@@ -329,6 +337,7 @@ template <typename T> static bool vfs_mount_type(String mount) {
   void *ptr = mem_alloc(sizeof(T));
   T *vfs = new (ptr) T();
 
+  vfs->make();
   bool ok = vfs->mount(mount);
   if (!ok) {
     vfs->trash();

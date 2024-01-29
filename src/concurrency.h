@@ -64,4 +64,5 @@ struct LuaChannel {
 LuaChannel *lua_channel_make(String name, u64 buf);
 LuaChannel *lua_channel_get(String name);
 LuaChannel *lua_channels_select(lua_State *L, LuaVariant *v);
+void lua_channels_setup();
 void lua_channels_shutdown();

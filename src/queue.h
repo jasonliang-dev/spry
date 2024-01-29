@@ -12,7 +12,16 @@ template <typename T> struct Queue {
   u64 len = 0;
   u64 capacity = 0;
 
-  void trash() { mem_free(data); }
+  void make() {
+    mtx.make();
+    cv.make();
+  }
+
+  void trash() {
+    mtx.trash();
+    cv.trash();
+    mem_free(data);
+  }
 
   void reserve(u64 cap) {
     if (cap <= capacity) {
